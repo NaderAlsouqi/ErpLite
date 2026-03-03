@@ -1,0 +1,21 @@
+.input-group ng-select.form-control {
+    height: 38px !important;
+    border-start-start-radius: 0 !important;
+    border-end-start-radius: 0 !important;
+    .ng-select-container {
+      height: 38px !important;
+      min-height: 38px !important;
+    }
+    
+    .ng-value-container {
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+  }
+
+
+
+  

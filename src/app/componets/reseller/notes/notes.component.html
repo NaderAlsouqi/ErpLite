@@ -1,0 +1,222 @@
+<app-page-header [title]="'NotesPage.Title' | translate" [activeTitle]="'NotesPage.addNote' | translate"></app-page-header>
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+      <div class="card-header">
+        <div class="card-title">
+          {{ 'NotesPage.searchNotes' | translate }}
+        </div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary mr-1"  
+             (click)="openNoteModal(NotesModal)">
+            <i class="ti ti-plus me-1"></i>
+            {{ 'NotesPage.addNote' | translate }}
+          </button>
+          <div style="margin-right: 10px;"></div>
+           <button 
+            class="btn btn-outline-primary"         
+            (click)="PrintNotesReport()"   
+            [disabled]="this.NotesData.length === 0">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+            <div class="form-group">
+        <div class="row mb-4">
+          <!-- Start Date with MatDatepicker -->
+          <div class="col-md-3">
+            <div class="form-group">
+             <label class="form-label">{{ 'NotesPage.Name' | translate }}</label>
+              <div class="input-group">
+                 <input type="text" class="form-control"  (keyup)="applyFilter()"  [(ngModel)]="newNote.Name"  placeholder="{{ 'NotesPage.searchByName' | translate }}">
+              </div>
+            </div>
+          </div>
+          <!-- End Date with MatDatepicker -->
+          <div class="col-md-3">
+            <div class="form-group">
+             <label class="form-label">{{ 'NotesPage.Phone' | translate }}</label>
+              <div class="input-group">
+                 <input type="text" class="form-control" (keyup)="applyFilter()" [(ngModel)]="newNote.Phone"  placeholder="{{ 'NotesPage.searchByPhone' | translate }}">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Customer Account with NgSelect - Fixed Overlap Issue -->
+          <div class="col-md-4">
+            <div class="form-group">
+               <label class="form-label">{{ 'NotesPage.Email' | translate }}</label>
+                 <input type="text" class="form-control" (keyup)="applyFilter()" [(ngModel)]="newNote.Email"  placeholder="{{ 'NotesPage.searchByEmail' | translate }}">
+
+            </div>
+          </div>
+          
+          <!-- Search Button -->
+          <div class="col-md-2">
+            <div class="form-group d-flex align-items-end h-100">
+              <button 
+                class="btn btn-primary w-100" 
+                (click)="search()" 
+                [disabled]="!newNote.Name && !newNote.Phone && !newNote.Email">
+                <i class="ti ti-search me-1"></i>
+                {{ 'General.Search' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        
+        <!-- Results table -->
+        <div *ngIf="!loading && NotesData.length > 0" class="table-responsive">
+          <table mat-table [dataSource]="NotesData" matSort (matSortChange)="onSortChange($event)" class="table table-bordered">
+            <!-- Date Column with adjusted format -->
+            <ng-container matColumnDef="Name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'NotesPage.Name' | translate }} </th>
+              <td mat-cell *matCellDef="let row"> {{ row.Name }} </td>
+            </ng-container>
+
+            <!-- Document Number Column -->
+            <ng-container matColumnDef="Subject">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'NotesPage.Subject' | translate }} </th>
+              <td mat-cell *matCellDef="let row"> {{ row.Subject }} </td>
+            </ng-container>
+
+            <!-- Description Column -->
+            <ng-container matColumnDef="Note">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'NotesPage.Note' | translate }} </th>
+              <td mat-cell *matCellDef="let row"> {{ row.Note }} </td>
+            </ng-container>
+
+            <!-- Debit Column -->
+            <ng-container matColumnDef="Phone">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'NotesPage.Phone' | translate }} </th>
+              <td mat-cell *matCellDef="let row" > {{ row.Phone }} </td>
+            </ng-container>
+
+            <!-- Credit Column -->
+            <ng-container matColumnDef="Email">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'NotesPage.Email' | translate }} </th>
+              <td mat-cell *matCellDef="let row" >{{ row.Email }}</td>
+            </ng-container>
+
+                        <!-- Actions Column -->
+            <ng-container matColumnDef="actions">              
+              <th mat-header-cell *matHeaderCellDef class="text-center"> {{ 'NotesPage.Action' | translate }} </th>
+              <td mat-cell *matCellDef="let row" class="text-center">
+                <button class="btn btn-sm btn-info" (click)="printNote(row.NoteId)" title="{{ 'NotesPage.PrintNote' | translate }}">
+                  <i class="ti ti-printer"></i>
+                </button>
+              </td>
+            </ng-container>
+
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- No data row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
+                {{ 'General.NoRecordsFound' | translate }}
+              </td>
+            </tr>
+          </table>
+
+          <!-- Pagination -->
+          <mat-paginator 
+            [pageSizeOptions]="pageSizeOptions"
+            [pageSize]="pageSize"
+            [pageIndex]="pageIndex"
+            [length]="totalItems"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+        </div>
+
+
+
+        <!-- No results message -->
+        <div *ngIf="!loading && searched" class="alert alert-info mt-3">
+          {{ 'AccountStatement.NoTransactions' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Note Modal Dialog Template -->
+<ng-template #NotesModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">{{ 'NotesPage.addNote' | translate }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group mb-3">
+      <label class="form-label">{{ 'NotesPage.Name' | translate }}</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="newNote.Name"
+        placeholder="{{ 'NotesPage.Name' | translate }}"
+      />
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">{{ 'NotesPage.Subject' | translate }}</label>
+  <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="newNote.Subject"
+        placeholder="{{ 'NotesPage.Subject' | translate }}"
+      />
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">{{ 'NotesPage.Note' | translate }}</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="newNote.Note"
+        placeholder="{{ 'NotesPage.Note' | translate }}"
+      />
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">{{ 'NotesPage.Phone' | translate }}</label>
+        <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="newNote.Phone"
+        placeholder="{{ 'NotesPage.Phone' | translate }}"
+      />
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">{{ 'NotesPage.Email' | translate }}</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="newNote.Email"
+        placeholder="{{ 'NotesPage.Email' | translate }}"
+      />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">
+      <i class="ti ti-x me-1"></i>{{ 'General.Cancel' | translate }}
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-primary" 
+      (click)="addNote()"
+      [disabled]="!newNote.Name || !newNote.Subject || !newNote.Note || !newNote.Phone|| !newNote.Email">
+      <i class="ti ti-plus me-1"></i>{{ 'General.Add' | translate }}
+    </button>
+  </div>
+</ng-template>

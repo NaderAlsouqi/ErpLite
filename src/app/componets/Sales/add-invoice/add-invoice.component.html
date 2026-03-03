@@ -1,0 +1,280 @@
+<app-page-header *ngIf="Quotation"
+  [title]="'VirtualInvoicePage.AddQuotation' | translate" 
+  [title1]="'VirtualInvoicePage.Quotation' | translate" 
+  [activeTitle]="'VirtualInvoicePage.AddQuotation' | translate">
+</app-page-header>
+<app-page-header *ngIf="!Quotation"
+  [title]="'AddInvoicePage.AddInvoice' | translate" 
+  [title1]="'InvoicesPage.Invoices' | translate" 
+  [activeTitle]="'AddInvoicePage.AddInvoice' | translate">
+</app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card mb-4">
+      <div class="card-header">
+        <div class="card-title" *ngIf="!Quotation">
+          {{ 'AddInvoicePage.InvoiceDetails' | translate }}
+        </div>
+        <div class="card-title" *ngIf="Quotation">
+          {{ 'VirtualInvoicePage.QuotationDetails' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!loading">
+          <!-- Customer Selection Section -->
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">{{ 'AddInvoicePage.SearchCustomers' | translate }}</label>
+              <div class="input-group mb-2">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input type="text" class="form-control" 
+                  placeholder="{{ 'AddInvoicePage.SearchCustomerPlaceholder' | translate }}"
+                  [(ngModel)]="customerSearchTerm"
+                  (input)="filterCustomers()">
+              </div>
+              <select class="form-select" size="5"
+                [(ngModel)]="selectedCustomer"
+                (change)="onCustomerSelected(selectedCustomer)">
+                <option *ngFor="let customer of filteredCustomers" [ngValue]="customer">
+                  {{ customer.CustomerAccountNumber }} - {{ customer.CustomerAccountName }}
+                </option>
+              </select>
+              
+              <div *ngIf="selectedCustomer" class="mt-2 alert alert-success">
+                <strong>{{ 'AddInvoicePage.SelectedCustomer' | translate }}:</strong> {{ selectedCustomer.CustomerAccountName }}
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Description Field -->
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">{{ 'AddInvoicePage.Description' | translate }}</label>
+              <textarea class="form-control" rows="3"
+                [(ngModel)]="newRow.Description"></textarea>
+            </div>
+          </div>
+
+          <!-- Payment Method Field -->
+          <div class="row mb-3">
+            <div class="col-md-6" *ngIf="!Quotation">
+              <label class="form-label">{{ 'AddInvoicePage.PaymentMethod' | translate }}</label>
+              <select class="form-select" [(ngModel)]="newRow.CashPay">
+                <option value="" disabled selected>{{ 'AddInvoicePage.SelectPaymentMethod' | translate }}</option>
+                <option *ngFor="let method of payMethods" [value]="method.Id">
+                  {{ currentLang === 'ar' ? method.ArabicName : method.ArabicName }} <!-- Display Arabic for both languages !! change it if you have english names -->
+                </option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{{ 'AddInvoicePage.Options' | translate }}</label>
+              <div class="d-flex mt-2">
+                <div class="form-check me-4">
+                  <input class="form-check-input" type="checkbox" id="includeTaxCheckbox"
+                    [(ngModel)]="includeTax" (change)="updateTax();ResetItems()" >
+                  <label class="form-check-label" for="includeTaxCheckbox">
+                    {{ 'AddInvoicePage.IncludeTax' | translate }}
+                  </label>
+                </div>
+                <div class="form-check me-4" *ngIf="!Quotation">
+                  <input class="form-check-input" type="checkbox" id="SignCheckbox"
+                    [(ngModel)]="newRow.Sign" (change)="AddSign()"  >
+                  <label class="form-check-label" for="SignCheckbox">
+                    {{ 'VirtualInvoicePage.AddSign' | translate }}
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="isCashCheckbox"
+                    [(ngModel)]="isCash">
+                  <label class="form-check-label" for="isCashCheckbox">
+                    {{ 'AddInvoicePage.IsCash' | translate }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End::row-1 -->
+
+<!-- Start::row-2 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card mb-4">
+      <div class="card-header">
+        <div class="card-title">
+          {{ 'AddInvoicePage.ItemsManagement' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!loading">
+          <!-- Item Selection Section -->
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <label class="form-label">{{ 'AddInvoicePage.SearchItems' | translate }}</label>
+              <div class="input-group mb-2">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input type="text" class="form-control"
+                  placeholder="{{ 'AddInvoicePage.SearchItemPlaceholder' | translate }}"
+                  [(ngModel)]="itemSearchTerm"
+                  (input)="filterItems()">
+              </div>
+              <div class="d-flex">
+                <select class="form-select" size="5"
+                  [(ngModel)]="selectedItem">
+                  <option *ngFor="let item of filteredItems" [ngValue]="item" (click)="onItemSelected(item)">
+                    {{ item.ItemNumber }} - {{ item.ItemArabicName }}
+                  </option>
+                </select>
+                <button class="btn btn-primary ms-2 align-self-start" (click)="addItem()">
+                  <i class="ti ti-plus me-1"></i>
+                  {{ 'AddInvoicePage.AddItem' | translate }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Items Table Section -->
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped table-sm">
+              <thead class="table-light">
+                <tr>
+                  <th>{{ 'AddInvoicePage.ItemNumber' | translate }}</th>
+                  <th>{{ 'AddInvoicePage.ItemName' | translate }}</th>
+                  <!-- <th>{{ 'AddInvoicePage.Store' | translate }}</th> -->
+                  <th>{{ 'AddInvoicePage.Quantity' | translate }}</th>
+                  <th>{{ 'AddInvoicePage.ItemPrice' | translate }}</th>
+                  <th *ngIf="!this.includeTax">{{ 'AddInvoicePage.DiscountAmount' | translate }}</th>
+                  <th>{{ 'AddInvoicePage.TaxType' | translate }}</th>
+                  <th>{{ 'AddInvoicePage.TaxAmount' | translate }}</th>
+                  <th>{{ 'AddInvoicePage.Total' | translate }}</th>
+                  <th>{{ 'AddInvoicePage.Actions' | translate }}</th>
+                </tr>
+              </thead>            
+              <tbody>
+                <tr *ngFor="let item of newRow.Items; let i = index">
+                  <td>{{ item.ItemNumber }}</td>
+                  <td>{{ item['ItemName'] }}</td>
+                  <!-- <td>
+                    <select class="form-select form-select-sm" [(ngModel)]="item['StoreNumber']" (change)="onStoreChange(i)">
+                      <option [value]="''">{{ 'AddInvoicePage.SelectStore' | translate }}</option>
+                      <option *ngFor="let store of item.Stores" [value]="store.StoreNumber">
+                        {{ store.StoreName }} ({{ store.Quantity }})
+                      </option>
+                    </select>
+                  </td> -->
+                  <td>
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="item['Quantity']"
+                           min="1" (change)="updateItem(i)">
+                  </td>
+                  <td>
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="item['ItemPrice']"  pattern="^\d*(\.\d{0,3})?$"
+                           min="0" (change)="updateItem(i)">
+                  </td>
+                  <td  *ngIf="!this.includeTax">
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="item['ItemDiscountAmount']" 
+                           min="0" (change)="updateItem(i)">
+                  </td>
+                  <td>
+                    <!-- Add new tax type dropdown -->
+                    <select class="form-select form-select-sm" 
+                            [(ngModel)]="item.TaxType"
+                            (change)="onTaxTypeChange(i)">
+                      <option *ngFor="let tax of taxTypes" [ngValue]="tax.TaxNumber">
+                        {{ currentLang === 'ar' ? tax.TaxNameAr : tax.TaxNameEn }} ({{ tax.TaxPercentage }}%)
+                      </option>
+                    </select>
+                  </td>
+                  <td>{{ item['ItemTaxAmount'] | number:'1.3-3' }}</td>
+                  <td>{{ item['ItemTotalPriceAfterTax'] | number:'1.3-3' }}</td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-danger" (click)="removeItem(i)">
+                      <i class="ti ti-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="newRow.Items.length === 0">
+                  <td colspan="10" class="text-center py-3">{{ 'AddInvoicePage.NoItemsAdded' | translate }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End::row-2 -->
+
+<!-- Start::row-3 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card mb-4">
+      <div class="card-header">
+        <div class="card-title">
+          {{ 'AddInvoicePage.InvoiceSummary' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="alert alert-light">
+              <div class="row">
+                <div class="col-6 col-md-3 mb-2">
+                  <div class="fw-bold">{{ 'AddInvoicePage.TotalTax' | translate }}</div>
+                  <div class="fs-5">{{ newRow.TotalTax | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-6 col-md-3 mb-2">
+                  <div class="fw-bold">{{ 'AddInvoicePage.TotalWithoutTax' | translate }}</div>
+                  <div class="fs-5">{{ newRow.TotalWithoutTax | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-6 col-md-3 mb-2">
+                  <div class="fw-bold">{{ 'AddInvoicePage.TotalWithTax' | translate }}</div>
+                  <div class="fs-5">{{ newRow.TotalWithTax | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-6 col-md-3 mb-2">
+                  <div class="fw-bold">{{ 'AddInvoicePage.DiscountAmount' | translate }}</div>
+                  <div class="fs-5">{{ newRow.DiscountAmount | number:'1.2-2' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 d-flex align-items-center justify-content-end">
+            <button class="btn btn-lg btn-primary" (click)="save()" *ngIf="!Quotation">
+              <i class="ti ti-device-floppy me-1"></i>
+              {{ 'AddInvoicePage.SaveInvoice' | translate }}
+            </button>
+            <button class="btn btn-lg btn-primary" (click)="SaveQuotation()" *ngIf="Quotation">
+              <i class="ti ti-device-floppy me-1"></i>
+              {{ 'VirtualInvoicePage.SaveQuotation' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End::row-3 -->

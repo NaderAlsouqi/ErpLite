@@ -1,0 +1,67 @@
+
+
+<div class="login-background">
+
+    <div class="container">
+    
+        <!-- Login Form Section -->
+        <div class="login-section">
+            <div class="login-card">
+                <h1 class="welcome-title">WELCOME BACK</h1>
+                <p class="welcome-subtitle">Please Enter Your Credentials</p>
+                
+                <form class="login-form" id="loginForm" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                    <div class="form-group">
+                <label for="Login_Name">Username</label>
+                        <input 
+                            type="text" 
+                            id="Login_Name" 
+                            name="username" 
+                            formControlName="Login_Name"
+                            [ngClass]="{'is-invalid': loginForm.get('Login_Name')?.invalid && loginForm.get('Login_Name')?.touched}"
+                            placeholder="Enter your Username"
+                            required>
+                    </div>
+                    
+                    <div class="form-group" >
+                        <label for="password">Password</label>
+                        <input 
+                            [type]="showPassword ? 'text' : 'password'" 
+                            id="password" 
+                            formControlName="Password"
+                            name="password" 
+                            placeholder="**********"
+                            required
+                            [ngClass]="{'is-invalid': loginForm.get('Password')?.invalid && loginForm.get('Password')?.touched}">
+                            <button type="button"  
+                                (click)="togglePassword()">
+                                <i class="ri-{{toggleClass}} align-middle"></i>
+                            </button>
+                    </div>
+                    
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-password">Forgot password</a>
+                    </div>
+                    
+                    <button type="submit" class="signin-btn">Sign in</button>
+                    
+                    <div class="signup-link">
+                        <span>Don't have an account?</span>
+                        <a href="#" class="signup-text">Sign up</a>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Logo Section -->
+            <div class="logo-container">
+                <img src="../../../assets/Login/img/logo.png" alt="SKYLINE INNOVATION" class="logo-image">
+            </div>
+        </div>
+    </div>
+
+    </div>
+    <script src="../../../assets/script.js"></script>

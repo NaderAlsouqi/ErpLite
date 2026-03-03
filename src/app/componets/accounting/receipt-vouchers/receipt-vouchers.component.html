@@ -1,0 +1,794 @@
+<app-page-header 
+  [title]="'ReceiptVoucher.Title' | translate" 
+  [title1]="'ReceiptVoucher.Accounting' | translate" 
+  [activeTitle]="'ReceiptVoucher.Receipts' | translate">
+</app-page-header>
+
+
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+      <div class="card-header">
+        <div class="card-title">
+          {{ 'ReceiptVoucher.CreateReceipt' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!loading" class="row">
+          <!-- Left column: Basic receipt info -->
+          <div class="col-md-6">
+            <!-- Date input with Flatpickr -->
+            <div class="form-group mb-3">
+              <label class="form-label">{{ 'ReceiptVoucher.Date' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-calendar"></i></span>
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="{{ 'ReceiptVoucher.SelectDate' | translate }}"
+                  [(ngModel)]="receiptForm.date"
+                  name="receiptDate"
+                  mwlFlatpickr
+                  [altInput]="true"
+                  [convertModelValue]="true"
+                  [altFormat]="'d/m/Y'"
+                  dateFormat="Y-m-d"
+                  [options]="dateOptions">
+              </div>
+            </div>
+
+                        <!-- Invoice Selection with NgSelect -->
+            <div class="form-group mb-3">
+              <label class="form-label">{{ 'ReceiptVoucher.Invoice' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text d-flex align-items-center justify-content-center" style="width: 41px;">
+                  <i class="ti ti-file-invoice"></i>
+                </span>
+                <ng-select 
+                  [items]="invoices"
+                  bindLabel="InvoiceNumber"
+                  bindValue="InvoiceNumber"
+                  [(ngModel)]="receiptForm.invoiceNumber"
+                  (change)="onInvoiceSelected($event)"
+                  [searchable]="true"
+                  [clearable]="true"
+                  appendTo="body"
+                  class="form-control p-0 flex-grow-1"
+                  [ngClass]="{'is-invalid': submitted && !receiptForm.invoiceNumber}">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.InvoiceNumber }} - {{ item.CustomerName }} ({{ item.InvoiceAmount | number:'1.2-2' }})
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    {{ item.InvoiceNumber }} - {{ item.CustomerName }} ({{ item.InvoiceAmount | number:'1.2-2' }})
+                  </ng-template>
+                </ng-select>
+              </div>
+            </div>
+
+
+                        <!-- Customer Selection with NgSelect -->
+            <div class="form-group mb-3">
+              <label class="form-label">{{ 'ReceiptVoucher.CashAccountNo' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text d-flex align-items-center justify-content-center" style="width: 41px;">
+                  <i class="ti ti-user"></i>
+                </span>
+                <ng-select 
+                  [items]="accounts"
+                  bindLabel="CustomerAccountArabicName"
+                  bindValue="CustomerAccountNumber"
+                  [(ngModel)]="receiptForm.debtAccountNumber"
+                  (change)="onAccountSelected($event)"
+                  [searchable]="true"
+                  [clearable]="true"
+                  [searchFn]="customSearchFn"
+                  appendTo="body"
+                  class="form-control p-0 flex-grow-1"
+                  [ngClass]="{'is-invalid': submitted && !receiptForm.customerAccountNumber}">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.CustomerAccountArabicName }} ({{ item.CustomerAccountNumber }})
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    {{ item.CustomerAccountArabicName }} ({{ item.CustomerAccountNumber }})
+                  </ng-template>
+                </ng-select>
+              </div>
+            </div>
+
+
+            
+                        <!-- Customer Selection with NgSelect -->
+            <div class="form-group mb-3">
+              <label class="form-label">{{ 'ReceiptVoucher.ChequeAccountNo' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text d-flex align-items-center justify-content-center" style="width: 41px;">
+                  <i class="ti ti-user"></i>
+                </span>
+                <ng-select 
+                  [items]="accounts"
+                  bindLabel="CustomerAccountArabicName"
+                  bindValue="CustomerAccountNumber"
+                  [(ngModel)]="receiptForm.ChequedebtAccountNumber"
+                  (change)="onAccountChequeSelected($event)"
+                  [searchable]="true"
+                  [clearable]="true"
+                  [searchFn]="customSearchFn"
+                  appendTo="body"
+                  class="form-control p-0 flex-grow-1"
+                  [ngClass]="{'is-invalid': submitted && !receiptForm.ChequedebtAccountNumber}">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.CustomerAccountArabicName }} ({{ item.CustomerAccountNumber }})
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    {{ item.CustomerAccountArabicName }} ({{ item.CustomerAccountNumber }})
+                  </ng-template>
+                </ng-select>
+              </div>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="form-label">{{ 'ReceiptVoucher.Description' | translate }}</label>
+              <textarea
+                class="form-control"
+                [(ngModel)]="receiptForm.description"
+                placeholder="{{ 'ReceiptVoucher.EnterDescription' | translate }}"               
+                rows="3">
+              </textarea>
+            </div>
+          </div>
+
+          <!-- Right column: Customer and invoice selection -->
+          <div class="col-md-6">
+            <!-- Customer Selection with NgSelect -->
+            <div class="form-group mb-3">
+              <label class="form-label">{{ 'ReceiptVoucher.Customer' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text d-flex align-items-center justify-content-center" style="width: 41px;">
+                  <i class="ti ti-user"></i>
+                </span>
+                <ng-select 
+                  [items]="customers"
+                  bindLabel="CustomerAccountName"
+                  bindValue="CustomerAccountNumber"
+                  [(ngModel)]="receiptForm.customerAccountNumber"
+                  (change)="onCustomerSelected($event)"
+                  [searchable]="true"
+                  [clearable]="true"
+                  [searchFn]="customSearchFn"
+                  appendTo="body"
+                  class="form-control p-0 flex-grow-1"
+                  [ngClass]="{'is-invalid': submitted && !receiptForm.customerAccountNumber}">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.CustomerAccountName }} ({{ item.CustomerAccountNumber }})
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    {{ item.CustomerAccountName }} ({{ item.CustomerAccountNumber }})
+                  </ng-template>
+                </ng-select>
+              </div>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="form-label">{{ 'ReceiptVoucher.InvoiceAmount' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-cash"></i></span>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="receiptForm.amount"
+                  placeholder="{{ 'ReceiptVoucher.EnterAmount' | translate }}"
+                  >
+              </div>
+              <small class="form-text text-muted" *ngIf="selectedInvoice">
+                {{ 'ReceiptVoucher.AmountFromInvoice' | translate }}
+              </small>
+            </div>
+
+
+            <div class="form-group mb-3">
+              <label class="form-label">{{ 'ReceiptVoucher.CashAmount' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-cash"></i></span>
+                <input
+                  type="number"
+                  [(ngModel)]="receiptForm.cashAmount"
+                  class="form-control"                 
+                  placeholder="{{ 'ReceiptVoucher.EnterAmount' | translate }}"
+                  >
+              </div>
+            </div>
+
+
+            
+            <div class="form-group mb-3">
+              <label class="form-label">{{ 'ReceiptVoucher.TotalChequeAmount' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-cash"></i></span>
+                <input readonly
+                  type="number"
+                  [(ngModel)]="receiptForm.TotalChequesAmount"
+                  [value]="finalBalance | number:'1.2-2'" 
+                  class="form-control"                      
+                  placeholder="{{ 'ReceiptVoucher.EnterAmount' | translate }}"
+                  >
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Amount validation error -->
+        <div *ngIf="!isAmountValid && cheques.length > 0" class="row mt-3">
+          <div class="col-12">
+            <div class="alert alert-danger">
+            <!--  {{ 'ReceiptVoucher.AmountValidationError' | translate: { amount: receiptForm.amount | number:'1.2-2' } }} -->
+              {{ 'ReceiptVoucher.AmountValidationError' | translate}} 
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="row mt-4">
+          <div class="col-12 d-flex gap-2 justify-content-end">
+          <button 
+                type="button"
+                class="btn btn-primary" 
+                (click)="AddCash()"
+                [disabled]="(!receiptForm.customerAccountNumber || !receiptForm.debtAccountNumber || !receiptForm.cashAmount)">
+                <i class="ti ti-plus me-1"></i>
+                {{ 'ReceiptVoucher.AddCash' | translate }}
+           </button>
+           <button 
+                type="button"
+                class="btn btn-primary" 
+                (click)="openCheckModal(checkModal)"
+                [disabled]="(!receiptForm.customerAccountNumber ||  !receiptForm.ChequedebtAccountNumber)">
+                <i class="ti ti-plus me-1"></i>
+                {{ 'ReceiptVoucher.AddCheque' | translate }}
+           </button>
+            <button 
+              class="btn btn-primary" 
+              (click)="submitReceipt()"
+              [disabled]="!receiptForm.cashAmount&&cheques.length==0">
+              <i class="ti ti-device-floppy me-1"></i>
+              {{ 'ReceiptVoucher.SubmitReceipt' | translate }}
+            </button>
+            <button 
+              class="btn btn-secondary" 
+              (click)="resetForm()">
+              <i class="ti ti-refresh me-1"></i>
+              {{ 'General.Reset' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<mat-tab-group>
+  <mat-tab label="نقدي">
+              <div  style="align-items: center;" *ngIf="cashReceiptVouchers==null">لا يوجد دفعات نقدية</div>
+          <div *ngIf="!loading && cashReceiptVouchers!=null" class="row mt-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">{{ 'ReceiptVoucher.CashAmount' | translate }}</div>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table text-nowrap table-bordered">
+                    <thead>
+                      <tr>
+                        <th scope="col">{{ 'ReceiptVoucher.AccountNo' | translate }}</th>
+                        <th scope="col">{{ 'ReceiptVoucher.AccountName' | translate }}</th>
+                        <th scope="col">{{ 'ReceiptVoucher.Amount' | translate }}</th>
+                        <th scope="col">{{ 'General.Actions' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">
+                          <div class="d-flex align-items-center">
+                            <span class="avatar avatar-xs me-2 bg-primary-transparent avatar-rounded">
+                              <i class="ti ti-file-invoice"></i>
+                            </span>
+                            {{ cashReceiptVouchers.CreditAccountNumber }}
+                          </div>
+                        </th>
+                        <th scope="row">
+                          <div class="d-flex align-items-center">
+                            <span class="avatar avatar-xs me-2 bg-primary-transparent avatar-rounded">
+                              <i class="ti ti-file-invoice"></i>
+                            </span>
+                            {{ cashReceiptVouchers.CreditAccountName }}
+                          </div>
+                        </th>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <span class="fw-semibold">{{ cashReceiptVouchers.Amount | number:'1.2-2' }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="hstack gap-2 flex-wrap">
+                            <button class="btn btn-icon btn-sm btn-danger-light" (click)="deleteCashReceiptCheck()" 
+                               ngbTooltip="{{ 'General.Delete' | translate }}">
+                               <i class="ri-delete-bin-5-line"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>  
+
+  </mat-tab>
+  <mat-tab label="شيكات"> 
+          <div  style="align-items: center;" *ngIf="cheques.length==0">لا يوجد دفعات شيك</div>
+          <div *ngIf="!loading && cheques.length > 0" class="row mt-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">{{ 'ReceiptVoucher.ChequesAdded' | translate }}</div>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table text-nowrap table-bordered">
+                    <thead>
+                      <tr>
+                        <th scope="col">{{ 'ReceiptVoucher.ChequeNumber' | translate }}</th>
+                        <th scope="col">{{ 'ReceiptVoucher.ChequeDate' | translate }}</th>
+                        <th scope="col">{{ 'ReceiptVoucher.BankName' | translate }}</th>
+                        <th scope="col">{{ 'ReceiptVoucher.ChequeAmount' | translate }}</th>
+                        <th scope="col">{{ 'General.Actions' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let cheque of cheques; let i = index">
+                        <th scope="row">
+                          <div class="d-flex align-items-center">
+                            <span class="avatar avatar-xs me-2 bg-primary-transparent avatar-rounded">
+                              <i class="ti ti-file-invoice"></i>
+                            </span>
+                            {{ cheque.ChequeNumber }}
+                          </div>
+                        </th>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <span class="avatar avatar-xs me-2 bg-success-transparent avatar-rounded">
+                              <i class="ti ti-calendar"></i>
+                            </span>
+                            {{ cheque.ChequeDate | date:'dd/MM/yyyy' }}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <span class="avatar avatar-xs me-2 bg-info-transparent avatar-rounded">
+                              <i class="ti ti-building-bank"></i>
+                            </span>
+                            {{ cheque.BankNumber }} - ({{ cheque.BankName }})
+                          </div>
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <span class="avatar avatar-xs me-2 bg-warning-transparent avatar-rounded">
+                              <i class="ti ti-cash"></i>
+                            </span>
+                            <span class="fw-semibold">{{ cheque.ChequeAmount | number:'1.2-2' }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="hstack gap-2 flex-wrap">
+                            <button class="btn btn-icon btn-sm btn-danger-light" (click)="deleteCheque(i)" 
+                               ngbTooltip="{{ 'General.Delete' | translate }}">
+                               <i class="ri-delete-bin-5-line"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tfoot *ngIf="cheques.length > 0">
+                      <tr>
+                        <td colspan="3" class="text-end fw-bold">{{ 'ReceiptVoucher.TotalAmount' | translate }}</td>
+                        <td class="fw-bold">
+                          <div class="d-flex align-items-center">
+                            <span class="avatar avatar-xs me-2 bg-primary avatar-rounded">
+                              <i class="ti ti-sum text-white"></i>
+                            </span>
+                            <span class="fs-14">{{ finalBalance | number:'1.2-2' }}</span>
+                          </div>
+                        </td>
+                        <td></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>  
+  </mat-tab>
+</mat-tab-group>
+
+
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-title">
+          {{ 'ReceiptVoucher.SearchTitle' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row mb-4">
+          <!-- Start Date with MatDatepicker -->
+          <div class="col-md-3">
+            <div class="form-group">
+              <label class="form-label">{{ 'AccountStatement.StartDate' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-calendar"></i></span>
+                <input 
+                  matInput 
+                  [matDatepicker]="startDatePicker" 
+                  class="form-control" 
+                  [(ngModel)]="startDateModel" 
+                  (dateChange)="onStartDateChange($event)"
+                  name="startDate"
+                  [placeholder]="'AccountStatement.SelectDate' | translate">
+                <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #startDatePicker></mat-datepicker>
+              </div>
+            </div>
+          </div>
+          
+          <!-- End Date with MatDatepicker -->
+          <div class="col-md-3">
+            <div class="form-group">
+              <label class="form-label">{{ 'AccountStatement.EndDate' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-calendar"></i></span>
+                <input 
+                  matInput 
+                  [matDatepicker]="endDatePicker" 
+                  class="form-control" 
+                  [(ngModel)]="endDateModel" 
+                  (dateChange)="onEndDateChange($event)"
+                  name="endDate"
+                  [placeholder]="'AccountStatement.SelectDate' | translate">
+                <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #endDatePicker></mat-datepicker>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Customer Account with NgSelect - Fixed Overlap Issue -->
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="form-label">{{ 'AccountStatement.Account' | translate }}</label>
+              <ng-select 
+                [items]="customersSearch"
+                bindLabel="CustomerAccountName"
+                bindValue="CustomerAccountNumber"
+                [(ngModel)]="accountNumber"
+                [searchable]="true"
+                [clearable]="true"
+                [searchFn]="customSearchFn"
+                [placeholder]="'AccountStatement.SelectCustomer' | translate"
+                appendTo="body">
+                <ng-template ng-label-tmp let-item="item">
+                  {{ item.CustomerAccountName }} ({{ item.CustomerAccountNumber }})
+                </ng-template>
+                <ng-template ng-option-tmp let-item="item">
+                  {{ item.CustomerAccountName }} ({{ item.CustomerAccountNumber }})
+                </ng-template>
+              </ng-select>
+            </div>
+          </div>
+          
+          <!-- Search Button -->
+          <div class="col-md-2">
+            <div class="form-group d-flex align-items-end h-100">
+              <button 
+                class="btn btn-primary w-100" 
+                (click)="search()" 
+                [disabled]="!startDate || !endDate || !accountNumber">
+                <i class="ti ti-search me-1"></i>
+                {{ 'General.Search' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        
+        
+        <!-- Results table -->
+        <div *ngIf="accountStatementData.length > 0" class="table-responsive">
+          <table mat-table [dataSource]="dataSourceReceiptVouchers" matSort (matSortChange)="onSortChange($event)" class="table table-bordered">
+            <!-- Date Column with adjusted format -->
+            <ng-container matColumnDef="Date">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'AccountStatement.Date' | translate }} </th>
+              <td mat-cell *matCellDef="let row"> {{ row.Date | date:'dd/MM/yyyy' }} </td>
+            </ng-container>
+
+            <!-- Document Number Column -->
+            <ng-container matColumnDef="DocumentNumber">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'AccountStatement.DocumentNumber' | translate }} </th>
+              <td mat-cell *matCellDef="let row"> {{ row.DocumentNumber }} </td>
+            </ng-container>
+
+            <!-- Description Column -->
+            <ng-container matColumnDef="Description">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'AccountStatement.Description' | translate }} </th>
+              <td mat-cell *matCellDef="let row"> {{ row.Description }} </td>
+            </ng-container>
+
+            <!-- Debit Column
+            <ng-container matColumnDef="Dept">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'AccountStatement.Debit' | translate }} </th>
+              <td mat-cell *matCellDef="let row" class="text-end"> {{ row.Dept | number:'1.2-2' }} </td>
+            </ng-container> -->
+
+            <!-- Credit Column 
+            <ng-container matColumnDef="Credit">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'AccountStatement.Credit' | translate }} </th>
+              <td mat-cell *matCellDef="let row" class="text-end">  </td>
+            </ng-container>-->
+
+            <!-- Balance Column 
+            <ng-container matColumnDef="Balance">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'AccountStatement.Balance' | translate }} </th>
+              <td mat-cell *matCellDef="let row" class="text-end"> {{ row.Balance | number:'1.2-2' }} </td>
+            </ng-container>-->
+
+            <ng-container matColumnDef="Actions">
+              <th mat-header-cell *matHeaderCellDef class="text-center"> {{ 'InvoicesPage.Action' | translate }} </th>
+              <td mat-cell *matCellDef="let row" class="text-center">
+                <button class="btn btn-sm btn-primary me-1" 
+                   title="{{ 'AccountStatement.ShowCheque' | translate }}"
+                   (click)="openChequesModal(ChequesModal,row.DocumentNumber,row.Trans_Num)">
+                  <i class="ti ti-list"></i>
+                </button>
+                <button class="btn btn-sm btn-info"  title="{{ 'AccountStatement.PrintReceiptVoucher' | translate }}"
+                  (click)="PrintReceiptVoucherPDF(row.Trans_Num)">
+                  <i class="ti ti-printer"></i>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- No data row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
+                {{ 'General.NoRecordsFound' | translate }}
+              </td>
+            </tr>
+          </table>
+
+          <!-- Pagination -->
+          <mat-paginator 
+            [pageSizeOptions]="pageSizeOptions"
+            [pageSize]="pageSize"
+            [pageIndex]="pageIndex"
+            [length]="totalItems"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cheque Modal Dialog Template -->
+<ng-template #checkModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">{{ 'ReceiptVoucher.AddCheque' | translate }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group mb-3">
+      <label class="form-label">{{ 'ReceiptVoucher.ChequeNumber' | translate }}</label>
+      <input
+        type="number"
+        class="form-control"
+        [(ngModel)]="newCheque.ChequeNumber"
+        placeholder="{{ 'ReceiptVoucher.EnterChequeNumber' | translate }}"
+      />
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">{{ 'ReceiptVoucher.ChequeDate' | translate }}</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="ti ti-calendar"></i></span>
+        <input
+          class="form-control"
+          type="text"
+          placeholder="{{ 'ReceiptVoucher.SelectDate' | translate }}"
+          [(ngModel)]="newCheque.ChequeDate"
+          name="chequeDate"
+          mwlFlatpickr
+          [altInput]="true" 
+          [convertModelValue]="true"
+          [altFormat]="'d/m/Y'"
+          dateFormat="Y-m-d"
+          [options]="dateOptions">
+      </div>
+    </div>
+    <div class="form-group mb-3">
+           <label class="form-label">{{ 'ReceiptVoucher.BankNumber' | translate }}</label>
+              <select class="form-select" size="5"
+                [(ngModel)]="selectedBank"
+                (change)="onBankSelected(selectedBank)">
+                <option *ngFor="let item of banks" [ngValue]="item">
+              {{ item.bank_num }} - {{currentLang === 'ar' ? item.Bank : item.BEName  }}                </option>
+              </select>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">{{ 'ReceiptVoucher.ChequeAmount' | translate }}</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="ti ti-cash"></i></span>
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="newCheque.ChequeAmount"
+          placeholder="{{ 'ReceiptVoucher.EnterAmount' | translate }}"
+        />
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">
+      <i class="ti ti-x me-1"></i>{{ 'General.Cancel' | translate }}
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-primary" 
+      (click)="addCheck()"
+      [disabled]="!newCheque.ChequeNumber || !newCheque.ChequeAmount || !selectedBank">
+      <i class="ti ti-plus me-1"></i>{{ 'General.Add' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<!-- Delete Confirmation Modal -->
+<ng-template #deleteConfirmModal let-modal>
+  <div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">{{ 'General.Confirmation' | translate }}</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <div class="d-flex align-items-center mb-3">
+      <span class="avatar avatar-md me-3 bg-danger-transparent">
+        <i class="ti ti-alert-triangle text-danger fs-18"></i>
+      </span>
+      <div>
+        <h6 class="mb-1">{{ 'ReceiptVoucher.DeleteChequeConfirmation' | translate }}</h6>
+        <p class="text-muted small mb-0">{{ 'General.ActionCannotBeUndone' | translate }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light" (click)="modal.close(false)">
+      <i class="ti ti-x me-1"></i>{{ 'General.Cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-danger" (click)="modal.close(true)">
+      <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+
+<!-- Delete Confirmation Modal -->
+<ng-template #deleteAmountConfirmModal let-modal>
+  <div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">{{ 'General.Confirmation' | translate }}</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <div class="d-flex align-items-center mb-3">
+      <span class="avatar avatar-md me-3 bg-danger-transparent">
+        <i class="ti ti-alert-triangle text-danger fs-18"></i>
+      </span>
+      <div>
+        <h6 class="mb-1">{{ 'ReceiptVoucher.DeleteCashAmountConfirmation' | translate }}</h6>
+        <p class="text-muted small mb-0">{{ 'General.ActionCannotBeUndone' | translate }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light" (click)="modal.close(false)">
+      <i class="ti ti-x me-1"></i>{{ 'General.Cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-danger" (click)="modal.close(true)">
+      <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+
+<!-- Note Modal Dialog Template -->
+<ng-template #ChequesModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">{{ 'AccountStatement.ShowCheque' | translate }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+
+        <!-- Results table -->
+        <div *ngIf="ChequesData" class="table-responsive">
+          <table mat-table [dataSource]="ChequesData"  class="table table-bordered">
+
+            <!-- Document Number Column -->
+            <ng-container matColumnDef="ChequeNumber">
+              <th mat-header-cell *matHeaderCellDef > {{ 'AccountStatement.ChequeNumber' | translate }} </th>
+              <td mat-cell *matCellDef="let row"> {{ row.ChequeNumber }} </td>
+            </ng-container>
+
+            <!-- Date Column with adjusted format -->
+            <ng-container matColumnDef="ChequeDate">
+              <th mat-header-cell *matHeaderCellDef > {{ 'AccountStatement.ChequeDate' | translate }} </th>
+              <td mat-cell *matCellDef="let row"> {{ row.ChequeDate | date:'dd/MM/yyyy' }} </td>
+            </ng-container>
+
+            <!-- Description Column -->
+            <ng-container matColumnDef="BankNumber">
+              <th mat-header-cell *matHeaderCellDef > {{ 'AccountStatement.BankNumber' | translate }} </th>
+              <td mat-cell *matCellDef="let row">  {{ row.BankNumber }} </td>
+            </ng-container>
+
+            <!-- Description Column -->
+            <ng-container matColumnDef="BankName">
+              <th mat-header-cell *matHeaderCellDef > {{ 'AccountStatement.BankName' | translate }} </th>
+              <td mat-cell *matCellDef="let row">  {{ row.BankName }} </td>
+            </ng-container>
+
+            <!-- Debit Column -->
+            <ng-container matColumnDef="ChequeAmount">
+              <th mat-header-cell *matHeaderCellDef > {{ 'AccountStatement.ChequeAmount' | translate }} </th>
+              <td mat-cell *matCellDef="let row" class="text-end"> {{ row.ChequeAmount | number:'1.3-3' }} </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedChequeColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedChequeColumns;"></tr>
+
+            <!-- No data row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
+                {{ 'General.NoRecordsFound' | translate }}
+              </td>
+            </tr>
+
+          </table>
+        </div>
+
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">
+      <i class="ti ti-x me-1"></i>{{ 'General.Cancel' | translate }}
+    </button>
+  </div>
+</ng-template>
+

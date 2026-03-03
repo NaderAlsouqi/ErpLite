@@ -1,0 +1,550 @@
+<app-page-header *ngIf="Quotation"
+  [title]="'VirtualInvoicePage.AddQuotation' | translate" 
+  [title1]="'VirtualInvoicePage.Quotation' | translate" 
+  [activeTitle]="'VirtualInvoicePage.AddQuotation' | translate">
+</app-page-header>
+<app-page-header *ngIf="!Quotation"
+  [title]="'VirtualInvoicePage.AddVirtualInvoice' | translate" 
+  [title1]="'VirtualInvoicePage.VirtualInvoices' | translate" 
+  [activeTitle]="'VirtualInvoicePage.AddVirtualInvoice' | translate">
+</app-page-header>
+<!-- Start::row-1 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card mb-4">
+      <div class="card-header">
+        <div class="card-title" *ngIf="!Quotation">
+          {{ 'VirtualInvoicePage.InvoiceDetails' | translate }}
+        </div>
+        <div class="card-title" *ngIf="Quotation">
+          {{ 'VirtualInvoicePage.QuotationDetails' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!loading">
+          <!-- Branch Selection Section -->
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">{{ 'VirtualInvoicePage.SelectBranch' | translate }}</label>
+              <div class="input-group mb-2">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input type="text" class="form-control" 
+                  placeholder="{{ 'VirtualInvoicePage.SearchBranchPlaceholder' | translate }}"
+                  [(ngModel)]="branchSearchTerm"
+                  (input)="filterBranches()">
+              </div>
+              <div class="d-flex">
+                <select class="form-select" size="3"
+                  [(ngModel)]="selectedBranch"
+                  (change)="selectedBranch && onBranchSelected(selectedBranch)">
+                  <option *ngFor="let branch of branches" [ngValue]="branch">
+                    {{ branch.BranchNo }} - {{ currentLang === 'ar' ? branch.BranchNameArabic : branch.BranchNameEnglish }}
+                  </option>
+                </select>
+                <!-- Add edit button next to selected branch -->
+                <button *ngIf="selectedBranch" class="btn btn-outline-secondary ms-2 align-self-start" 
+                        (click)="openAddBranchModal(addBranchModal, selectedBranch)">
+                  <i class="ti ti-edit"></i>
+                </button>
+              </div>
+              
+              <div *ngIf="selectedBranch" class="mt-2 alert alert-info">
+                <strong>{{ 'VirtualInvoicePage.SelectedBranch' | translate }}:</strong> 
+                {{ currentLang === 'ar' ? selectedBranch.BranchNameArabic : selectedBranch.BranchNameEnglish }}
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-outline-primary" (click)="openAddBranchModal(addBranchModal)">
+              <i class="ti ti-plus me-1"></i>
+              {{ 'VirtualInvoicePage.AddNewBranch' | translate }}
+            </button>
+          </div>
+
+          <!-- Customer Selection Section -->
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">{{ 'VirtualInvoicePage.SearchCustomers' | translate }}</label>
+              <div class="input-group mb-2">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input type="text" class="form-control" 
+                  placeholder="{{ 'VirtualInvoicePage.SearchCustomerPlaceholder' | translate }}"
+                  [(ngModel)]="customerSearchTerm"
+                  (input)="filterCustomers()">
+              </div>
+              <div class="d-flex">
+                <select class="form-select" size="5"
+                  [(ngModel)]="selectedCustomer"
+                  (change)="selectedCustomer && onCustomerSelected(selectedCustomer)">
+                  <option *ngFor="let customer of filteredCustomers" [ngValue]="customer">
+                    {{ customer.CustomerAccountNumber }} - {{ customer.CustomerAccountName }}
+                  </option>
+                </select>
+                <button *ngIf="selectedCustomer" class="btn btn-outline-secondary ms-2 align-self-start" 
+                        (click)="openAddCustomerModal(addCustomerModal, selectedCustomer)">
+                  <i class="ti ti-edit"></i>
+                </button>
+              </div>
+              
+              <div *ngIf="selectedCustomer" class="mt-2 alert alert-success">
+                <strong>{{ 'VirtualInvoicePage.SelectedCustomer' | translate }}:</strong> {{ selectedCustomer.CustomerAccountName }}
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-outline-primary" (click)="openAddCustomerModal(addCustomerModal)">
+              <i class="ti ti-plus me-1"></i>
+              {{ 'VirtualInvoicePage.AddNewCustomer' | translate }}
+            </button>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Description Field -->
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">{{ 'VirtualInvoicePage.Description' | translate }}</label>
+              <textarea class="form-control" rows="3"
+                [(ngModel)]="newRow.Description"  >
+              </textarea>
+            </div>
+          </div>
+
+          <!-- Add after the Description field, before Payment Method -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label class="form-label">{{ 'VirtualInvoicePage.InvoiceDate' | translate }}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-calendar"></i></span>
+                  <input
+                    class="form-control"
+                    type="text"
+                    placeholder="{{ 'VirtualInvoicePage.SelectDate' | translate }}"
+                    [(ngModel)]="invoiceDate"
+                    name="invoiceDate"
+                    mwlFlatpickr
+                    [altInput]="true"
+                    [convertModelValue]="true"
+                    [altFormat]="'d/m/Y'"
+                    dateFormat="Y-m-d"
+                    [maxDate]="maxDate"
+                    [options]="dateOptions"
+                    (ngModelChange)="onDateChange()">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Yousef -->
+          <div class="col-md-6" *ngIf="!Quotation">
+            <label class="form-label">{{ 'AddInvoicePage.PaymentMethod' | translate }}</label>
+            <select class="form-select" [(ngModel)]="newRow.InvoiceType"   (ngModelChange)="onTaxModeChange($event)" >
+              <option value="" disabled selected>{{ 'AddInvoicePage.SelectPaymentMethod' | translate }}</option>
+              <option *ngFor="let type of InvoiceTypes" [value]="type.Id">
+                {{ currentLang === 'ar' ? type.ArabicName : type.ArabicName }} <!-- Display Arabic for both languages !! change it if you have english names -->
+              </option>
+            </select>
+          </div>
+
+          <!-- Options Field -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">{{ 'VirtualInvoicePage.Options' | translate }}</label>
+              <div class="d-flex mt-2">
+                <div class="form-check me-4">
+                  <input class="form-check-input" type="checkbox" id="includeTaxCheckbox"
+                    [(ngModel)]="includeTax" (change)="updateTax();ResetItems()"  >
+                  <label class="form-check-label" for="includeTaxCheckbox">
+                    {{ 'VirtualInvoicePage.IncludeTax' | translate }}
+                  </label>
+                </div>
+                <div class="form-check me-4" *ngIf="!Quotation">
+                  <input class="form-check-input" type="checkbox" id="SignCheckbox"
+                    [(ngModel)]="newRow.Sign" (change)="AddSign()"  >
+                  <label class="form-check-label" for="SignCheckbox">
+                    {{ 'VirtualInvoicePage.AddSign' | translate }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End::row-1 -->
+
+<!-- Start::row-2 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card mb-4">
+      <div class="card-header">
+        <div class="card-title">
+          {{ 'VirtualInvoicePage.ItemsManagement' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!loading">
+          <!-- Item Selection Section -->
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <label class="form-label">{{ 'VirtualInvoicePage.SearchItems' | translate }}</label>
+              <div class="input-group mb-2">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input type="text" class="form-control"
+                  placeholder="{{ 'VirtualInvoicePage.SearchItemPlaceholder' | translate }}"
+                  [(ngModel)]="itemSearchTerm"
+                  (input)="filterItems()">
+              </div>
+              <!-- Update the item selection section with an edit button -->
+              <div class="d-flex">
+                <select class="form-select" size="5"
+                  [(ngModel)]="selectedItem">
+                  <option *ngFor="let item of filteredItems" [ngValue]="item" (click)="onItemSelected(item)">
+                    {{ item.ItemNumber }} - {{ item.ItemArabicName }}
+                  </option>
+                </select>
+                <div class="ms-2 d-flex flex-column">
+                  <button class="btn btn-primary mb-2" (click)="addItem()">
+                    <i class="ti ti-plus"></i>
+                  </button>
+                  <button *ngIf="selectedItem" class="btn btn-outline-secondary" 
+                          (click)="openAddItemModal(addItemModal, selectedItem)">
+                    <i class="ti ti-edit"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-outline-primary" (click)="openAddItemModal(addItemModal)">
+              <i class="ti ti-plus me-1"></i>
+              {{ 'VirtualInvoicePage.AddNewItem' | translate }}
+            </button>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Items Table Section -->
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped table-sm">
+              <thead class="table-light">
+                <tr>
+                  <th>{{ 'VirtualInvoicePage.ItemNumber' | translate }}</th>
+                  <th>{{ 'VirtualInvoicePage.ItemName' | translate }}</th>
+                  <th>{{ 'VirtualInvoicePage.Quantity' | translate }}</th>
+                  <th>{{ 'VirtualInvoicePage.ItemPrice' | translate }}</th>
+                  <th  *ngIf="!this.includeTax">{{ 'VirtualInvoicePage.DiscountAmount' | translate }}</th>
+                  <th  *ngIf="this.taxTypeId==1&&!this.TaxMode">{{ 'VirtualInvoicePage.TaxType' | translate }}</th> 
+                  <th *ngIf="this.taxTypeId==1&&!this.TaxMode">{{ 'VirtualInvoicePage.TaxAmount' | translate }}</th>
+                  <th>{{ 'VirtualInvoicePage.Total' | translate }}</th>
+                  <th>{{ 'VirtualInvoicePage.Actions' | translate }}</th>
+                </tr>
+              </thead>            
+              <tbody>
+                <tr *ngFor="let item of newRow.Items; let i = index">
+                  <td>{{ item.ItemNumber }}</td>
+                  <td>{{ item.ItemName }}</td>
+                  <td>
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="item.Quantity"
+                           min="1" (change)="updateItem(i)">
+                  </td>
+                  <td>
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="item.Price" 
+                           min="0" (change)="updateItem(i)">
+                  </td>
+                  <td  *ngIf="!this.includeTax">
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="item.ItemDiscountAmount" 
+                           min="0" (change)="updateItem(i)">
+                  </td>
+                      <!-- Tax type dropdown -->
+                    <td *ngIf="this.taxTypeId==1&&!this.TaxMode">
+                
+                    <select class="form-select form-select-sm" 
+                            [(ngModel)]="item.TaxType"
+                            (change)="onTaxTypeChange(i)">
+                      <option *ngFor="let tax of taxTypes" [ngValue]="tax.TaxNumber">
+                        {{ currentLang === 'ar' ? tax.TaxNameAr : tax.TaxNameEn }} ({{ tax.TaxPercentage }}%)
+                      </option>
+                    </select>
+                  </td>
+                  <td *ngIf="this.taxTypeId==1&&!this.TaxMode">{{ item.ItemTaxAmount | number:'1.3-3' }}</td>
+                  <td>{{ item.ItemTotalPriceAfterTax | number:'1.3-3' }}</td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-danger" (click)="removeItem(i)">
+                      <i class="ti ti-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="newRow.Items.length === 0">
+                  <td colspan="9" class="text-center py-3">{{ 'VirtualInvoicePage.NoItemsAdded' | translate }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End::row-2 -->
+
+<!-- Start::row-3 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card mb-4">
+      <div class="card-header">
+        <div class="card-title" *ngIf="!Quotation">
+          {{ 'VirtualInvoicePage.InvoiceSummary' | translate }}
+        </div>
+        <div class="card-title" *ngIf="Quotation">
+          {{ 'VirtualInvoicePage.QuotationSummary' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="alert alert-light">
+              <div class="row">
+                <div class="col-6 col-md-3 mb-2">
+                  <div class="fw-bold">{{ 'VirtualInvoicePage.TotalTax' | translate }}</div>
+                  <div class="fs-5">{{ newRow.TotalTax | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-6 col-md-3 mb-2">
+                  <div class="fw-bold">{{ 'VirtualInvoicePage.TotalWithoutTax' | translate }}</div>
+                  <div class="fs-5">{{ newRow.TotalWithoutTax | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-6 col-md-3 mb-2">
+                  <div class="fw-bold">{{ 'VirtualInvoicePage.TotalWithTax' | translate }}</div>
+                  <div class="fs-5">{{ newRow.TotalWithTax | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-6 col-md-3 mb-2" *ngIf="!this.includeTax">
+                  <div class="fw-bold">{{ 'VirtualInvoicePage.DiscountAmount' | translate }}</div>
+                  <div class="fs-5">{{ newRow.DiscountAmount | number:'1.2-2' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 d-flex align-items-center justify-content-end">
+           <button class="btn btn-lg btn-primary" (click)="save()"  *ngIf="!Quotation">
+              <i class="ti ti-device-floppy me-1"></i>
+              {{ 'VirtualInvoicePage.SaveInvoice' | translate }}
+            </button>
+            <button class="btn btn-lg btn-primary" (click)="SaveQuotation()" *ngIf="Quotation">
+              <i class="ti ti-device-floppy me-1"></i>
+              {{ 'VirtualInvoicePage.SaveQuotation' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End::row-3 -->
+
+<!-- Branch Modal Template -->
+<ng-template #addBranchModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      {{ isEditingBranch ? ('VirtualInvoicePage.EditBranch' | translate) : ('VirtualInvoicePage.AddNewBranch' | translate) }}
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label for="branchNumber" class="form-label">{{ 'VirtualInvoicePage.BranchNumber' | translate }} *</label>
+        <input type="number" class="form-control" id="branchNumber" [(ngModel)]="newBranch.BranchNo" 
+               name="branchNo" required [readonly]="isEditingBranch">
+      </div>
+      <div class="mb-3">
+        <label for="branchNameAr" class="form-label">{{ 'VirtualInvoicePage.BranchNameArabic' | translate }} *</label>
+        <input type="text" class="form-control" id="branchNameAr" [(ngModel)]="newBranch.BranchNameArabic" name="branchNameAr" required>
+      </div>
+      <div class="mb-3">
+        <label for="branchNameEn" class="form-label">{{ 'VirtualInvoicePage.BranchNameEnglish' | translate }}</label>
+        <input type="text" class="form-control" id="branchNameEn" [(ngModel)]="newBranch.BranchNameEnglish" name="branchNameEn">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <div *ngIf="loading" class="spinner-border text-primary me-2" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss('Cancel')">
+      {{ 'General.Cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="saveBranch()" [disabled]="loading">
+      {{ 'General.Save' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<!-- Customer Modal Template -->
+<ng-template #addCustomerModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      {{ isEditingCustomer ? ('VirtualInvoicePage.EditCustomer' | translate) : ('VirtualInvoicePage.AddNewCustomer' | translate) }}
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label for="branchDisplay" class="form-label">{{ 'VirtualInvoicePage.Branch' | translate }}</label>
+        <input type="text" class="form-control" id="branchDisplay" 
+               [value]="selectedBranch ? (currentLang === 'ar' ? selectedBranch.BranchNameArabic : selectedBranch.BranchNameEnglish) : ''" 
+               disabled>
+      </div>
+      <div class="mb-3">
+        <label for="customerNumber" class="form-label">{{ 'VirtualInvoicePage.CustomerNumber' | translate }} *</label>
+        <input type="number" class="form-control" id="customerNumber" [(ngModel)]="newCustomer.CustomerNumber" name="customerNumber" required>
+      </div>
+      <div class="mb-3">
+        <label for="customerName" class="form-label">{{ 'VirtualInvoicePage.CustomerName' | translate }} *</label>
+        <input type="text" class="form-control" id="customerName" [(ngModel)]="newCustomer.CustomerName" name="customerName" required>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="TaxNo" class="form-label">{{ 'VirtualInvoicePage.TaxNo' | translate }}</label>
+            <input type="text" class="form-control" id="TaxNo" [(ngModel)]="newCustomer.TaxNo" name="TaxNo">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="PhoneNo" class="form-label">{{ 'VirtualInvoicePage.PhoneNo' | translate }}</label>
+            <input type="text" class="form-control" id="PhoneNo" [(ngModel)]="newCustomer.PhoneNo" name="PhoneNo">
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <div *ngIf="loading" class="spinner-border text-primary me-2" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss('Cancel')">
+      {{ 'General.Cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="saveCustomer()" [disabled]="loading">
+      {{ 'General.Save' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<!-- Item Modal Template -->
+<ng-template #addItemModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      {{ isEditingItem ? ('VirtualInvoicePage.EditItem' | translate) : ('VirtualInvoicePage.AddNewItem' | translate) }}
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label for="itemNumber" class="form-label">{{ 'VirtualInvoicePage.ItemNumber' | translate }} *</label>
+        <input type="text" class="form-control" id="itemNumber" [(ngModel)]="newItem.ItemNumber" name="itemNumber" required>
+      </div>
+      <div class="mb-3">
+        <label for="itemName" class="form-label">{{ 'VirtualInvoicePage.ItemName' | translate }} *</label>
+        <input type="text" class="form-control" id="itemName" [(ngModel)]="newItem.ItemName" name="itemName" required>
+      </div>
+      <!-- Update the unit field in the item modal to include an edit button -->
+      <div class="mb-3">
+        <label for="unitNumber" class="form-label">{{ 'VirtualInvoicePage.UnitNumber' | translate }} *</label>
+        <div class="d-flex align-items-center">
+          <select class="form-select" [(ngModel)]="newItem.UnitNumber" name="unitNumber" id="unitNumber">
+            <option *ngFor="let unit of availableUnits" [value]="unit.UnitNumber">
+              {{ unit.UnitNumber }} - {{ currentLang === 'ar' ? unit.ArabicName : unit.EnglishName }}
+            </option>
+          </select>
+          <div class="ms-2 d-flex">
+            <button class="btn btn-outline-primary me-1" (click)="openAddUnitModal(addUnitModal)">
+              <i class="ti ti-plus"></i>
+            </button>
+            <button class="btn btn-outline-secondary" 
+                    (click)="openAddUnitModal(addUnitModal, findUnitByNumber(newItem.UnitNumber))">
+              <i class="ti ti-edit"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3" *ngIf="this.taxTypeId==1&&!this.TaxMode">
+        <label for="taxType" class="form-label">{{ 'VirtualInvoicePage.TaxType' | translate }}</label>
+        <select class="form-select" id="taxType" [(ngModel)]="newItem.TaxNo" name="taxType">
+          <option *ngFor="let tax of taxTypes" [value]="tax.TaxNumber">
+            {{ currentLang === 'ar' ? tax.TaxNameAr : tax.TaxNameEn }} ({{ tax.TaxPercentage }}%)
+          </option>
+        </select>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <div *ngIf="loading" class="spinner-border text-primary me-2" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss('Cancel')">
+      {{ 'General.Cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="saveItem()" [disabled]="loading">
+      {{ 'General.Save' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<!-- Unit Modal Template -->
+<ng-template #addUnitModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-unit-title">
+      {{ isEditingUnit ? ('VirtualInvoicePage.EditUnit' | translate) : ('VirtualInvoicePage.AddNewUnit' | translate) }}
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label for="unitNumber" class="form-label">{{ 'VirtualInvoicePage.UnitNumber' | translate }} *</label>
+        <input type="number" class="form-control" id="unitNumber" [(ngModel)]="newUnit.UnitNumber" name="unitNumber" required>
+      </div>
+      <div class="mb-3">
+        <label for="unitNameAr" class="form-label">{{ 'VirtualInvoicePage.UnitNameArabic' | translate }} *</label>
+        <input type="text" class="form-control" id="unitNameAr" [(ngModel)]="newUnit.UnitArabicName" name="unitNameAr" required>
+      </div>
+      <div class="mb-3">
+        <label for="unitNameEn" class="form-label">{{ 'VirtualInvoicePage.UnitNameEnglish' | translate }}</label>
+        <input type="text" class="form-control" id="unitNameEn" [(ngModel)]="newUnit.UnitEnglishName" name="unitNameEn">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <div *ngIf="loading" class="spinner-border text-primary me-2" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss('Cancel')">
+      {{ 'General.Cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="saveUnit()" [disabled]="loading">
+      {{ 'General.Save' | translate }}
+    </button>
+  </div>
+</ng-template>

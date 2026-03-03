@@ -1,0 +1,25 @@
+<ng-template #confirmationContent let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">{{ title }}</h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="onCancel()"></button>
+    </div>
+    <div class="modal-body">
+      <p>{{ message }}</p>
+      
+      <!-- Display detail items if provided -->
+      <div *ngIf="details && details.length > 0">
+        <p *ngFor="let detail of details">
+          <strong>{{ detail.label }}:</strong> {{ detail.value }}
+        </p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        {{ cancelButtonText }}
+      </button>
+      <button type="button" [class]="'btn ' + confirmButtonClass" (click)="onConfirm()" [disabled]="processing">
+        <span *ngIf="processing" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        {{ processing ? processingText : confirmButtonText }}
+      </button>
+    </div>
+  </ng-template>

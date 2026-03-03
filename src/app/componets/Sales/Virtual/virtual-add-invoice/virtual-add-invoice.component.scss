@@ -1,0 +1,11 @@
+// Style for secondary modal that appears on top of the first modal
+.secondary-modal .modal-content {
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid #007bff;
+}
+
+.secondary-modal {
+  z-index: 1060 !important; /* Higher than the parent modal */
+}
+
+

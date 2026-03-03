@@ -1,0 +1,107 @@
+:host {
+  display: block;
+}
+
+// Table styling
+.table-responsive {
+  margin-bottom: 0;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.table {
+  margin-bottom: 0;
+  
+  // Reset Material styling to match Bootstrap
+  &.mat-mdc-table {
+    background: transparent;
+    
+    .mat-mdc-row, .mat-mdc-header-row {
+      height: auto;
+    }
+  }
+  
+  th.mat-mdc-header-cell {
+    font-weight: 600;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-emphasis-color);
+    
+    &.mat-sort-header-sorted {
+      color: var(--bs-primary);
+    }
+  }
+  
+  td.mat-mdc-cell {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    vertical-align: middle;
+  }
+  
+  .w-70px {
+    width: 70px;
+    max-width: 70px;
+  }
+  
+  .w-100px {
+    width: 100px;
+    max-width: 100px;
+  }
+}
+
+// Highlighted selected row
+.selected-row {
+  background-color: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+// Delivery badge
+.delivery-badge {
+  background-color: var(--bs-tertiary-bg);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50rem;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+// Override Material styling to match template
+::ng-deep {
+  // Fix checkbox styling
+  .mat-mdc-checkbox .mdc-checkbox {
+    padding: 0;
+  }
+  
+  // Fix paginator styling
+  .mat-mdc-paginator {
+    background: transparent;
+    border-top: 1px solid var(--bs-border-color);
+  }
+  
+  // Fix sort arrows
+  .mat-sort-header-arrow {
+    color: var(--bs-secondary-color);
+  }
+}
+
+// Empty state for no data
+.mat-mdc-no-data-row {
+  height: 200px;
+  
+  td {
+    color: var(--bs-secondary-color);
+  }
+}
+
+// Responsive tweaks
+@media (max-width: 767.98px) {
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .btn {
+      margin-top: 1rem;
+      width: 100%;
+    }
+  }
+}

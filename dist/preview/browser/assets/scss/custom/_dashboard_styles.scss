@@ -1,0 +1,701 @@
+/* analytics dashboard */
+.analytics-visitors-countries {
+  margin-block-end: 0;
+  li {
+    margin-block-end: 1.338rem;
+    &:last-child {
+      margin-block-end: 0rem;
+    }
+  }
+}
+#audienceReport,
+#session-users,
+#country-sessions {
+  .apexcharts-grid {
+    > line {
+      stroke-width: 0;
+    }
+  }
+  .apexcharts-grid-borders {
+    .apexcharts-gridline {
+      stroke-width: 0;
+    }
+  }
+}
+/* analytics dashboard */
+
+#leads-source {
+  .apexcharts-pie text {
+    fill: $white !important;
+  }
+}
+.crm-card-chart {
+  .apexcharts-grid {
+    display: none;
+  }
+  .apexcharts-grid-borders {
+    display: none;
+  }
+}
+
+.order-status {
+  position: relative;
+  &::before {
+    position: absolute;
+    content: "";
+    width: 0.3rem;
+    height: 0.3rem;
+    line-height: 0.3rem;
+    border-radius: 50px;
+    inset-block-start: 7px;
+    inset-inline-start: 7px;
+  }
+}
+
+.order-status.complete:before {
+  background-color: $success;
+}
+
+.order-status.pending:before {
+  background-color: $warning;
+}
+
+.order-status.cancel:before {
+  background-color: $danger;
+}
+
+.crm-table-th1 {
+  min-width: 200px;
+}
+
+.crm-table-th2 {
+  min-width: 80px;
+}
+
+.visit-gender {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 0.5rem;
+    inset-block-start: 9px;
+    inset-inline-start: -0.85rem;
+  }
+}
+
+.visit-gender.male:before {
+  background-color: rgb(var(--primary-rgb));
+}
+
+.visit-gender.female:before {
+  background-color: rgb(var(--secondary-rgb));
+}
+
+.customer-count {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 0.5rem;
+    inset-block-start: 0.6875rem;
+    inset-inline-start: -0.9rem;
+  }
+}
+
+.customer-count.new:before {
+  background-color: $primary;
+}
+
+.customer-count.return:before {
+  background-color: $success;
+}
+
+/* Ecommerce Dashboard */
+#total-sales,
+#total-expenses,
+#total-visitors,
+#total-orders {
+  .apexcharts-grid {
+    display: none;
+  }
+}
+
+.browser-list li {
+  margin-block-end: 1.8rem;
+
+  &:last-child {
+    margin-block-end: 0;
+  }
+}
+
+.browser-list li .custom-progress-6 {
+  min-width: 12.5rem;
+}
+
+.progress.custom-progress-6 {
+  background-color: transparent;
+  overflow: visible;
+}
+
+.progress.custom-progress-6 .progress-bar .progress-bar-value {
+  position: absolute;
+  inset-inline-end: -3rem;
+}
+
+.progress.custom-progress-6 .progress-bar {
+  position: relative;
+  overflow: visible;
+}
+
+.top-countries {
+  margin-block-end: 0;
+
+  li {
+    margin-block-end: 2.1rem;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+
+.top-customers {
+  margin-block-end: 0;
+
+  li {
+    margin-block-end: 1.85rem;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+
+/* Ecommerce Dashboard */
+
+/* CRM Dashboard */
+#leads-source {
+  .apexcharts-pie text {
+    fill: $white;
+  }
+}
+
+.crm-recent-activity {
+  li {
+    padding-block-end: 1.3rem;
+
+    &:last-child {
+      padding-block-end: 0;
+    }
+  }
+
+  .crm-timeline-content {
+    width: 15.5rem;
+  }
+
+  .crm-recent-activity-content {
+    position: relative;
+
+    &::before {
+      position: absolute;
+      content: "";
+      width: 1px;
+      background-color: transparent;
+      inset-block-start: 1.4375rem;
+      inset-inline-start: 0.8125rem;
+      border: 1px solid $default-border;
+      height: 100%;
+    }
+
+    &:last-child {
+      &::before {
+        display: none;
+      }
+    }
+  }
+}
+
+.crm-top-deals {
+  li {
+    margin-block-end: 1.6rem;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+
+#total-deals {
+  .apexcharts-grid line,
+  .apexcharts-xaxis line,
+  .apexcharts-grid-borders line {
+    stroke: transparent;
+  }
+}
+
+#customers-countries {
+  height: 19.2rem;
+
+  #jvm-markers-labels-group {
+    display: none;
+  }
+}
+
+#customers-countries circle:nth-child(1) {
+  fill: $primary;
+  stroke: rgba(var(--primary-rgb), 0.5);
+}
+
+#customers-countries circle:nth-child(2) {
+  fill: $warning;
+  stroke: rgba(var(--warning-rgb), 0.5);
+}
+
+#customers-countries circle:nth-child(3) {
+  fill: $success;
+  stroke: rgba(var(--success-rgb), 0.5);
+}
+
+#customers-countries circle:nth-child(4) {
+  fill: $info;
+  stroke: rgba(var(--info-rgb), 0.5);
+}
+
+#customers-countries #jvm-regions-group path {
+  fill: rgba(var(--primary-rgb), 0.6) !important;
+}
+
+/* CRM Dashboard */
+
+/* HRM Dashboard */
+#application-stats,
+#application-categories {
+  .apexcharts-grid {
+    display: none;
+  }
+}
+
+.leave-activity {
+  li {
+    padding-block-end: 1.2rem;
+
+    &:last-child {
+      padding-block-end: 0;
+    }
+  }
+
+  .leave-content {
+    width: 15rem;
+  }
+
+  .leave-activity-content {
+    position: relative;
+
+    &::before {
+      position: absolute;
+      content: "";
+      width: 1px;
+      background-color: transparent;
+      inset-block-start: 1.4375rem;
+      inset-inline-start: 0.8125rem;
+      border: 1px solid $default-border;
+      height: 100%;
+    }
+
+    &:last-child {
+      &::before {
+        display: none;
+      }
+    }
+  }
+}
+
+.total-employees {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    content: "";
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 0.5rem;
+    inset-block-start: 0.5rem;
+    left: -0.85rem;
+  }
+}
+[dir="rtl"] {
+  .total-employees {
+    &::before {
+      right: 1rem;
+    }
+  }
+}
+
+.total-employees.male:before {
+  background-color: $primary;
+}
+
+.total-employees.female:before {
+  background-color: $green;
+}
+
+/* HRM Dashboard */
+
+/* NFT Dashboard */
+.nft-trending-collectors {
+  margin-block-end: 0;
+
+  li {
+    margin-block-end: 1.2rem;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+.nft-image {
+  min-height: 350px;
+}
+
+.card-body.nft-body {
+  position: absolute;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  bottom: 0;
+  backdrop-filter: blur(30px);
+}
+
+.nft-auction-time {
+  padding: 0.25rem 0.5rem;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 0.3rem;
+}
+
+h1.nft-title {
+  line-height: 1.3;
+  font-weight: 300;
+}
+
+.card.custom-card {
+  .card-body.nft-main {
+    padding: 2.25rem;
+  }
+}
+@media (min-width: 1400px) {
+  h1.nft-title {
+    width: 60%;
+  }
+  .nft-main-image {
+    position: absolute;
+    inset-inline-end: 4.5rem;
+    inset-block-start: -3.75rem;
+  }
+}
+// @media (max-width: 1399.98px) {
+  .nft-banner .card-img {
+    height: 300px;
+  }
+// }
+
+#trending-creator1,
+#trending-creator2,
+#trending-creator3,
+#trending-creator4,
+#trending-creator5,
+#trending-creator6 {
+  .apexcharts-grid {
+    display: none;
+  }
+}
+
+.top-drops-list {
+  margin-block-end: 0;
+
+  li {
+    margin-block-end: 1rem;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+.nft-featuredcollect-image {
+  height: 8.813rem !important;
+  border-radius: 0.5rem;
+  position: relative;
+}
+/* NFT Dashboard */
+
+/* Crypto Dashboard */
+
+#crypto-analysis {
+  .apexcharts-toolbar {
+    display: none;
+  }
+}
+.crypto-main-card-icon {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  inset-inline-end: -1.5625rem;
+  bottom: -2.1875rem;
+  opacity: 0.1;
+}
+
+.crypto-marketcap-list {
+  margin-block-end: 0;
+
+  li {
+    margin-block-end: 1.75rem;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+
+#btc-marketcap,
+#eth-marketcap,
+#usdt-marketcap,
+#sol-marketcap,
+#ada-marketcap,
+#bnb-marketcap,
+#bitcoin-change,
+#etherium-change,
+#tether-change,
+#solana-change,
+#cardano-change,
+#binance-change {
+  .apexcharts-grid {
+    display: none;
+  }
+}
+
+.crypto-investments {
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+/* Crypto Dashboard */
+
+/* jobs dashboard */
+.card.custom-card.earning-card {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(var(--primary-rgb), 0.1);
+  background-repeat: no-repeat;
+}
+
+#profile-views {
+  .apexcharts-grid {
+    display: none;
+  }
+}
+
+.swiper-vertical {
+  height: 29.5rem;
+}
+
+/* jobs dashboard */
+
+/* projects dashboard */
+.custom-card.all-clients-card {
+  position: relative;
+  overflow: hidden;
+
+  &:before {
+    content: "";
+    position: absolute;
+    background-image: url("../images/media/media-80.svg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    inset-inline-start: 0;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    inset-block-end: 0;
+    opacity: 0.05;
+  }
+}
+
+// #projects-revenue {
+//   .apexcharts-bar-series.apexcharts-plot-series
+//     .apexcharts-series
+//     .apexcharts-bar-area {
+//     stroke: $custom-white !important;
+//   }
+// }
+
+#projects-done {
+  .apexcharts-datalabels-group text {
+    fill: rgb(var(--success-rgb));
+  }
+  .apexcharts-svg,
+  .apexcharts-canvas {
+    width: auto !important;
+  }
+}
+
+#projects-ongoing {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+
+  .apexcharts-grid {
+    display: none;
+  }
+}
+
+.project-activity-list {
+  position: relative;
+
+  &:before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -3px;
+    width: 1px;
+    inset-block-start: 0.5rem;
+    inset-block-end: 3rem;
+    background-color: $default-border;
+  }
+
+  li {
+    margin-block-end: 0.85rem;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+
+.project-activity {
+  position: relative;
+
+  &:before {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: $custom-white;
+    border-radius: 50%;
+    inset-block-start: 6px;
+    inset-inline-start: -7px;
+  }
+
+  &:nth-child(1):before {
+    content: "";
+    border: 1px solid $primary;
+  }
+
+  &:nth-child(2):before {
+    border: 1px solid $success;
+  }
+
+  &:nth-child(3):before {
+    border: 1px solid $warning;
+  }
+
+  &:nth-child(4):before {
+    border: 1px solid $danger;
+  }
+
+  &:nth-child(5):before {
+    border: 1px solid $info;
+  }
+
+  &:nth-child(6):before {
+    border: 1px solid $secondary;
+  }
+}
+
+/* projects dashboard */
+
+/* courses dashboard */
+.card.custom-card.card-pattern-1 {
+  position: relative;
+  &:before {
+    content: "";
+    position: absolute;
+    background-image: url("../images/media/svg/pattern-2.svg");
+    background-repeat: repeat;
+    inset-inline-start: 0;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    inset-block-end: 0;
+    opacity: 0.05;
+  }
+}
+.card.custom-card.card-pattern-2 {
+  position: relative;
+  &:before {
+    content: "";
+    position: absolute;
+    background-image: url("../images/media/svg/pattern-3.svg");
+    background-repeat: repeat;
+    inset-inline-start: 0;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    inset-block-end: 0;
+    opacity: 0.05;
+  }
+}
+/* courses dashboard */
+
+/* personal dashboard */
+#subscriptionAnalysis {
+  .apexcharts-canvas {
+    width: auto !important;
+  }
+}
+/* personal dashboard */
+
+/* stocks dashboard */
+#apple-stock,
+#microsoft-stock,
+#amazon-stock,
+#nvidia-stock,
+#total-invested,
+#portfolio-value,
+#returns-rate {
+  .apexcharts-grid {
+    display: none;
+  }
+}
+.watchlist-list {
+  margin-block-end: 0;
+  li {
+    margin-block-end: 0.95rem;
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+/* stocks dashboard */
+
+/* sales dashboard */
+.visitors-country {
+  margin-block-end: 0;
+  li {
+    margin-block-end: 1.34rem;
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+[dir="rtl"] {
+  #orders-card,#customers-card,#revenue-card,#sales-card {
+    .apexcharts-canvas {
+      -webkit-transform: scaleX(-1);
+      transform: scaleX(-1);
+    }
+  }
+}
+/* sales dashboard  */

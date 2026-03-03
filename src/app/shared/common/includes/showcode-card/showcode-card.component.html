@@ -1,0 +1,23 @@
+<div class="card custom-card    custom-component">
+    <div class="card-header justify-content-between">
+        <div class="card-title" [innerHTML]="title">
+        </div>
+        <div class="prism-toggle">
+            <button class="btn btn-sm btn-primary-light" (click)="toggleShowCode()">Show Code<i
+                    class="ri-code-{{toggleStatus  ? 's-slash-line' : 'line'}} ms-2 d-inline-block align-middle"></i></button>
+        </div>
+    </div>
+    @if(!toggleStatus){
+
+    <div class="card-body {{classbody}}">
+        <ng-content></ng-content>
+    </div>
+    }
+    @else{
+    <div class="card-footer  border-top-0">
+        <pre class="language-html"><code class="language-html" >
+        {{prism}}</code></pre>
+        <!-- Prism Code -->
+    </div>
+    }
+</div>

@@ -1,0 +1,171 @@
+<app-page-header 
+  [title]="'InvoiceDetails.invoiceDetails' | translate" 
+  [title1]="'InvoicesPage.Sales' | translate" 
+  [activeTitle]="'InvoiceDetails.invoiceDetails' | translate">
+</app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-title">
+          {{ 'InvoiceDetails.invoiceDetails' | translate }} - #{{ invoiceHeader.SellerInvoiceNumber }}
+        </div>
+        <div>
+          <button class="btn btn-outline-primary btn-sm me-2" (click)="printInvoice()">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-primary btn-sm" (click)="goBack()">
+            <i class="ti ti-arrow-back me-1"></i>
+            {{ 'General.Back' | translate }}
+          </button>
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        
+        <div *ngIf="!loading">
+          <!-- Invoice Header Section -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="mb-4">
+                <h5 class="section-title">
+                  {{ 'InvoiceDetails.InvoiceHeader' | translate }}
+                </h5>
+                
+                <div class="row g-3">
+                  <div class="col-md-4 col-sm-6">
+                    <div class="info-item">
+                      <span class="info-label">{{ 'InvoiceDetails.InvoiceNumber' | translate }}</span>
+                      <span class="info-value">{{ invoiceHeader.SellerInvoiceNumber }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 col-sm-6">
+                    <div class="info-item">
+                      <span class="info-label">{{ 'InvoiceDetails.InvoiceDate' | translate }}</span>
+                      <span class="info-value">{{ invoiceHeader.FormattedDate || invoiceHeader.InvoiceDate }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 col-sm-6">
+                    <div class="info-item">
+                      <span class="info-label">{{ 'InvoiceDetails.PaymentMethod' | translate }}</span>
+                      <span class="info-value">{{ invoiceHeader.InvoiceType }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 col-sm-6">
+                    <div class="info-item">
+                      <span class="info-label">{{ 'InvoiceDetails.CustomerAccountNumber' | translate }}</span>
+                      <span class="info-value">{{ invoiceHeader.CustomerAccountNumber }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 col-sm-6">
+                    <div class="info-item">
+                      <span class="info-label">{{ 'InvoiceDetails.CustomerName' | translate }}</span>
+                      <span class="info-value">{{ invoiceHeader.CustomerName }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 col-sm-6">
+                    <div class="info-item">
+                      <!--  <span class="info-label">{{ 'InvoiceDetails.PaymentMethod' | translate }}</span>-->
+                      <!--  <span class="info-value">{{ invoiceHeader.PayMethodName || 'N/A' }}</span>-->
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mt-3">
+                  <div class="col-12">
+                    <div class="info-item">
+                      <span class="info-label">{{ 'InvoiceDetails.Description' | translate }}</span>
+                      <span class="info-value description">{{ invoiceHeader.Description || 'N/A' }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="row invoice-totals">
+                  <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="total-item">
+                      <span class="total-label">{{ 'InvoiceDetails.TotalAmount' | translate }}</span>
+                      <span class="total-value">{{ (invoiceHeader.InvoiceTotalPriceWithoutTax || invoiceHeader.tot) | number:'1.3-3' }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="total-item">
+                      <span class="total-label">{{ 'InvoiceDetails.InvoiceTotalTax' | translate }}</span>
+                      <span class="total-value">{{ invoiceHeader.InvoiceTotalTax | number:'1.3-3' }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="total-item main-total">
+                      <span class="total-label">{{ 'InvoiceDetails.InvoiceTotalPriceAfterTax' | translate }}</span>
+                      <span class="total-value">{{ invoiceHeader.InvoiceTotalPriceAfterTax | number:'1.3-3' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Items Table -->
+          <div class="row">
+            <div class="col-12">
+              <h5 class="section-title mb-3">{{ 'InvoiceDetails.Items' | translate }}</h5>
+              <div class="table-responsive">
+                <table class="table text-nowrap table-bordered">
+                  <thead>
+                    <tr>
+                      <th>{{ 'InvoiceDetails.ItemNumber' | translate }}</th>
+                      <th>{{ 'InvoiceDetails.ItemName' | translate }}</th>
+                      <th>{{ 'InvoiceDetails.Quantity' | translate }}</th>
+                      <th class="text-end">{{ 'InvoiceDetails.ItemPrice' | translate }}</th>
+                      <th class="text-end">{{ 'InvoiceDetails.DiscountAmount' | translate }}</th>
+                      <th class="text-end">{{ 'InvoiceDetails.ItemTotalPrice' | translate }}</th>
+                      <th class="text-end">{{ 'InvoiceDetails.ItemTaxRate' | translate }}</th>
+                      <th class="text-end">{{ 'InvoiceDetails.ItemTaxAmount' | translate }}</th>
+                      <th class="text-end">{{ 'InvoiceDetails.ItemTotalPriceAfterTax' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of dataSource.data">
+                      <td>{{ item.ItemNumber }}</td>
+                      <td>{{ item.ItemName }}</td>
+                      <td>{{ item.Quantity }}</td>
+                      <td class="text-end">{{ item.ItemPrice }}</td>
+                      <td class="text-end">{{ item.ItemTotalPrice }}</td>
+                      <td class="text-end">{{ item.ItemDiscount }}</td>
+                      <td class="text-end">{{ item.ItemTaxRate }}</td>
+                      <td class="text-end">{{ item.ItemTaxAmount }}</td>
+                      <td class="text-end">{{ item.ItemTotalPriceAfterTax }}</td>
+                    </tr>
+                    <tr *ngIf="dataSource.data.length === 0">
+                      <td colspan="8" class="text-center py-3">
+                        {{ 'General.NoRecordsFound' | translate }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End::row-1 -->

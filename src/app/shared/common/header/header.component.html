@@ -1,0 +1,248 @@
+<!-- app-header -->
+<header class="app-header">
+
+  <!-- Start::main-header-container -->
+  <div class="main-header-container container-fluid">
+
+    <!-- Start::header-content-left -->
+    <div class="header-content-left">
+
+      <!-- Start::header-element -->
+      <div class="">
+       <!--  <div class="horizontal-logo">
+         <a routerLink="/sales/invoice" class="header-logo">
+            <img src="./assets/images/brand-logos/logo.jpg" alt="logo" class="desktop-logo">
+            <img src="./assets/images/brand-logos/logo.jpg" alt="logo" class="toggle-logo">
+            <img src="./assets/images/brand-logos/logo.jpg" alt="logo" class="desktop-dark">
+            <img src="./assets/images/brand-logos/logo.jpg" alt="logo" class="toggle-dark">
+
+
+            <img src="./assets/images/brand-logos/desktop-logo.png" alt="logo" class="desktop-logo">
+            <img src="./assets/images/brand-logos/toggle-logo.png" alt="logo" class="toggle-logo">
+            <img src="./assets/images/brand-logos/desktop-dark.png" alt="logo" class="desktop-dark">
+            <img src="./assets/images/brand-logos/toggle-dark.png" alt="logo" class="toggle-dark">
+          </a>
+        </div>-->
+      </div>
+      <!-- End::header-element -->
+
+      <!-- Start::header-element -->
+      <div class="header-element mx-lg-0 mx-2">
+        <a aria-label="Hide Sidebar" (click)="toggleSidebar()"
+          class="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle"
+          data-bs-toggle="sidebar"><span></span></a>
+      </div>
+      <!-- End::header-element -->
+
+      <!-- Start::header-element -->
+      <!-- Start::header-element header-search -->
+      <!--
+      <div class="header-element header-search d-md-block d-none">
+        <input type="text" class="header-search-bar form-control border-0 bg-body" placeholder="Search for Results..."
+          autocomplete="off" (click)="SearchHeader()" [(ngModel)]="text" [ngModelOptions]="{standalone: true}"
+          (keyup)="Search(text)">
+        <a href="javascript:void(0);" class="header-search-icon border-0">
+          <i class="bi bi-search"></i>
+        </a>
+        <div>
+          @if("menuItems?.length>0"){
+          <div class="search_drop list-group" (click)="clearSearch()">
+        @for(menuItem of menuItems | slice:0:5;track $index){
+        <div class="list-group-item" [routerLink]="menuItem?.path" (click)="clearSearch()">
+          <a [routerLink]="menuItem?.path"><span><i
+            class='fa fa-angle-double-right me-2'></i>{{menuItem?.title}}</span></a>
+        </div>
+        }
+          </div>
+          }
+          @else{
+          <ng-template>
+        <ul class="ps-2">
+          <li class="p-1 d-flex align-items-center text-muted mb-2 search-app">
+            <a><span><i class='fa fa-angle-double-right me-2'></i>No Search Result Found with "{{text}}"</span></a>
+          </li>
+        </ul>
+          </ng-template>
+          }
+        </div>
+      </div>
+      -->
+      <!-- End::header-element header-search -->
+      <!-- End::header-element -->
+
+      <!-- Start::header-element -->
+      <!-- 
+      <div class="header-element ms-3 d-lg-block d-none my-auto">
+        <div ngbDropdown class="dropdown my-auto" (click)="toggleDropdown()">
+          <a ngbDropdownToggle href="javascript:void(0);" class="btn bg-body header-dashboards-button text-start d-flex align-items-center justify-content-between" data-bs-toggle="dropdown" aria-expanded="false">{{ selectedItem }}
+            <i class="ri-arrow-down-s-line align-middle ms-1 d-inline-block"></i>
+          </a>
+          <ul ngbDropdownMenu class="dropdown-menu dashboard-dropdown" role="menu">
+            <li>
+              <a ngbDropdownItem class="dropdown-item dashboards-dropdown-item" [routerLink]="[ 'dashboard', 'sales']" (click)="handleItemClick('Sales Dashboard')" [class.active]="selectedItem === 'Sales Dashboard'">Sales Dashboard</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      -->
+      <!-- End::header-element -->
+
+    </div>
+    <!-- End::header-content-left -->
+
+
+    <!-- Start::header-content-right -->
+    <ul class="header-content-right">
+
+      <!-- Start::header-element -->
+      <li class="header-element d-md-none d-block">
+        <a href="javascript:void(0);" class="header-link" data-bs-toggle="modal"
+          data-bs-target="#header-responsive-search" (click)="openModal(content)">
+          <!-- Start::header-link-icon -->
+          <i class="bi bi-search header-link-icon"></i>
+          <!-- End::header-link-icon -->
+        </a>
+      </li>
+      <!-- End::header-element -->
+        <li class="header-element header-theme-mode">
+          <div class="d-flex align-items-center">
+            <!-- <div class="me-sm-2 me-0">
+              <img src="./assets/images/faces/9.jpg" alt="img" class="avatar avatar-sm avatar-rounded">
+            </div> -->
+            <div class="d-xl-block d-none lh-1">
+              <span class="fw-medium lh-2" title="{{ DatabaseName }}" >{{ userTaxType }}</span> 
+            </div>
+          </div>
+        </li>
+      <!-- Start::header-element -->
+      <li ngbDropdown class="header-element country-selector" [autoClose]="'outside'">
+        <!-- Start::header-link|dropdown-toggle -->
+        <a ngbDropdownToggle href="javascript:void(0);" class="header-link dropdown-toggle" data-bs-auto-close="outside"
+          data-bs-toggle="dropdown">
+          <img [src]="currentFlag" alt="img" class="rounded-circle" >
+        </a>
+        <!-- End::header-link|dropdown-toggle -->
+        <ul ngbDropdownMenu class="main-header-dropdown dropdown-menu dropdown-menu-end full-width"
+          data-popper-placement="none">
+          <li>
+            <a ngbDropdownItem class="dropdown-item d-flex align-items-center" href="javascript:void(0);" (click)="changeLanguage('en')">
+              <span class="avatar avatar-xs lh-1 me-2">
+                <img src="./assets/images/flags/us_flag.jpg" alt="img" >
+              </span>
+              English
+            </a>
+          </li>
+          <li>
+            <a ngbDropdownItem class="dropdown-item d-flex align-items-center" href="javascript:void(0);" (click)="changeLanguage('ar')">
+              <span class="avatar avatar-xs lh-1 me-2">
+                <img src="./assets/images/flags/uae_flag.jpg" alt="img">
+              </span>
+              Arabic
+            </a>
+          </li>
+        </ul>
+      </li>
+      <!-- End::header-element -->
+
+      <!-- Start::header-element themes-->
+      <li class="header-element header-theme-mode">
+        <!-- Start::header-link|layout-setting -->
+        <a href="javascript:void(0);" class="header-link layout-setting">
+          <span class="light-layout">
+            <!-- Start::header-link-icon -->
+            <i class="bi bi-moon header-link-icon" (click)="updateTheme('dark')"></i>
+            <!-- End::header-link-icon -->
+          </span>
+          <span class="dark-layout">
+            <!-- Start::header-link-icon -->
+            <i class="bi bi-brightness-high header-link-icon" (click)="updateTheme('light')"></i>
+            <!-- End::header-link-icon -->
+          </span>
+        </a>
+        <!-- End::header-link|layout-setting -->
+      </li>
+      <!-- End::header-element -->
+
+
+      <!-- Start::header-element fullscreen -->
+      <li class="header-element header-fullscreen" appFullscreen>
+        <!-- Start::header-link -->
+        <a href="javascript:void(0);" class="header-link" (click)="toggleFullscreen()">
+          <i class="bi bi-fullscreen full-screen-open header-link-icon" [ngClass]="{ 'd-none': isFullscreen }"></i>
+          <i class="bi bi-fullscreen-exit full-screen-close header-link-icon d-none"
+            [ngClass]="{ 'd-none': !isFullscreen }"></i>
+        </a>
+        <!-- End::header-link -->
+      </li>
+      <!-- End::header-element -->
+
+      <!-- Start::header-element profile -->
+      <li ngbDropdown class="header-element">
+        <!-- Start::header-link|dropdown-toggle -->
+        <a ngbDropdownToggle href="javascript:void(0);" class="header-link dropdown-toggle" id="mainHeaderProfile"
+          data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+          <div class="d-flex align-items-center">
+            <!-- <div class="me-sm-2 me-0">
+              <img src="./assets/images/faces/9.jpg" alt="img" class="avatar avatar-sm avatar-rounded">
+            </div> -->
+            <div class="d-xl-block d-none lh-1">
+              <span class="fw-medium lh-1">{{ userFirstName || 'Guest' }}</span>
+            </div>
+          </div>
+        </a>
+        <!-- End::header-link|dropdown-toggle -->
+        <ul ngbDropdownMenu
+          class="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end full-width"
+          aria-labelledby="mainHeaderProfile">
+          <!-- <li><a ngbDropdownItem class="dropdown-item d-flex align-items-center" href="javascript:void(0);"><i
+                class="bi bi-person fs-18 me-2 op-7"></i>Profile</a></li>
+          <li><a ngbDropdownItem class="dropdown-item d-flex align-items-center" href="javascript:void(0);"><i
+                class="bi bi-envelope fs-16 me-2 op-7"></i>Inbox <span
+                class="ms-auto badge bg-light border text-default">19</span></a></li>
+          <li><a ngbDropdownItem class="dropdown-item d-flex align-items-center" href="javascript:void(0);"><i
+                class="bi bi-check-square fs-16 me-2 op-7"></i>Task Manager</a></li>
+          <li><a ngbDropdownItem class="dropdown-item d-flex align-items-center"
+            href="javascript:void(0);"><i class="bi bi-gear fs-16 me-2 op-7"></i>Settings</a></li>
+          <li><a ngbDropdownItem class="dropdown-item d-flex align-items-center" href="javascript:void(0);"><i
+                class="bi bi-headset fs-18 me-2 op-7"></i>Support</a></li> -->
+          <li>
+            <a ngbDropdownItem class="dropdown-item d-flex align-items-center"
+              href="javascript:void(0);" (click)="logout()">
+              <i class="bi bi-box-arrow-right fs-18 me-2 op-7"></i>Log Out
+            </a>
+          </li>
+        </ul>
+      </li>
+      <!-- End::header-element -->
+
+      <!-- Start::header-element offcanvas -->
+      <!-- <li class="header-element">
+        // Start::header-link|switcher-icon 
+        <a (click)="open()" href="javascript:void(0);" class="header-link switcher-icon" data-bs-toggle="offcanvas"
+          data-bs-target="#switcher-canvas">
+          <i class="bi bi-gear header-link-icon border-0"></i>
+        </a>
+
+        // End::header-link|switcher-icon 
+      </li> -->
+      <!-- End::header-element -->
+
+    </ul>
+    <!-- End::header-content-right -->
+    <!-- End::header-content-right -->
+  </div>
+  <!-- End::main-header-container -->
+
+</header>
+<!-- /app-header -->
+<ng-template #content let-modal>
+  <div class="modal-body">
+    <div class="input-group">
+      <input type="text" class="form-control border-end-0" placeholder="Search Anything ..."
+        aria-label="Search Anything ..." aria-describedby="button-addon2">
+      <button class="btn btn-primary" type="button" id="button-addon2"><i class="bi bi-search"></i></button>
+    </div>
+  </div>
+
+
+</ng-template>
