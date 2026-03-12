@@ -37,32 +37,32 @@ export interface TransferInvoiceData {
 
 /**
  * Interface for Transfer Refund Invoice data returned from the API
+ * Property names match C# TransferRefundInvoiceDto (snake_case as serialised by ASP.NET Core)
  */
 export interface TransferRefundInvoiceData {
   serial_number: number;
-  inv_number: number;
+  inv_number: string;
   inv_date: string;
   type_code: string;
   note: string;
   zip_code: string;
   city_code: string;
-  OriginalSerialNumber: string;
-  OriginalInvNumber: string;
+  original_serial_number: string;
+  original_inv_number: string;
   original_total_amount: string;
   the_tax_number: string;
   the_global_tax_number: string;
-  TheCompanyName: string;
-  CustomerName: string;
-  CustomerPhone: string;
-  IncomeSourceSequence: string;
-  ReturnReason: string;
+  the_company_name: string;
+  customer_name: string;
+  customer_phone: string;
+  income_source_sequence: string;
+  return_reason: string;
   total_discount_amount: number;
   total_tax_amount: number;
   TaxExclusiveAmount: number;
   TaxInclusiveAmount: number;
   AllowanceTotalAmount: number;
   PayableAmount: number;
-  PrepaidAmount: number;
   items: TransferRefundInvoiceItem[];
   item_taxs: TransferRefundInvoiceTax[];
   Client_Id?: string;
@@ -93,6 +93,7 @@ export interface TransferRefundInvoiceTax {
   item_price_to_return: number;
   item_tax_to_return: number;
   item_tax_percent: number;
+  item_tax_type: number;
 }
 
 /**
@@ -124,7 +125,7 @@ export interface FotaraInvoicePayload {
 
 /**
  * Interface for Transfer Refund Invoice payload to Fotara API
- * with Items and item_taxs as strings
+ * Field names match C# ReturnInvoiceRequest mixed casing
  */
 export interface FotaraRefundInvoicePayload {
   inv_number: number;
@@ -132,27 +133,27 @@ export interface FotaraRefundInvoicePayload {
   inv_date: string;
   type_code: string;
   note: string;
-  zip_code: string;
-  city_code: string;
-  OriginalSerialNumber: string;
-  OriginalInvNumber: string;
+  original_inv_number: string;
+  original_serial_number: string;
   original_total_amount: string;
   the_tax_number: string;
-  the_global_tax_number: string;
-  TheCompanyName: string;
+  the_company_name: string;
+  zip_code: string;
+  city_code: string;
   CustomerName: string;
-  CustomerPhone: string;
-  IncomeSourceSequence: string;
-  ReturnReason: string;
+  customer_phone: string;
+  income_source_sequence: string;
+  return_reason: string;
   total_discount_amount: number;
   total_tax_amount: number;
   TaxExclusiveAmount: number;
   TaxInclusiveAmount: number;
   AllowanceTotalAmount: number;
-  PayableAmount: string;
   PrepaidAmount: number;
-  items: string;
+  PayableAmount: number;
   item_taxs: string;
+  items: string;
+  Test?: boolean;
 }
 
 /**
@@ -371,7 +372,6 @@ export class FotaraService {
    * @returns Observable with the API response containing QR code
    */
   sendRefundToFotaraApi(refundInvoiceData: TransferRefundInvoiceData): Observable<FotaraApiResponse> {
-    debugger;
     // Validate that credentials exist in the invoice data
     if (!refundInvoiceData.Client_Id || !refundInvoiceData.Secret_Key) {
       const errorMessage = this.translate.instant('FotaraService.MissingCredentials');
@@ -393,30 +393,31 @@ export class FotaraService {
 
     const fotaraPath = this.taxType == 1 ? 'Invoice/returnInvoice' : 'Invoice/returnIncome';
 
-    refundInvoiceData.original_total_amount = refundInvoiceData.original_total_amount.toString();
-    refundInvoiceData.zip_code = refundInvoiceData.zip_code || "";
-    refundInvoiceData.city_code = refundInvoiceData.city_code || "";
-    refundInvoiceData.CustomerName = refundInvoiceData.CustomerName || "";
+    refundInvoiceData.original_total_amount = refundInvoiceData.original_total_amount?.toString() || '0';
+    refundInvoiceData.zip_code = refundInvoiceData.zip_code || '';
+    refundInvoiceData.city_code = refundInvoiceData.city_code || '';
+    refundInvoiceData.customer_name = refundInvoiceData.customer_name || '';
 
-
-    // Create a clean payload with Items and item_taxs encoded as strings
+    // Create a clean payload with Items and ItemTaxs encoded as strings
     const cleanPayload = this.createCleanRefundPayload(refundInvoiceData);
 
     if (this.taxType == 2) {
-      let numberValue: number = refundInvoiceData.PayableAmount;
-      let stringValue: string = numberValue.toString();
-      cleanPayload.PayableAmount = stringValue;
+      cleanPayload.PayableAmount = parseFloat(refundInvoiceData.PayableAmount as any) || 0;
     }
 
-cleanPayload.CustomerName = "Test";
-cleanPayload.city_code = "Amm";
-
-    // Log the payload for debugging (remove in production)
-    console.log('Sending refund payload to Fotara API:', cleanPayload);
+    console.log('=== Fotara Refund Payload ===');
+    console.table(cleanPayload);
+    console.log('items (parsed):', JSON.parse(cleanPayload.items));
+    console.log('item_taxs (parsed):', JSON.parse(cleanPayload.item_taxs));
 
     return this.http.post<FotaraApiResponse>(`${this.fotaraApiUrl}/${fotaraPath}`, cleanPayload, { headers })
       .pipe(
-        catchError(this.handleError('Send refund to Fotara API')),
+        catchError((error) => {
+          console.error('Fotara API 400 error body:', error.error);
+          console.error('Fotara API error status:', error.status);
+          console.error('Full payload sent:', cleanPayload);
+          return this.handleError('Send refund to Fotara API')(error);
+        }),
         map(response => {
           // Check if API response indicates success
           if (response && response.status === 'success') {
@@ -460,23 +461,82 @@ cleanPayload.city_code = "Amm";
    * @returns Clean payload without Client_Id and Secret_Key and with encoded arrays
    */
   private createCleanRefundPayload(refundInvoiceData: TransferRefundInvoiceData): FotaraRefundInvoicePayload {
-    // First remove credentials using destructuring
+    // Remove credentials using destructuring
     const { Client_Id, Secret_Key, items, item_taxs, ...basePayload } = refundInvoiceData;
 
-    // Process the items to make sure each has the TaxableAmount field
+    // Process items → remap to match JoFotara ReturnInvoiceItem model
     const processedItems = items.map(item => ({
-      ...item,
-      return_item_TaxableAmount: item.return_item_LineExtensionAmount  // Set TaxableAmount equal to LineExtensionAmount
+      return_id: item.return_id?.toString() || '',
+      return_unitCode: item.return_unitCode || 'PCE',
+      return_InvoicedQuantity: parseInt(item.return_InvoicedQuantity as any) || 1,
+      return_item_LineExtensionAmount: parseFloat(item.return_item_LineExtensionAmount as any) || 0,
+      return_item_TaxAmount: parseFloat(item.return_item_TaxAmount as any) || 0,
+      return_item_RoundingAmount: parseFloat(item.return_item_RoundingAmount as any) || 0,
+      return_item_tax_Percent: parseFloat(item.return_item_tax_Percent as any) || 0,
+      return_item_tax_type: parseInt(item.return_item_tax_type as any) || 0,
+      return_item_Name: item.return_item_Name || item.return_id || '',
+      return_item_PriceAmount: parseFloat(item.return_item_PriceAmount as any) || 0,
+      return_item_discount_Amount: parseFloat(item.return_item_discount_Amount as any) || 0,
+      return_item_TaxableAmount: parseFloat(item.return_item_LineExtensionAmount as any) || 0
     }));
 
-    // Create the final payload with items and item_taxs encoded as strings
+    // Process item_taxs → remap to match JoFotara ReturnItemTax model
+    const processedItemTaxs = item_taxs.map(tax => ({
+      item_price_to_return: parseFloat(tax.item_price_to_return as any) || 0,
+      item_tax_to_return: parseFloat(tax.item_tax_to_return as any) || 0,
+      item_tax_percent: parseInt(tax.item_tax_percent as any) || 0,
+      item_tax_type: parseInt((tax.item_tax_type ?? 0) as any)
+    }));
+
+    // Compute totals from items to use as fallback when SP returns 0
+    const computedTaxExclusive = processedItems.reduce((sum, item) => sum + item.return_item_LineExtensionAmount, 0);
+    const computedTaxAmount = processedItems.reduce((sum, item) => sum + item.return_item_TaxAmount, 0);
+    const computedTaxInclusive = computedTaxExclusive + computedTaxAmount;
+
+    const spTaxExclusive = parseFloat(refundInvoiceData.TaxExclusiveAmount as any) || 0;
+    const spTaxAmount = parseFloat(refundInvoiceData.total_tax_amount as any) || 0;
+    const spTaxInclusive = parseFloat(refundInvoiceData.TaxInclusiveAmount as any) || 0;
+    const spPayable = parseFloat(refundInvoiceData.PayableAmount as any) || 0;
+
+    // Use SP values if available, otherwise compute from items
+    const finalTaxExclusive = spTaxExclusive || computedTaxExclusive;
+    const finalTaxAmount = spTaxAmount || computedTaxAmount;
+    const finalTaxInclusive = spTaxInclusive || computedTaxInclusive;
+    const finalPayable = spPayable || computedTaxInclusive;
+    const finalOriginalTotal = parseFloat(refundInvoiceData.original_total_amount as any) || computedTaxInclusive;
+
+    // Recompute item_taxs from items if SP returned zeros
+    const finalItemTaxs = (processedItemTaxs.length > 0 && processedItemTaxs[0].item_price_to_return === 0)
+      ? [{ item_price_to_return: computedTaxExclusive, item_tax_to_return: computedTaxAmount, item_tax_percent: processedItemTaxs[0]?.item_tax_percent || 0, item_tax_type: processedItemTaxs[0]?.item_tax_type || 1 }]
+      : processedItemTaxs;
+
+    // Map fields matching C# ReturnInvoiceRequest exactly
     const cleanPayload: FotaraRefundInvoicePayload = {
-      ...basePayload,
-      the_global_tax_number: refundInvoiceData.the_tax_number,
-      PayableAmount: refundInvoiceData.PayableAmount.toString(),
-      PrepaidAmount: parseInt(refundInvoiceData.original_total_amount), // Fixed: Set PrepaidAmount equal to original_total_amount
-      items: JSON.stringify(processedItems), // Encode processed items array as JSON string
-      item_taxs: JSON.stringify(item_taxs) // Encode item_taxs array as JSON string
+      inv_number: parseInt(refundInvoiceData.inv_number as any, 10),
+      serial_number: parseInt(refundInvoiceData.serial_number as any, 10),
+      inv_date: refundInvoiceData.inv_date || '',
+      type_code: (refundInvoiceData.type_code === '381' || !refundInvoiceData.type_code) ? '012' : refundInvoiceData.type_code,
+      note: refundInvoiceData.note || '',
+      original_inv_number: refundInvoiceData.serial_number?.toString() || '',
+      original_serial_number: refundInvoiceData.original_serial_number || '',
+      original_total_amount: finalOriginalTotal.toString(),
+      the_tax_number: refundInvoiceData.the_tax_number || '',
+      the_company_name: refundInvoiceData.the_company_name || '',
+      zip_code: refundInvoiceData.zip_code || '',
+      city_code: refundInvoiceData.city_code || '',
+      CustomerName: refundInvoiceData.customer_name || '',
+      customer_phone: refundInvoiceData.customer_phone || '',
+      income_source_sequence: refundInvoiceData.income_source_sequence || '',
+      return_reason: refundInvoiceData.return_reason || 'مرتجع',
+      total_discount_amount: parseFloat(refundInvoiceData.total_discount_amount as any) || 0,
+      total_tax_amount: finalTaxAmount,
+      TaxExclusiveAmount: finalTaxExclusive,
+      TaxInclusiveAmount: finalTaxInclusive,
+      AllowanceTotalAmount: parseFloat(refundInvoiceData.AllowanceTotalAmount as any) || 0,
+      PrepaidAmount: finalOriginalTotal,
+      PayableAmount: finalPayable,
+      item_taxs: JSON.stringify(finalItemTaxs),
+      items: JSON.stringify(processedItems)
     };
 
     return cleanPayload;

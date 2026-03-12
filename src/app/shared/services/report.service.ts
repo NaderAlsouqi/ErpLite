@@ -46,12 +46,12 @@ export interface AccountStatementResponse {
 })
 export class ReportService {
   private apiUrl = environment.apiUrl;
-  
+
   constructor(
     private http: HttpClient,
     private toastr: ToastrService,
     private translate: TranslateService
-  ) {}
+  ) { }
 
   /**
    * Get customers by delivery ID
@@ -64,7 +64,7 @@ export class ReportService {
   }
 
 
-    getVirtualCustomers(deliveryId: number): Observable<Customer[]> {
+  getVirtualCustomers(deliveryId: number): Observable<Customer[]> {
     return this.http.get<Customer[]>(`${this.apiUrl}/Accounts/Virtual/GetCustomers/${deliveryId}`)
       .pipe(
         catchError(this.handleError('Get customers'))
@@ -97,16 +97,16 @@ export class ReportService {
    * Calculate running balance
    */
   private calculateBalances(data: AccountStatementResponse[]): AccountStatementResponse[] {
-    let runningBalance = 0;    
-        return data?.map((item) => {
-        // Use Net value for balance calculation as specified in your code
-        runningBalance += item.Net;
-        return {
-          ...item,
-          Balance: runningBalance,
-        };
-      });
-}
+    let runningBalance = 0;
+    return data?.map((item) => {
+      // Use Net value for balance calculation as specified in your code
+      runningBalance += item.Net;
+      return {
+        ...item,
+        Balance: runningBalance,
+      };
+    });
+  }
 
   /**
    * Generate account statement report as PDF
@@ -120,9 +120,9 @@ export class ReportService {
   }
 
 
-    /**
-   * Generate account statement report as PDF
-   */
+  /**
+ * Generate account statement report as PDF
+ */
   VirtualInvoicesReport(requestPayload: any): Observable<Blob> {
     return this.http.post(`${this.apiUrl}/Report/InvoicesReport`, requestPayload, {
       responseType: 'blob',
@@ -132,9 +132,9 @@ export class ReportService {
   }
 
 
-      /**
-   * Generate account statement report as PDF
-   */
+  /**
+* Generate account statement report as PDF
+*/
   DeliveryNotesReport(params: any): Observable<Blob> {
     return this.http.post(`${this.apiUrl}/Report/DeliveryNotesReport`, params, {
       responseType: 'blob',
@@ -144,7 +144,7 @@ export class ReportService {
   }
 
 
-    DeliveryNoteByIdReport(Id: number): Observable<Blob> {
+  DeliveryNoteByIdReport(Id: number): Observable<Blob> {
     return this.http.post(`${this.apiUrl}/Report/DeliveryNoteByIdReport`, Id, {
       responseType: 'blob',
     }).pipe(
@@ -152,9 +152,9 @@ export class ReportService {
     );
   }
 
-      /**
-   * Generate account statement report as PDF
-   */
+  /**
+* Generate account statement report as PDF
+*/
   RefundsReport(requestPayload: any): Observable<Blob> {
     return this.http.post(`${this.apiUrl}/Report/RefundsReport`, requestPayload, {
       responseType: 'blob',
@@ -163,7 +163,7 @@ export class ReportService {
     );
   }
 
-  
+
   /**
    * Generate invoice report as PDF
    */
@@ -194,7 +194,7 @@ export class ReportService {
       catchError(this.handleError('Generate transferred invoice report'))
     );
   }
-  
+
   /**
    * Generate refund report as PDF
    * @param documentNumber The refund document number
@@ -211,6 +211,18 @@ export class ReportService {
       }
     ).pipe(
       catchError(this.handleError('Generate refund report'))
+    );
+  }
+
+  GenerateServiceTransferedRefundPDF(documentNumber: string, invoiceNumber: string, year: string): Observable<Blob> {
+    return this.http.post<Blob>(
+      `${this.apiUrl}/Report/GenerateServiceTransferedRefundPDF/${documentNumber}/${invoiceNumber}/${year}`,
+      {}, // Empty body
+      {
+        responseType: 'blob' as 'json',
+      }
+    ).pipe(
+      catchError(this.handleError('Generate service refund report'))
     );
   }
 
@@ -238,16 +250,16 @@ export class ReportService {
 
 
 
-  
+
   /**
    * Handle HTTP errors
    */
   private handleError(operation: string) {
     return (error: any): Observable<never> => {
       console.error(`${operation} failed:`, error);
-      
+
       let errorMessage = this.translate.instant('Reports.FailedOperation', { operation: operation.toLowerCase() });
-      
+
       if (error.status === 0) {
         errorMessage = this.translate.instant('Reports.ConnectionError');
       } else if (error.status === 404) {
@@ -259,12 +271,12 @@ export class ReportService {
           try {
             const errorJson = JSON.parse(reader.result as string);
             this.toastr.error(
-              errorJson.message || errorMessage, 
+              errorJson.message || errorMessage,
               this.translate.instant('General.Error')
             );
           } catch {
             this.toastr.error(
-              errorMessage, 
+              errorMessage,
               this.translate.instant('General.Error')
             );
           }
@@ -275,12 +287,12 @@ export class ReportService {
       } else if (error.error && error.error.message) {
         errorMessage = error.error.message;
       }
-      
+
       this.toastr.error(
-        errorMessage, 
+        errorMessage,
         this.translate.instant('General.Error')
       );
-      
+
       return throwError(() => new Error(errorMessage));
     };
   }
@@ -320,9 +332,9 @@ export class ReportService {
   }
 
 
-   /**
-   * Generate transferred invoice with QR code report as PDF
-   */
+  /**
+  * Generate transferred invoice with QR code report as PDF
+  */
   printQuotation(transactionNumber: string, invoiceNumber: string): Observable<Blob> {
     // Change from GET to POST method to match the server's requirements
     return this.http.post(
@@ -336,7 +348,7 @@ export class ReportService {
     );
   }
 
-    VirtualprintQuotation(transactionNumber: string, invoiceNumber: string): Observable<Blob> {
+  VirtualprintQuotation(transactionNumber: string, invoiceNumber: string): Observable<Blob> {
     // Change from GET to POST method to match the server's requirements
     return this.http.post(
       `${this.apiUrl}/Report/VirtualGenerateQuotationPDF/${transactionNumber}/${invoiceNumber}`,
@@ -372,13 +384,13 @@ export class ReportService {
     );
   }
 
-    /**
-     * Get transfer invoice data by transaction number and financial year
-     * @param transNo Transaction number
-     * @param myear Financial year
-     * @returns Observable of transfer invoice data
-     */
-  generateDetailsReceiptVoucherPDF(transNo: number,systemType : number): Observable<Blob> {
+  /**
+   * Get transfer invoice data by transaction number and financial year
+   * @param transNo Transaction number
+   * @param myear Financial year
+   * @returns Observable of transfer invoice data
+   */
+  generateDetailsReceiptVoucherPDF(transNo: number, systemType: number): Observable<Blob> {
     return this.http.post(
       `${this.apiUrl}/Report/GenerateReceiptVoucherPDF/${transNo}/${systemType}`,
       {}, // Empty body

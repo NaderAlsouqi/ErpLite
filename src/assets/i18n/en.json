@@ -95,7 +95,6 @@
     "Action": "Action",
     "PrintNote": "Print Note",
     "Email": "Email"
-    
   },
   "AddNoteDialog": {
     "Title": "Add Note",
@@ -108,15 +107,15 @@
     "AddNote": "Add Note"
   },
   "QuotationPage": {
-        "Title": "Quotation",
-        "SearchQuotationPlaceholder": "Search quotation by number, customer, date or amount",
-        "ShowQuotation": "Show Quotation",
-        "QuotationDate": "Quotation Date",
-        "QuotationNumber": "Quotation Number",
-        "CustomerName": "Customer Name",
-        "FinancialYear": "Financial Year",
-        "QuotationAmount": "Quotation Amount",
-        "Action": "Action"
+    "Title": "Quotation",
+    "SearchQuotationPlaceholder": "Search quotation by number, customer, date or amount",
+    "ShowQuotation": "Show Quotation",
+    "QuotationDate": "Quotation Date",
+    "QuotationNumber": "Quotation Number",
+    "CustomerName": "Customer Name",
+    "FinancialYear": "Financial Year",
+    "QuotationAmount": "Quotation Amount",
+    "Action": "Action"
   },
   "InvoiceDetails": {
     "invoiceDetails": "Invoice Details",
@@ -190,7 +189,7 @@
   },
   "PaybackPage": {
     "InvoicePayback": "Refund",
-   "DiscountAmount": "Discount",
+    "DiscountAmount": "Discount",
     "InvoiceNumber": "Invoice Number",
     "EnterInvoiceNumber": "Please enter an invoice number",
     "FetchInvoice": "Fetch Invoice",
@@ -411,6 +410,10 @@
       "ServiceInvoicesCategory": "Service Invoices",
       "TransferServiceInvoices": "Transfer Service Invoices",
       "TransferredServiceInvoices": "Transferred Service Invoices",
+      "ServiceRefundsCategory": "Service Refunds",
+      "ServiceRefund": "Service Refund",
+      "TransferServiceRefunds": "Transfer Service Refunds",
+      "TransferredServiceRefunds": "Transferred Service Refunds",
       "VirtualRefundsCategory": "Virtual Refunds",
       "AddVirtualRefund": "Add Refund",
       "TransferVirtualRefunds": "Transfer Refunds",
@@ -429,12 +432,34 @@
       "AccountStatement": "Account Statement"
     },
     "Notes": {
-            "Title": "Notes"
+      "Title": "Notes"
     },
     "Quotation": {
-            "Title": "Quotations",
-            "LoadError": "Failed to load Quotations"
+      "Title": "Quotations",
+      "LoadError": "Failed to load Quotations"
     }
+  },
+  "ServiceInvoicePage": {
+    "Sales": "Sales",
+    "Invoices": "Service Invoices",
+    "AddInvoice": "Add Invoice",
+    "SearchPlaceholder": "Search by invoice number, customer...",
+    "FilterBy": "Filter by Status",
+    "All": "All",
+    "Transferred": "Transferred",
+    "NotTransferred": "Not Transferred",
+    "InvoiceDate": "Invoice Date",
+    "InvoiceNumber": "Invoice Number",
+    "CustomerName": "Customer",
+    "FinancialYear": "Financial Year",
+    "InvoiceAmount": "Amount",
+    "TransferStatus": "Transfer Status",
+    "Action": "Action",
+    "UserInfoNotFound": "User info not found",
+    "LoadSuccess": "Successfully loaded {{count}} invoices",
+    "LoadError": "Failed to load invoices",
+    "NavigationError": "Error navigating to invoice details",
+    "FilterApplied": "Filter applied: {{status}}"
   },
   "Footer": {
     "Copyright": "Copyright",
@@ -473,7 +498,7 @@
     "Customer": "Customer",
     "SelectCustomer": "Select customer",
     "SelectBank": "Select bank",
-    "Invoice": "Invoice", 
+    "Invoice": "Invoice",
     "SelectInvoice": "Select invoice",
     "AddCheque": "Add Cheque",
     "AddCash": "Add Cash Amount",
@@ -853,8 +878,6 @@
     "ErrorLoadingCustomers": "Error loading customers",
     "ErrorLoadingInvoices": "Error loading invoices"
   },
-
-
   "VirtualRefundsPage": {
     "RefundDate": "Refund Date",
     "RefundNumber": "Refund Number",
@@ -870,6 +893,8 @@
     "AddRefund": "Add Refund",
     "Search": "Search refund by number, customer or amount",
     "FilterByStatus": "Filter by Status",
+    "Transferred": "Transferred",
+    "NotTransferred": "Not Transferred",
     "ViewRefund": "View Refund",
     "PrintRefund": "Print Refund",
     "DeleteRefund": "Delete Refund",
@@ -899,7 +924,7 @@
     "TotalAmountWithoutTax": "Amount Before Tax",
     "TotalAmountWithTax": "Total Amount",
     "TotalDiscount": "Total Discount",
-    "PercentDiscount": "Percent Discount", 
+    "PercentDiscount": "Percent Discount",
     "TotalTax": "Total Tax",
     "ItemNumber": "Item Number",
     "ItemName": "Item Name",
@@ -907,7 +932,6 @@
     "Quantity": "Quantity",
     "UnitPrice": "Unit Price",
     "DiscountAmount": "Discount",
-    
     "TaxPercent": "Tax Rate",
     "TaxAmount": "Tax Amount",
     "GrossAmount": "Gross Amount",

@@ -12,6 +12,8 @@ export interface ServiceInvoiceMainData {
   FinancialYear: string;
   InvoiceAmount: string;
   IsTransferred: boolean;
+  RIsTransfered?: boolean;
+  RQRCode?: string;
 }
 
 export interface ServiceInvoiceHeader {
@@ -23,6 +25,8 @@ export interface ServiceInvoiceHeader {
   FinancialYear: number;
   TotalAmount: number;
   IsTransferred: boolean;
+  RIsTransfered?: boolean;
+  RQRCode?: string;
   QRCode?: string;
   // Add additional fields as needed
 }
@@ -128,6 +132,20 @@ export class ServiceInvoiceService {
       );
   }
 
+  // Get details of a specific invoice by bill number
+  getInvoiceDetailsByBillNumber(TransactionNumber: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/GetInvoiceDetailsByBillNumber/${TransactionNumber}`).pipe(
+      catchError(this.handleError('Get invoice details by bill number'))
+    );
+  }
+
+  // Get details of a specific service invoice by bill number
+  GetServiceInvoiceDetailsByBillNumber(TransactionNumber: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/GetServiceInvoiceDetailsByBillNumber/${TransactionNumber}`).pipe(
+      catchError(this.handleError('Get service invoice details by bill number'))
+    );
+  }
+
   /**
    * Update QR code for a service invoice
    * @param updateQRCodeDto The update data with transaction number and QR code
@@ -158,9 +176,95 @@ export class ServiceInvoiceService {
       TransactionNumber: transactionNumber,
       FinancialYear: financialYear
     };
-    
+
     return this.http.delete<any>(`${this.apiUrl}/DeleteInvoice`, {
       body: deleteInvoiceDto
     });
+  }
+
+  // ==== REFUND CAPABILITIES ====
+
+  getRefunds(deliveryId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/GetServiceRefundsMainInfo/${deliveryId}`, {
+      params: { t: Date.now().toString() }
+    }).pipe(
+      catchError(this.handleError('Get refunds main info'))
+    );
+  }
+
+  GetTransferredRefundsMainData(deliveryId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/GetTransferredRefundsMainData/${deliveryId}`).pipe(
+      catchError(this.handleError('Get transferred refunds'))
+    );
+  }
+
+  GetTransferedServiceRefundsMainInfo(deliveryId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/GetTransferedServiceRefundsMainInfo/${deliveryId}`).pipe(
+      catchError(this.handleError('Get transferred service refunds'))
+    );
+  }
+
+  GetUntransferredRefundsMainData(deliveryId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/GetUntransferredRefundsMainData/${deliveryId}`).pipe(
+      catchError(this.handleError('Get untransferred refunds'))
+    );
+  }
+
+  getTransferRefundInvoiceData(doc: string, bill: string, myear: number): Observable<any> {
+    const url = `${this.apiUrl}/GetTransferRefundInvoiceData?doc=${encodeURIComponent(doc)}&bill=${encodeURIComponent(bill)}&myear=${myear}`;
+    return this.http.get<any>(url).pipe(
+      catchError(this.handleError('Get transfer refund data'))
+    );
+  }
+
+  getServiceTransferRefundInvoiceData(doc: string, bill: string, myear: number): Observable<any> {
+    const url = `${this.apiUrl}/GetServiceTransferRefundInvoiceData?doc=${encodeURIComponent(doc)}&bill=${encodeURIComponent(bill)}&myear=${myear}`;
+    return this.http.get<any>(url).pipe(
+      catchError(this.handleError('Get service transfer refund data'))
+    );
+  }
+
+  updateRefundQRCode(updateDto: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/update-refund-qrcode`, updateDto).pipe(
+      catchError(this.handleError('Update refund QR code'))
+    );
+  }
+
+  updateServiceRefundQRCode(updateDto: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/update-service-refund-qrcode`, updateDto, { responseType: 'text' }).pipe(
+      catchError(this.handleError('Update service refund QR code'))
+    );
+  }
+
+  getRefundQRCode(refundNumber: number, bill: string, myear: number): Observable<any> {
+    const url = `${this.apiUrl}/GetRefundQRCode?refundNumber=${refundNumber}&bill=${encodeURIComponent(bill)}&myear=${myear}`;
+    return this.http.get<any>(url, { responseType: 'text' as 'json' }).pipe(
+      catchError(this.handleError('Get refund QR Code'))
+    );
+  }
+
+  getRefundDetails(documentNumber: string, invoiceNumber: string, year: string): Observable<any> {
+    const url = `${this.apiUrl}/GetServiceRefundDetails?doc=${encodeURIComponent(documentNumber)}&bill=${encodeURIComponent(invoiceNumber)}&myear=${year}`;
+    return this.http.get<any>(url).pipe(
+      catchError(this.handleError('Get refund details'))
+    );
+  }
+
+  insertSalesInvoicePayback(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/InsertSalesInvoicePayback`, payload).pipe(
+      catchError(this.handleError('Insert service invoice payback'))
+    );
+  }
+
+  deleteRefund(documentNumber: string, billNumber: string, financialYear: number): Observable<any> {
+    const url = `${this.apiUrl}/DeleteServiceRefund`;
+    const deleteRefundDto = {
+      DocumentNumber: documentNumber,
+      BillNumber: billNumber,
+      FinancialYear: financialYear
+    };
+    return this.http.delete<any>(url, { body: deleteRefundDto }).pipe(
+      catchError(this.handleError('Delete refund'))
+    );
   }
 }

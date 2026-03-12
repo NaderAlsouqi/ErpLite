@@ -20,7 +20,7 @@
         "Debit": "مدين",
         "Credit": "دائن",
         "Balance": "الرصيد",
-        "ShowCheque": "عرض الشيكات",        
+        "ShowCheque": "عرض الشيكات",
         "FinalBalance": "الرصيد النهائي",
         "PrintReceiptVoucher": "طباعة سند القبض",
         "NoTransactions": "لا توجد معاملات للفترة المحددة.",
@@ -88,7 +88,6 @@
     "Notes": "ملاحظات",
     "TransferPayback": "ترحيل الفواتير المستردة",
     "TransferInvoice": "ترحيل الفواتير",
-
     "NotesPage": {
         "Title": "ملاحظات",
         "addNote": "إضافة ملاحظة",
@@ -106,9 +105,7 @@
         "Action": "الإجراء",
         "PrintNote": "طباعة ملاحظة",
         "AddNoteSuccess": "تمت إضافة الملاحظة بنجاح!"
-
     },
-
     "AddNoteDialog": {
         "Title": "إضافة ملاحظة",
         "Name": "الاسم",
@@ -155,8 +152,7 @@
         "DiscountAmount": "الخصم",
         "PaymentMethod": "نوع الفاتورة للضريبة"
     },
-
-    "AddInvoicePage": {        
+    "AddInvoicePage": {
         "TheItemHasAlreadyBeenEntered": "تم أضافة المادة مسبقا",
         "AddInvoice": "إضافة فاتورة",
         "InvoiceDetails": "تفاصيل الفاتورة",
@@ -200,7 +196,6 @@
         "NoItemsAdded": "لم تتم إضافة عناصر بعد",
         "SelectStore": "اختر المخزن"
     },
-
     "PaybackPage": {
         "InvoicePayback": "المرتجعات",
         "DiscountAmount": "الخصم",
@@ -236,7 +231,6 @@
         "SubmissionProcessError": "خطأ في عملية الإرسال. يرجى المحاولة مرة أخرى.",
         "TaxCalculationError": "خطأ في حساب مبالغ الضريبة"
     },
-
     "InvoicesPage": {
         "Title": "الفواتير",
         "Sales": "المبيعات",
@@ -282,7 +276,6 @@
         "DeleteSuccess": "تم حذف الفاتورة بنجاح",
         "DeleteError": "حدث خطأ أثناء حذف الفاتورة"
     },
-
     "LOGIN_PAGE": {
         "WELCOME_BACK": "أهلا بعودتك!",
         "USERNAME": "اسم المستخدم",
@@ -292,7 +285,6 @@
         "LOGIN": "تسجيل الدخول",
         "ISSUES_MESSAGE": "هل تواجه مشاكل؟ اتصل بمديرك."
     },
-
     "TransferInvoicesPage": {
         "Title": "ترحيل الفواتير",
         "TransferInvoices": "ترحيل الفواتير",
@@ -320,7 +312,6 @@
         "Selected": "محدد",
         "InvoiceDetailsError": "خطأ في جلب تفاصيل الفاتورة"
     },
-
     "General": {
         "Warning": "تحذير",
         "Error": "خطأ",
@@ -356,7 +347,6 @@
         "NotTransferred": "غير مرحل",
         "Status": "الحالة"
     },
-
     "TransferRefundsPage": {
         "Title": "ترحيل المرتجعات",
         "TransferRefunds": "ترحيل المرتجعات المحددة",
@@ -379,7 +369,6 @@
         "SelectRefunds": "الرجاء تحديد المرتجعات للترحيل",
         "TransferInProgress": "جاري الترحيل..."
     },
-
     "RefundsPage": {
         "RefundDate": "تاريخ الإرجاع",
         "RefundNumber": "رقم الإرجاع",
@@ -392,7 +381,6 @@
         "Title": "المرتجعات",
         "Sales": "المبيعات"
     },
-
     "Nav": {
         "Sales": {
             "Title": "المبيعات",
@@ -415,6 +403,10 @@
             "ServiceInvoicesCategory": "فواتير الخدمات",
             "TransferServiceInvoices": "ترحيل فواتير الخدمات",
             "TransferredServiceInvoices": "فواتير الخدمات المرحلة",
+            "ServiceRefundsCategory": "مرتجعات الخدمات",
+            "ServiceRefund": "مرتجعات الخدمات",
+            "TransferServiceRefunds": "ترحيل مرتجعات الخدمات",
+            "TransferredServiceRefunds": "مرتجعات الخدمات المرحلة",
             "VirtualRefundsCategory": "المرتجعات",
             "AddVirtualRefund": "إضافة مرتجع",
             "TransferVirtualRefunds": "ترحيل المرتجعات",
@@ -427,7 +419,7 @@
             "Title": "المحاسبة",
             "ReceiptVouchers": "سندات القبض",
             "VirtualReceiptVouchers": "سندات القبض الافتراضية"
-            },
+        },
         "Reports": {
             "Title": "التقارير",
             "AccountStatement": "كشف حساب"
@@ -439,29 +431,26 @@
             "Title": "عروض الأسعار",
             "LoadError": "خطأ في تحميل عروض الأسعار"
         }
-      },
+    },
     "Footer": {
         "Copyright": "حقوق النشر",
         "AllRightsReserved": "جميع الحقوق محفوظة"
     },
-
     "Error404": {
         "Title": "عفوا! لم تجد ما تبحث عنه؟",
         "Description": "الصفحة التي تبحث عنها غير موجودة. ربما تم نقلها أو حذفها أو ربما لم تكن موجودة من الأساس.",
         "BackToHome": "العودة للصفحة الرئيسية"
     },
-
     "Reports": {
         "FailedOperation": "فشل في {{operation}}",
         "ConnectionError": "لا يمكن الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.",
         "ReportNotFound": "لم يتم العثور على التقرير المطلوب.",
         "PDFGenerationError": "خطأ في إنشاء تقرير PDF."
     },
-
     "ReceiptVoucher": {
         "AccountNo": "رقم الحساب",
         "CashAccountNo": "رقم حساب النقدي",
-        "ChequeAccountNo":  "رقم حساب الشيكات",
+        "ChequeAccountNo": "رقم حساب الشيكات",
         "AccountName": "اسم الحساب",
         "SearchTitle": "بحث في سندات القبض",
         "Title": "سندات القبض",
@@ -507,7 +496,6 @@
         "ReceiptVoucherDesc": "سند قبض مقابل فاتورة : ",
         "CashReceiptSuccess": "تم حفظ سند القبض النقدي بنجاح"
     },
-
     "TransferredInvoicesPage": {
         "Title": "الفواتير المحولة",
         "SearchInvoicePlaceholder": "البحث بواسطة الرقم، العميل، التاريخ أو المبلغ",
@@ -518,7 +506,6 @@
         "ViewInvoice": "عرض تفاصيل الفاتورة",
         "PrintInvoice": "طباعة الفاتورة مع رمز QR"
     },
-
     "FotaraService": {
         "MissingCredentials": "بيانات الاعتماد API مفقودة",
         "InvoiceSubmittedSuccessfully": "تم إرسال الفاتورة بنجاح",
@@ -529,7 +516,6 @@
         "QrCodeUpdateSuccess": "تم حفظ رمز QR بنجاح",
         "QrCodeUpdateError": "فشل في حفظ رمز QR"
     },
-
     "RefundDetailsPage": {
         "RefundDetails": "تفاصيل المرتجع",
         "RefundHeader": "معلومات المرتجع",
@@ -562,7 +548,6 @@
         "NoItemsFound": "لم يتم العثور على أي أصناف لهذا المرتجع.",
         "Sales": "المبيعات"
     },
-
     "TransferredRefundsPage": {
         "Title": "المرتجعات المحولة",
         "SearchRefundPlaceholder": "البحث عن مرتجعات بالرقم أو العميل أو التاريخ أو المبلغ",
@@ -573,7 +558,6 @@
         "PrintError": "خطأ في طباعة المرتجع",
         "NoMatchingResults": "لا توجد مرتجعات تطابق معايير البحث"
     },
-
     "VirtualInvoicePage": {
         "PleaseSelectInvoiceType": "اختر نوع الفاتورة للضريبة",
         "SelectCustomer": "اختر العميل",
@@ -726,7 +710,6 @@
         "DeleteSuccess": "تم حذف الفاتورة الافتراضية بنجاح",
         "DeleteError": "حدث خطأ أثناء حذف الفاتورة الافتراضية"
     },
-
     "VirtualTransferInvoicesPage": {
         "Title": "ترحيل الفواتير الافتراضية",
         "TransferInvoices": "ترحيل الفواتير المحددة",
@@ -741,7 +724,6 @@
         "TransferError": "خطأ في ترحيل الفواتير",
         "ViewInvoice": "عرض الفاتورة"
     },
-
     "VirtualTransferredInvoicesPage": {
         "Title": "الفواتير الافتراضية المرحلة",
         "SearchInvoicePlaceholder": "البحث برقم الفاتورة، اسم العميل، المبلغ...",
@@ -752,7 +734,6 @@
         "NavigationError": "خطأ في الانتقال إلى تفاصيل الفاتورة",
         "NoMatchingResults": "لا توجد فواتير تطابق معايير البحث"
     },
-
     "VirtualInvoiceDetails": {
         "invoiceDetails": "تفاصيل الفاتورة الافتراضية",
         "InvoiceHeader": "بيانات الفاتورة",
@@ -778,7 +759,6 @@
         "TotalDiscount": "إجمالي الخصم",
         "ItemTotalPriceAfterTax": "الإجمالي مع الضريبة"
     },
-
     "VirtualReceiptVoucher": {
         "Title": "سندات قبض الافتراضية",
         "Accounting": "المحاسبة",
@@ -815,7 +795,6 @@
         "ErrorLoadingCustomers": "خطأ في تحميل العملاء",
         "ErrorLoadingInvoices": "خطأ في تحميل الفواتير"
     },
-
     "ServiceInvoicesPage": {
         "Title": "فواتير الخدمات",
         "Sales": "المبيعات",
@@ -838,8 +817,8 @@
         "LoadError": "فشل في تحميل الفواتير",
         "NavigationError": "خطأ في الانتقال إلى تفاصيل الفاتورة",
         "FilterApplied": "تم تطبيق التصفية: {{status}}"
-      },
-      "ServiceTransferInvoicesPage": {
+    },
+    "ServiceTransferInvoicesPage": {
         "Title": "ترحيل فواتير الخدمات",
         "TransferInvoices": "ترحيل الفواتير المحددة",
         "SearchInvoicePlaceholder": "البحث عن فاتورة...",
@@ -851,14 +830,14 @@
         "TransferFailureDetail": "فشل ترحيل {{failed}} فاتورة: {{invoices}}",
         "TransferError": "خطأ أثناء عملية الترحيل",
         "QrUpdateWarning": "فشل تحديث رمز QR للمعاملة {{transactionNumber}}"
-      },
-      "ServiceTransferredInvoicesPage": {
+    },
+    "ServiceTransferredInvoicesPage": {
         "Title": "فواتير الخدمات المحولة",
         "SearchPlaceholder": "البحث عن فاتورة...",
         "LoadError": "فشل في تحميل الفواتير المحولة",
         "NavigationError": "خطأ في الانتقال إلى تفاصيل الفاتورة"
-      },
-      "ServiceInvoiceDetailsPage": {
+    },
+    "ServiceInvoiceDetailsPage": {
         "Title": "تفاصيل فاتورة الخدمة",
         "InvoiceDetails": "تفاصيل الفاتورة",
         "Sales": "المبيعات",
@@ -895,120 +874,117 @@
         "GeneratingPDF": "جاري إنشاء ملف PDF للفاتورة...",
         "PDFGenerated": "تم إنشاء ملف PDF بنجاح",
         "PDFGenerationError": "فشل في إنشاء ملف PDF"
-      },
-
-
-  "VirtualRefundsPage": {
-    "RefundDate": "تاريخ المرتجع",
-    "RefundNumber": "رقم المرتجع",
-    "InvoiceNumber": "رقم الفاتورة",
-    "CustomerName": "اسم العميل",
-    "FinancialYear": "السنة المالية",
-    "RefundAmount": "قيمة المرتجع",
-    "Actions": "الإجراءات",
-    "NoRefundsFound": "لم يتم العثور على مرتجعات",
-    "Sales": "المبيعات",
-    "ViewRefund": "عرض المرتجع",
-    "LoadError": "فشل في تحميل المرتجعات",
-    "DeleteSuccess": "تم حذف المرتجع بنجاح",
-    "DeleteError": "خطأ أثناء حذف المرتجع",
-    "PrintRefund": "طباعة المرتجع",
-    "PDFGeneratedSuccess": "تم إنشاء ملف PDF للمرتجع بنجاح",
-    "PDFGenerationError": "خطأ في إنشاء ملف PDF للمرتجع",
-    "Title": "المرتجعات الافتراضية",
-    "RefundsList": "قائمة المرتجعات",
-    "AddRefund": "إضافة مرتجع",
-    "Search": "البحث عن مرتجع بالرقم أو العميل أو المبلغ",
-    "FilterByStatus": "تصفية حسب الحالة",
-    "DeleteRefund": "حذف المرتجع",
-    "ConfirmDelete": "تأكيد حذف المرتجع",
-    "DeleteConfirmationMessage": "هل أنت متأكد أنك تريد حذف هذا المرتجع؟ لا يمكن التراجع عن هذا الإجراء.",
-    "LoadSuccess": "تم تحميل {{count}} مرتجع بنجاح",
-    "NavigationError": "خطأ في الانتقال إلى تفاصيل المرتجع",
-    "SortError": "خطأ في ترتيب المرتجعات",
-    "NoMatchingResults": "لم يتم العثور على مرتجعات مطابقة",
-    "FilterApplied": "عرض {{count}} مرتجع {{status}}",
-    "UserInfoNotFound": "لم يتم العثور على معلومات المستخدم"
-  },
-  "VirtualRefundDetailsPage": {
-    "RefundDetails": "تفاصيل المرتجع الافتراضي",
-    "RefundHeader": "معلومات المرتجع",
-    "RefundItems": "الأصناف المرتجعة",
-    "RefundNumber": "رقم المرتجع",
-    "RefundDate": "تاريخ المرتجع",
-    "OriginalInvoiceNumber": "رقم الفاتورة الأصلية",
-    "CustomerName": "اسم العميل",
-    "FinancialYear": "السنة المالية",
-    "TotalAmountWithoutTax": "المبلغ قبل الضريبة",
-    "TotalAmountWithTax": "المبلغ الإجمالي",
-    "TotalDiscount": "إجمالي الخصم",
-    "TotalTax": "إجمالي الضريبة",
-    "ItemNumber": "رقم الصنف",
-    "ItemName": "اسم الصنف",
-    "UnitCode": "الوحدة",
-    "Quantity": "الكمية",
-    "UnitPrice": "سعر الوحدة",
-    "DiscountAmount": "الخصم",
-    "TaxPercent": "نسبة الضريبة",
-    "TaxAmount": "مبلغ الضريبة",
-    "GrossAmount": "المبلغ الإجمالي",
-    "NetAmount": "المبلغ الصافي",
-    "TotalAmount": "المبلغ الكلي",
-    "NoItemsFound": "لم يتم العثور على أصناف لهذا المرتجع"
-  },
-  "VirtualPaybackPage": {
-    "TotalQuantity": "اجمالي الكمية",
-    "RemainingQuantity": "الكمية المتبقية",
-    "ReturnedQuantity": "الكمية المرتجعة",
-    "InvoicePayback": "مرتجعات افتراضية",
-    "SearchInvoice": "بحث عن الفاتورة",
-    "InvoiceNumber": "رقم الفاتورة",
-    "EnterInvoiceNumber": "الرجاء إدخال رقم الفاتورة",
-    "FetchInvoice": "جلب الفاتورة",
-    "InvoiceDetails": "تفاصيل الفاتورة",
-    "NoInvoiceLoaded": "لم يتم تحميل فاتورة",
-    "EnterInvoiceToBegin": "أدخل رقم الفاتورة للبدء",
-    "SelectRefundItems": "اختر الأصناف المرتجعة",
-    "ItemName": "اسم الصنف",
-    "Quantity": "الكمية",
-    "Price": "السعر",
-    "DiscountAmount": "الخصم",
-    "PerDiscountAmount": "نسبة الخصم",
-    "TotalPrice": "السعر الإجمالي",
-    "ReturnQuantity": "كمية الإرجاع",
-    "RefundAmount": "قيمة المرتجع",
-    "TotalRefundAmount": "إجمالي قيمة المرتجع",
-    "ProcessRefund": "تخزين المرتجع",
-    "PaybackSuccess": "تمت معالجة المرتجع الافتراضي بنجاح",
-    "PaybackError": "خطأ في معالجة المرتجع الافتراضي",
-    "RefundDescription": "مرتجع للفاتورة رقم",
-    "InvoiceDate": "تاريخ الفاتورة",
-    "CustomerName": "اسم العميل",
-    "TotalAmount": "المبلغ الإجمالي",
-    "Cancel": "إلغاء",
-    "FormReset": "تم إعادة تعيين النموذج",
-    "InvoiceLoadSuccess": "تم تحميل الفاتورة رقم #{{number}} بنجاح مع {{items}} صنف",
-    "ErrorFetchingInvoice": "خطأ في جلب تفاصيل الفاتورة",
-    "MaxQuantityExceeded": "لا يمكن أن تتجاوز كمية الإرجاع {{max}}",
-    "NegativeQuantity": "لا يمكن أن تكون كمية الإرجاع سالبة",
-    "NoItemsSelected": "الرجاء اختيار صنف واحد على الأقل للإرجاع",
-    "ProcessingPayback": "جاري معالجة المرتجع...",
-    "PaybackSuccessWithAmount": "تمت معالجة مرتجع بقيمة {{amount}} للفاتورة رقم #{{invoice}} بنجاح",
-    "SubmissionProcessError": "حدث خطأ أثناء معالجة طلبك",
-    "TaxCalculationError": "خطأ في حساب مبالغ الضريبة"
-  },
-  "VirtualTransferRefundsPage": {
-    "Title": "ترحيل المرتجعات الافتراضية",
-    "TransferRefunds": "ترحيل المرتجعات المحددة",
-    "SearchRefundPlaceholder": "البحث برقم المرتجع، العميل، التاريخ أو المبلغ",
-    "Selected": "محدد",
-    "NoRefundsSelected": "لم يتم تحديد مرتجعات للترحيل",
-    "TransferSuccess": "تم ترحيل المرتجعات بنجاح",
-    "TransferError": "خطأ في ترحيل المرتجعات"
-  },
-  "VirtualTransferredRefundsPage": {
-    "Title": "المرتجعات الافتراضية المرحلة",
-    "SearchRefundPlaceholder": "البحث برقم المرتجع، العميل، التاريخ أو المبلغ"
-  }
+    },
+    "VirtualRefundsPage": {
+        "RefundDate": "تاريخ المرتجع",
+        "RefundNumber": "رقم المرتجع",
+        "InvoiceNumber": "رقم الفاتورة",
+        "CustomerName": "اسم العميل",
+        "FinancialYear": "السنة المالية",
+        "RefundAmount": "قيمة المرتجع",
+        "Actions": "الإجراءات",
+        "NoRefundsFound": "لم يتم العثور على مرتجعات",
+        "Sales": "المبيعات",
+        "ViewRefund": "عرض المرتجع",
+        "LoadError": "فشل في تحميل المرتجعات",
+        "DeleteSuccess": "تم حذف المرتجع بنجاح",
+        "DeleteError": "خطأ أثناء حذف المرتجع",
+        "PrintRefund": "طباعة المرتجع",
+        "PDFGeneratedSuccess": "تم إنشاء ملف PDF للمرتجع بنجاح",
+        "PDFGenerationError": "خطأ في إنشاء ملف PDF للمرتجع",
+        "Title": "المرتجعات الافتراضية",
+        "RefundsList": "قائمة المرتجعات",
+        "AddRefund": "إضافة مرتجع",
+        "Search": "البحث عن مرتجع بالرقم أو العميل أو المبلغ",
+        "FilterByStatus": "تصفية حسب الحالة",
+        "DeleteRefund": "حذف المرتجع",
+        "ConfirmDelete": "تأكيد حذف المرتجع",
+        "DeleteConfirmationMessage": "هل أنت متأكد أنك تريد حذف هذا المرتجع؟ لا يمكن التراجع عن هذا الإجراء.",
+        "LoadSuccess": "تم تحميل {{count}} مرتجع بنجاح",
+        "NavigationError": "خطأ في الانتقال إلى تفاصيل المرتجع",
+        "SortError": "خطأ في ترتيب المرتجعات",
+        "NoMatchingResults": "لم يتم العثور على مرتجعات مطابقة",
+        "FilterApplied": "عرض {{count}} مرتجع {{status}}",
+        "UserInfoNotFound": "لم يتم العثور على معلومات المستخدم"
+    },
+    "VirtualRefundDetailsPage": {
+        "RefundDetails": "تفاصيل المرتجع الافتراضي",
+        "RefundHeader": "معلومات المرتجع",
+        "RefundItems": "الأصناف المرتجعة",
+        "RefundNumber": "رقم المرتجع",
+        "RefundDate": "تاريخ المرتجع",
+        "OriginalInvoiceNumber": "رقم الفاتورة الأصلية",
+        "CustomerName": "اسم العميل",
+        "FinancialYear": "السنة المالية",
+        "TotalAmountWithoutTax": "المبلغ قبل الضريبة",
+        "TotalAmountWithTax": "المبلغ الإجمالي",
+        "TotalDiscount": "إجمالي الخصم",
+        "TotalTax": "إجمالي الضريبة",
+        "ItemNumber": "رقم الصنف",
+        "ItemName": "اسم الصنف",
+        "UnitCode": "الوحدة",
+        "Quantity": "الكمية",
+        "UnitPrice": "سعر الوحدة",
+        "DiscountAmount": "الخصم",
+        "TaxPercent": "نسبة الضريبة",
+        "TaxAmount": "مبلغ الضريبة",
+        "GrossAmount": "المبلغ الإجمالي",
+        "NetAmount": "المبلغ الصافي",
+        "TotalAmount": "المبلغ الكلي",
+        "NoItemsFound": "لم يتم العثور على أصناف لهذا المرتجع"
+    },
+    "VirtualPaybackPage": {
+        "TotalQuantity": "اجمالي الكمية",
+        "RemainingQuantity": "الكمية المتبقية",
+        "ReturnedQuantity": "الكمية المرتجعة",
+        "InvoicePayback": "مرتجعات افتراضية",
+        "SearchInvoice": "بحث عن الفاتورة",
+        "InvoiceNumber": "رقم الفاتورة",
+        "EnterInvoiceNumber": "الرجاء إدخال رقم الفاتورة",
+        "FetchInvoice": "جلب الفاتورة",
+        "InvoiceDetails": "تفاصيل الفاتورة",
+        "NoInvoiceLoaded": "لم يتم تحميل فاتورة",
+        "EnterInvoiceToBegin": "أدخل رقم الفاتورة للبدء",
+        "SelectRefundItems": "اختر الأصناف المرتجعة",
+        "ItemName": "اسم الصنف",
+        "Quantity": "الكمية",
+        "Price": "السعر",
+        "DiscountAmount": "الخصم",
+        "PerDiscountAmount": "نسبة الخصم",
+        "TotalPrice": "السعر الإجمالي",
+        "ReturnQuantity": "كمية الإرجاع",
+        "RefundAmount": "قيمة المرتجع",
+        "TotalRefundAmount": "إجمالي قيمة المرتجع",
+        "ProcessRefund": "تخزين المرتجع",
+        "PaybackSuccess": "تمت معالجة المرتجع الافتراضي بنجاح",
+        "PaybackError": "خطأ في معالجة المرتجع الافتراضي",
+        "RefundDescription": "مرتجع للفاتورة رقم",
+        "InvoiceDate": "تاريخ الفاتورة",
+        "CustomerName": "اسم العميل",
+        "TotalAmount": "المبلغ الإجمالي",
+        "Cancel": "إلغاء",
+        "FormReset": "تم إعادة تعيين النموذج",
+        "InvoiceLoadSuccess": "تم تحميل الفاتورة رقم #{{number}} بنجاح مع {{items}} صنف",
+        "ErrorFetchingInvoice": "خطأ في جلب تفاصيل الفاتورة",
+        "MaxQuantityExceeded": "لا يمكن أن تتجاوز كمية الإرجاع {{max}}",
+        "NegativeQuantity": "لا يمكن أن تكون كمية الإرجاع سالبة",
+        "NoItemsSelected": "الرجاء اختيار صنف واحد على الأقل للإرجاع",
+        "ProcessingPayback": "جاري معالجة المرتجع...",
+        "PaybackSuccessWithAmount": "تمت معالجة مرتجع بقيمة {{amount}} للفاتورة رقم #{{invoice}} بنجاح",
+        "SubmissionProcessError": "حدث خطأ أثناء معالجة طلبك",
+        "TaxCalculationError": "خطأ في حساب مبالغ الضريبة"
+    },
+    "VirtualTransferRefundsPage": {
+        "Title": "ترحيل المرتجعات الافتراضية",
+        "TransferRefunds": "ترحيل المرتجعات المحددة",
+        "SearchRefundPlaceholder": "البحث برقم المرتجع، العميل، التاريخ أو المبلغ",
+        "Selected": "محدد",
+        "NoRefundsSelected": "لم يتم تحديد مرتجعات للترحيل",
+        "TransferSuccess": "تم ترحيل المرتجعات بنجاح",
+        "TransferError": "خطأ في ترحيل المرتجعات"
+    },
+    "VirtualTransferredRefundsPage": {
+        "Title": "المرتجعات الافتراضية المرحلة",
+        "SearchRefundPlaceholder": "البحث برقم المرتجع، العميل، التاريخ أو المبلغ"
+    }
 }
-

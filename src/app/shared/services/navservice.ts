@@ -89,12 +89,12 @@ export class NavService implements OnDestroy {
     this.translateService.onLangChange.subscribe(() => {
       this.updateMenuItems();
     });
-    
+
     // Subscribe to auth changes to update menu when user logs in/out
     this.authService.currentUser$.subscribe(() => {
       this.updateMenuItems();
     });
-    
+
     // Set initial menu items
     this.updateMenuItems();
   }
@@ -118,7 +118,7 @@ export class NavService implements OnDestroy {
       dirchange: false,
       type: 'sub',
       active: false,
-      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'DeliveryDriver', 'ServiceInvoices', 'CashLink','VirtualCashLink','CashLinkLimit','VirtualCashLinkLimit'],
+      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'DeliveryDriver', 'ServiceInvoices', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
       children: [
         {
           title: 'Invoices',
@@ -126,7 +126,7 @@ export class NavService implements OnDestroy {
           dirchange: false,
           type: 'sub',
           active: false,
-          roles: ['Admin', 'Manager', 'Sales', 'CashLink','CashLinkLimit'],
+          roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'CashLinkLimit'],
           children: [
             {
               title: 'Invoices',
@@ -136,7 +136,7 @@ export class NavService implements OnDestroy {
               active: false,
               selected: false,
               path: '/sales/invoice',
-              roles: ['Admin', 'Manager', 'Sales', 'CashLink','CashLinkLimit'],
+              roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'CashLinkLimit'],
             },
             {
               title: 'Transfer Invoices',
@@ -146,7 +146,7 @@ export class NavService implements OnDestroy {
               active: false,
               selected: false,
               path: '/sales/transfer-invoices',
-              roles: ['Admin', 'Manager', 'Sales', 'CashLink','CashLinkLimit'],
+              roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'CashLinkLimit'],
             },
             {
               title: 'Transferred Invoices',
@@ -156,7 +156,7 @@ export class NavService implements OnDestroy {
               active: false,
               selected: false,
               path: '/sales/transfered-invoices',
-              roles: ['Admin', 'Manager', 'Sales', 'DeliveryDriver', 'CashLink','CashLinkLimit'],
+              roles: ['Admin', 'Manager', 'Sales', 'DeliveryDriver', 'CashLink', 'CashLinkLimit'],
             },
           ]
         },
@@ -201,12 +201,52 @@ export class NavService implements OnDestroy {
           ]
         },
         {
+          title: 'Service Refunds',
+          translationKey: 'Nav.Sales.ServiceRefundsCategory',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          roles: ['Admin', 'Manager', 'ServiceInvoices'],
+          children: [
+            {
+              title: 'Service Refund',
+              translationKey: 'Nav.Sales.ServiceRefund',
+              dirchange: false,
+              type: 'link',
+              active: false,
+              selected: false,
+              path: '/sales/service/refunds',
+              roles: ['Admin', 'Manager', 'ServiceInvoices'],
+            },
+            {
+              title: 'Transfer Service Refunds',
+              translationKey: 'Nav.Sales.TransferServiceRefunds',
+              dirchange: false,
+              type: 'link',
+              active: false,
+              selected: false,
+              path: '/sales/service/transfer-refunds',
+              roles: ['Admin', 'Manager', 'ServiceInvoices'],
+            },
+            {
+              title: 'Transferred Service Refunds',
+              translationKey: 'Nav.Sales.TransferredServiceRefunds',
+              dirchange: false,
+              type: 'link',
+              active: false,
+              selected: false,
+              path: '/sales/service/transfered-refunds',
+              roles: ['Admin', 'Manager', 'ServiceInvoices'],
+            },
+          ]
+        },
+        {
           title: 'Refunds',
           translationKey: 'Nav.Sales.RefundsCategory',
           dirchange: false,
           type: 'sub',
           active: false,
-          roles: ['Admin', 'Manager', 'Sales', 'CashLink','CashLinkLimit'],
+          roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'CashLinkLimit'],
           children: [
             {
               title: 'Refund',
@@ -216,7 +256,7 @@ export class NavService implements OnDestroy {
               active: false,
               selected: false,
               path: '/sales/refund',
-              roles: ['Admin', 'Manager', 'Sales', 'CashLink','CashLinkLimit'],
+              roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'CashLinkLimit'],
             },
             {
               title: 'Transfer Refunds',
@@ -226,7 +266,7 @@ export class NavService implements OnDestroy {
               active: false,
               selected: false,
               path: '/sales/transfer-refunds',
-              roles: ['Admin', 'Manager', 'Sales', 'CashLink','CashLinkLimit'],
+              roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'CashLinkLimit'],
             },
             {
               title: 'Transferred Refunds',
@@ -236,7 +276,7 @@ export class NavService implements OnDestroy {
               active: false,
               selected: false,
               path: '/sales/transfered-refunds',
-              roles: ['Admin', 'Manager', 'Sales', 'DeliveryDriver', 'CashLink','CashLinkLimit'],
+              roles: ['Admin', 'Manager', 'Sales', 'DeliveryDriver', 'CashLink', 'CashLinkLimit'],
             },
           ]
         },
@@ -246,7 +286,7 @@ export class NavService implements OnDestroy {
           dirchange: false,
           type: 'sub',
           active: false,
-          roles: ['Admin', 'Manager', 'VirtualSales','VirtualCashLink','VirtualCashLinkLimit'],
+          roles: ['Admin', 'Manager', 'VirtualSales', 'VirtualCashLink', 'VirtualCashLinkLimit'],
           children: [
             {
               title: 'Virtual Invoices',
@@ -254,7 +294,7 @@ export class NavService implements OnDestroy {
               dirchange: false,
               type: 'sub',
               active: false,
-              roles: ['Admin', 'Manager', 'VirtualSales', 'VirtualCashLink','VirtualCashLinkLimit'],
+              roles: ['Admin', 'Manager', 'VirtualSales', 'VirtualCashLink', 'VirtualCashLinkLimit'],
               children: [
                 {
                   title: 'Virtual Invoices List',
@@ -264,7 +304,7 @@ export class NavService implements OnDestroy {
                   active: false,
                   selected: false,
                   path: '/sales/virtual/invoices',
-                  roles: ['Admin', 'Manager', 'VirtualSales','VirtualCashLink','VirtualCashLinkLimit'],
+                  roles: ['Admin', 'Manager', 'VirtualSales', 'VirtualCashLink', 'VirtualCashLinkLimit'],
                 },
                 // {
                 //   title: 'Add Virtual Invoice',
@@ -284,7 +324,7 @@ export class NavService implements OnDestroy {
                   active: false,
                   selected: false,
                   path: '/sales/virtual/transfer-invoices',
-                  roles: ['Admin', 'Manager', 'VirtualSales', 'VirtualCashLink','VirtualCashLinkLimit'],
+                  roles: ['Admin', 'Manager', 'VirtualSales', 'VirtualCashLink', 'VirtualCashLinkLimit'],
                 },
                 {
                   title: 'Transferred Virtual Invoices',
@@ -294,7 +334,7 @@ export class NavService implements OnDestroy {
                   active: false,
                   selected: false,
                   path: '/sales/virtual/transfered-invoices',
-                  roles: ['Admin', 'Manager', 'VirtualSales', 'DeliveryDriver','VirtualCashLink','VirtualCashLinkLimit'],
+                  roles: ['Admin', 'Manager', 'VirtualSales', 'DeliveryDriver', 'VirtualCashLink', 'VirtualCashLinkLimit'],
                 }
               ]
             },
@@ -314,7 +354,7 @@ export class NavService implements OnDestroy {
                   active: false,
                   selected: false,
                   path: '/sales/virtual/refunds',
-                  roles: ['Admin', 'Manager', 'VirtualSales','VirtualCashLink','VirtualCashLinkLimit'],
+                  roles: ['Admin', 'Manager', 'VirtualSales', 'VirtualCashLink', 'VirtualCashLinkLimit'],
                 },
                 // {
                 //   title: 'Add Virtual Refund',
@@ -334,7 +374,7 @@ export class NavService implements OnDestroy {
                   active: false,
                   selected: false,
                   path: '/sales/virtual/transfer-refunds',
-                  roles: ['Admin', 'Manager', 'VirtualSales','VirtualCashLink','VirtualCashLinkLimit'],
+                  roles: ['Admin', 'Manager', 'VirtualSales', 'VirtualCashLink', 'VirtualCashLinkLimit'],
                 },
                 {
                   title: 'Transferred Virtual Refunds',
@@ -344,7 +384,7 @@ export class NavService implements OnDestroy {
                   active: false,
                   selected: false,
                   path: '/sales/virtual/transfered-refunds',
-                  roles: ['Admin', 'Manager', 'VirtualSales', 'DeliveryDriver','VirtualCashLink','VirtualCashLinkLimit'],
+                  roles: ['Admin', 'Manager', 'VirtualSales', 'DeliveryDriver', 'VirtualCashLink', 'VirtualCashLinkLimit'],
                 }
               ]
             }
@@ -360,7 +400,7 @@ export class NavService implements OnDestroy {
       dirchange: false,
       type: 'sub',
       active: false,
-      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink','VirtualCashLink','CashLinkLimit','VirtualCashLinkLimit'],
+      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
       children: [
         {
           title: 'Receipt Vouchers',
@@ -370,7 +410,7 @@ export class NavService implements OnDestroy {
           active: false,
           selected: false,
           path: '/accounting/receipt-vouchers',
-          roles: ['Admin', 'Manager', 'Sales', 'CashLink','VirtualCashLink','CashLinkLimit','VirtualCashLinkLimit'],
+          roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
         },
         {
           title: 'Virtual Receipt Vouchers',
@@ -380,7 +420,7 @@ export class NavService implements OnDestroy {
           active: false,
           selected: false,
           path: '/accounting/virtual/receipt-vouchers',
-          roles: ['Admin', 'Manager', 'VirtualSales', 'CashLink','VirtualCashLink','CashLinkLimit','VirtualCashLinkLimit'],
+          roles: ['Admin', 'Manager', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
         },
       ]
     },
@@ -392,7 +432,7 @@ export class NavService implements OnDestroy {
       dirchange: false,
       type: 'sub',
       active: false,
-      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink','VirtualCashLink','CashLinkLimit','VirtualCashLinkLimit'],
+      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
       children: [
         {
           title: 'Account Statement',
@@ -402,7 +442,7 @@ export class NavService implements OnDestroy {
           active: false,
           selected: false,
           path: '/reports/account-statement',
-          roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink','VirtualCashLink','CashLinkLimit','VirtualCashLinkLimit'],
+          roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
         },
       ]
     },
@@ -415,7 +455,7 @@ export class NavService implements OnDestroy {
       type: 'link',
       active: false,
       path: '/reseller/notes',
-      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink','VirtualCashLink','CashLinkLimit','VirtualCashLinkLimit'],
+      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
     },
     { headTitle: 'Nav.Notes.Title' },
     {
@@ -426,7 +466,7 @@ export class NavService implements OnDestroy {
       type: 'link',
       active: false,
       path: '/reseller/quotation',
-      roles: ['Admin', 'Manager', 'Sales','VirtualSales','CashLink','VirtualCashLink','CashLinkLimit','VirtualCashLinkLimit'],
+      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
     },
   ];
 
@@ -437,21 +477,21 @@ export class NavService implements OnDestroy {
   updateMenuItems() {
     // Create a deep copy of the original menu
     const translatedMenu = JSON.parse(JSON.stringify(this.ORIGINALMENU));
-    
+
     // Apply translations recursively
     this.translateMenuItems(translatedMenu);
-    
+
     // Filter by user roles
     const filteredMenu = this.filterMenuByRoles(translatedMenu);
-    
+
     // Clean up empty sections
     const cleanedMenu = this.cleanupEmptySections(filteredMenu);
-    
+
     // Update the menu items
     this.MENUITEMS = cleanedMenu;
     this.items.next(this.MENUITEMS);
   }
-  
+
   // New method to filter menu by user roles
   private filterMenuByRoles(items: Menu[]): Menu[] {
     return items.filter(item => {
@@ -463,38 +503,38 @@ export class NavService implements OnDestroy {
         }
         return true;
       }
-      
+
       // Check if user has any of the required roles
       const hasAccess = this.authService.hasAnyRole(item.roles);
-      
+
       if (hasAccess && item.children && item.children.length > 0) {
         // Filter children recursively
         item.children = this.filterMenuByRoles(item.children);
-        
+
         // Remove parent if all children were filtered out and it's a submenu
         if (item.children.length === 0 && item.type === 'sub') {
           return false;
         }
       }
-      
+
       return hasAccess;
     });
   }
-  
+
   // Clean up empty sections (headers with no items)
   private cleanupEmptySections(items: Menu[]): Menu[] {
     if (!items || items.length === 0) return [];
-    
+
     const result: Menu[] = [];
     let lastWasHeader = false;
-    
+
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      
+
       // If it's a section header
       if (item.headTitle && !item.type) {
         // Only add if next item exists and isn't another header
-        if (i < items.length - 1 && items[i+1].type) {
+        if (i < items.length - 1 && items[i + 1].type) {
           result.push(item);
           lastWasHeader = true;
         }
@@ -503,12 +543,12 @@ export class NavService implements OnDestroy {
         lastWasHeader = false;
       }
     }
-    
+
     // Remove trailing header if it's the last item
     if (lastWasHeader && result.length > 0) {
       result.pop();
     }
-    
+
     return result;
   }
 
@@ -519,12 +559,12 @@ export class NavService implements OnDestroy {
       if (item.headTitle && item.headTitle.includes('Nav.')) {
         item.headTitle = this.translateService.instant(item.headTitle);
       }
-      
+
       // Translate item title if translation key exists
       if (item.translationKey) {
         item.title = this.translateService.instant(item.translationKey);
       }
-      
+
       // Recursively translate children
       if (item.children && item.children.length > 0) {
         this.translateMenuItems(item.children);
