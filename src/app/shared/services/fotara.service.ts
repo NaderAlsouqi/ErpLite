@@ -517,7 +517,7 @@ export class FotaraService {
       inv_date: refundInvoiceData.inv_date || '',
       type_code: (refundInvoiceData.type_code === '381' || !refundInvoiceData.type_code) ? '012' : refundInvoiceData.type_code,
       note: refundInvoiceData.note || '',
-      original_inv_number: refundInvoiceData.serial_number?.toString() || '',
+      original_inv_number: refundInvoiceData.original_inv_number?.toString() || '',
       original_serial_number: refundInvoiceData.original_serial_number || '',
       original_total_amount: finalOriginalTotal.toString(),
       the_tax_number: refundInvoiceData.the_tax_number || '',
