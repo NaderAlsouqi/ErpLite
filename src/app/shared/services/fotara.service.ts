@@ -464,51 +464,59 @@ export class FotaraService {
     // Remove credentials using destructuring
     const { Client_Id, Secret_Key, items, item_taxs, ...basePayload } = refundInvoiceData;
 
-    // Process items → remap to match JoFotara ReturnInvoiceItem model
-    const processedItems = items.map(item => ({
-      return_id: item.return_id?.toString() || '',
-      return_unitCode: item.return_unitCode || 'PCE',
-      return_InvoicedQuantity: parseInt(item.return_InvoicedQuantity as any) || 1,
-      return_item_LineExtensionAmount: parseFloat(item.return_item_LineExtensionAmount as any) || 0,
-      return_item_TaxAmount: parseFloat(item.return_item_TaxAmount as any) || 0,
-      return_item_RoundingAmount: parseFloat(item.return_item_RoundingAmount as any) || 0,
-      return_item_tax_Percent: parseFloat(item.return_item_tax_Percent as any) || 0,
-      return_item_tax_type: parseInt(item.return_item_tax_type as any) || 0,
-      return_item_Name: item.return_item_Name || item.return_id || '',
-      return_item_PriceAmount: parseFloat(item.return_item_PriceAmount as any) || 0,
-      return_item_discount_Amount: parseFloat(item.return_item_discount_Amount as any) || 0,
-      return_item_TaxableAmount: parseFloat(item.return_item_LineExtensionAmount as any) || 0
-    }));
+    // Process items — return_item_discount_Amount is a percentage stored in DB
+    // All monetary amounts are recalculated from PriceAmount × Qty × discount%
+    const processedItems = items.map(item => {
+      const priceAmount = parseFloat(item.return_item_PriceAmount as any) || 0;
+      const qty = parseInt(item.return_InvoicedQuantity as any) || 1;
+      const discountPercent = parseFloat(item.return_item_discount_Amount as any) || 0;
+      const taxPercent = parseFloat(item.return_item_tax_Percent as any) || 0;
 
-    // Process item_taxs → remap to match JoFotara ReturnItemTax model
-    const processedItemTaxs = item_taxs.map(tax => ({
-      item_price_to_return: parseFloat(tax.item_price_to_return as any) || 0,
-      item_tax_to_return: parseFloat(tax.item_tax_to_return as any) || 0,
-      item_tax_percent: parseInt(tax.item_tax_percent as any) || 0,
-      item_tax_type: parseInt((tax.item_tax_type ?? 0) as any)
-    }));
+      const grossAmount = parseFloat((priceAmount * qty).toFixed(5));
+      const discountAmount = parseFloat((grossAmount * discountPercent / 100).toFixed(5));
+      const netAmount = parseFloat((grossAmount - discountAmount).toFixed(5));
+      const taxAmount = parseFloat((netAmount * taxPercent / 100).toFixed(5));
+      const roundingAmount = parseFloat((netAmount + taxAmount).toFixed(5));
 
-    // Compute totals from items to use as fallback when SP returns 0
-    const computedTaxExclusive = processedItems.reduce((sum, item) => sum + item.return_item_LineExtensionAmount, 0);
-    const computedTaxAmount = processedItems.reduce((sum, item) => sum + item.return_item_TaxAmount, 0);
-    const computedTaxInclusive = computedTaxExclusive + computedTaxAmount;
+      return {
+        return_id: item.return_id?.toString() || '',
+        return_unitCode: item.return_unitCode || 'PCE',
+        return_InvoicedQuantity: qty,
+        return_item_LineExtensionAmount: netAmount,
+        return_item_TaxAmount: taxAmount,
+        return_item_RoundingAmount: roundingAmount,
+        return_item_tax_Percent: taxPercent,
+        return_item_tax_type: parseInt(item.return_item_tax_type as any) || 0,
+        return_item_Name: item.return_item_Name || item.return_id || '',
+        return_item_PriceAmount: priceAmount,
+        return_item_discount_Amount: discountAmount,
+        return_item_TaxableAmount: netAmount
+      };
+    });
 
-    const spTaxExclusive = parseFloat(refundInvoiceData.TaxExclusiveAmount as any) || 0;
-    const spTaxAmount = parseFloat(refundInvoiceData.total_tax_amount as any) || 0;
-    const spTaxInclusive = parseFloat(refundInvoiceData.TaxInclusiveAmount as any) || 0;
-    const spPayable = parseFloat(refundInvoiceData.PayableAmount as any) || 0;
+    // Compute all header totals from recalculated items
+    // TaxExclusiveAmount = gross before discount (PriceAmount × Qty)
+    const computedTaxExclusive = parseFloat(processedItems.reduce((sum, item) => sum + (item.return_item_PriceAmount * item.return_InvoicedQuantity), 0).toFixed(5));
+    const computedNetAmount = parseFloat(processedItems.reduce((sum, item) => sum + item.return_item_LineExtensionAmount, 0).toFixed(5));
+    const computedTaxAmount = parseFloat(processedItems.reduce((sum, item) => sum + item.return_item_TaxAmount, 0).toFixed(5));
+    const computedTaxInclusive = parseFloat((computedNetAmount + computedTaxAmount).toFixed(5));
+    const computedTotalDiscount = parseFloat(processedItems.reduce((sum, item) => sum + item.return_item_discount_Amount, 0).toFixed(5));
 
-    // Use SP values if available, otherwise compute from items
-    const finalTaxExclusive = spTaxExclusive || computedTaxExclusive;
-    const finalTaxAmount = spTaxAmount || computedTaxAmount;
-    const finalTaxInclusive = spTaxInclusive || computedTaxInclusive;
-    const finalPayable = spPayable || computedTaxInclusive;
     const finalOriginalTotal = parseFloat(refundInvoiceData.original_total_amount as any) || computedTaxInclusive;
 
-    // Recompute item_taxs from items if SP returned zeros
-    const finalItemTaxs = (processedItemTaxs.length > 0 && processedItemTaxs[0].item_price_to_return === 0)
-      ? [{ item_price_to_return: computedTaxExclusive, item_tax_to_return: computedTaxAmount, item_tax_percent: processedItemTaxs[0]?.item_tax_percent || 0, item_tax_type: processedItemTaxs[0]?.item_tax_type || 1 }]
-      : processedItemTaxs;
+    // Process item_taxs — recalculate monetary amounts from recalculated items
+    const processedItemTaxs = item_taxs.map(tax => {
+      const taxType = parseInt((tax.item_tax_type ?? 0) as any);
+      const matchingItems = processedItems.filter(item => item.return_item_tax_type === taxType);
+      const priceToReturn = parseFloat(matchingItems.reduce((sum, item) => sum + item.return_item_LineExtensionAmount, 0).toFixed(5));
+      const taxPercent = parseInt(tax.item_tax_percent as any) || 0;
+      return {
+        item_price_to_return: priceToReturn,
+        item_tax_to_return: parseFloat((priceToReturn * taxPercent / 100).toFixed(5)),
+        item_tax_percent: taxPercent,
+        item_tax_type: taxType
+      };
+    });
 
     // Map fields matching C# ReturnInvoiceRequest exactly
     const cleanPayload: FotaraRefundInvoicePayload = {
@@ -528,14 +536,14 @@ export class FotaraService {
       customer_phone: refundInvoiceData.customer_phone || '',
       income_source_sequence: refundInvoiceData.income_source_sequence || '',
       return_reason: refundInvoiceData.return_reason || 'مرتجع',
-      total_discount_amount: parseFloat(refundInvoiceData.total_discount_amount as any) || 0,
-      total_tax_amount: finalTaxAmount,
-      TaxExclusiveAmount: finalTaxExclusive,
-      TaxInclusiveAmount: finalTaxInclusive,
-      AllowanceTotalAmount: parseFloat(refundInvoiceData.AllowanceTotalAmount as any) || 0,
+      total_discount_amount: computedTotalDiscount,
+      total_tax_amount: computedTaxAmount,
+      TaxExclusiveAmount: computedTaxExclusive,
+      TaxInclusiveAmount: computedTaxInclusive,
+      AllowanceTotalAmount: computedTotalDiscount,
       PrepaidAmount: finalOriginalTotal,
-      PayableAmount: finalPayable,
-      item_taxs: JSON.stringify(finalItemTaxs),
+      PayableAmount: finalOriginalTotal,
+      item_taxs: JSON.stringify(processedItemTaxs),
       items: JSON.stringify(processedItems)
     };
 
