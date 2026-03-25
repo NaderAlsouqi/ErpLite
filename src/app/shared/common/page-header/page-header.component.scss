@@ -1,0 +1,121 @@
+:host {
+  display: block;
+  margin-bottom: 2rem;
+}
+
+.skyline-page-header {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  background: var(--color-primary);
+  border-radius: 14px;
+  padding: 1.25rem 1.75rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(27, 43, 74, 0.15);
+
+  // Decorative parallelogram strip — mirrors the logo bars
+  &::before {
+    content: '';
+    position: absolute;
+    inset-inline-end: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%) skewX(-12deg);
+    width: 6px;
+    height: 60%;
+    background: var(--color-accent);
+    border-radius: 2px;
+    opacity: 0.7;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline-end: 2.2rem;
+    top: 50%;
+    transform: translateY(-50%) skewX(-12deg);
+    width: 6px;
+    height: 40%;
+    background: var(--color-accent);
+    border-radius: 2px;
+    opacity: 0.4;
+  }
+}
+
+.skyline-page-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.skyline-page-header__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.skyline-page-header__breadcrumb {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+
+  li {
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  li.active {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+  }
+
+  li.separator {
+    color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    font-size: 0.65rem;
+  }
+}
+
+.skyline-page-header__accent {
+  // right-side accent bar
+  width: 5px;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, var(--color-accent), transparent);
+  align-self: stretch;
+  margin-inline-start: 1rem;
+  flex-shrink: 0;
+}
+
+// RTL adjustments
+[dir="rtl"] {
+  .skyline-page-header::before { inset-inline-end: auto; inset-inline-start: 1.5rem; }
+  .skyline-page-header::after { inset-inline-end: auto; inset-inline-start: 2.2rem; }
+  .bi-chevron-right { transform: rotate(180deg); }
+}
+
+// ── Mobile & Tablet Responsiveness ───────────────────────────────────────────
+@media (max-width: 991.98px) {
+  :host { margin-bottom: 1.5rem; }
+  .skyline-page-header { padding: 1rem 1.25rem; }
+  .skyline-page-header__title { font-size: 1.25rem; }
+}
+
+@media (max-width: 575.98px) {
+  .skyline-page-header {
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    
+    // Hide large decorative accents to save visual space
+    &::before, &::after, .skyline-page-header__accent {
+      display: none;
+    }
+  }
+  .skyline-page-header__title { font-size: 1.1rem; }
+  .skyline-page-header__breadcrumb { font-size: 0.75rem; }
+}

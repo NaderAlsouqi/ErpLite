@@ -209,10 +209,6 @@ export class HeaderComponent implements OnInit {
   }
 
   updateTheme(theme: string) {
-    // Get the current direction before changing anything
-    const html = document.querySelector('html');
-    const currentDir = html?.getAttribute('dir') || 'ltr';
-    
     this.appStateService.updateState({ theme, menuColor: theme });
     if (theme == 'light') {
       this.appStateService.updateState({
@@ -222,6 +218,7 @@ export class HeaderComponent implements OnInit {
         menuColor: 'light',
       });
       
+      const html = document.querySelector('html');
       html?.style.removeProperty('--body-bg-rgb');
       html?.style.removeProperty('--body-bg-rgb2');
       html?.style.removeProperty('--light-rgb');
@@ -237,6 +234,7 @@ export class HeaderComponent implements OnInit {
         menuColor: 'dark',
       });
       
+      const html = document.querySelector('html');
       html?.style.removeProperty('--body-bg-rgb');
       html?.style.removeProperty('--body-bg-rgb2');
       html?.style.removeProperty('--light-rgb');
@@ -244,15 +242,6 @@ export class HeaderComponent implements OnInit {
       html?.style.removeProperty('--input-border');
       html?.style.removeProperty('--primary-rgb');
     }
-    
-    // Restore the original direction that was set before changing the theme
-    html?.setAttribute('dir', currentDir);
-    
-    // Make sure the language flag is also consistent with the direction
-    const currentLanguage = currentDir === 'rtl' ? 'ar' : 'en';
-    this.currentFlag = currentDir === 'rtl' 
-      ? './assets/images/flags/uae_flag.jpg' 
-      : './assets/images/flags/us_flag.jpg';
   }
 
   localStorageBackUp() {
@@ -321,6 +310,23 @@ export class HeaderComponent implements OnInit {
     this.navServices.items.subscribe((menuItems) => {
       this.items = menuItems;
     });
+
+    // Subscribe to state changes to keep header properties in sync
+    this.appStateService.state$.subscribe(state => {
+      if (state.direction) {
+        const language = state.direction === 'rtl' ? 'ar' : 'en';
+        this.currentFlag = state.direction === 'rtl' 
+          ? './assets/images/flags/uae_flag.jpg' 
+          : './assets/images/flags/us_flag.jpg';
+
+        if (language === 'en') {
+          this.userTaxType = this.authService.currentUserValue?.TaxType == 1 ? 'Customer Type: Sales Tax' : 'Customer Type: Income Tax';
+        } else {
+          this.userTaxType = this.authService.currentUserValue?.TaxType == 1 ? 'نوع العميل : ضريبة مبيعات' : 'نوع العميل : ضريبة دخل';
+        }
+      }
+    });
+
     // To clear and close the search field by clicking on body
     document.querySelector('.main-content')?.addEventListener('click', () => {
       this.clearSearch();
@@ -462,31 +468,17 @@ export class HeaderComponent implements OnInit {
   }
 
   changeLanguage(language: string) {
-    const html = document.querySelector('html');
-    if (language === 'en') {
-      html?.setAttribute('dir', 'ltr');
-      this.currentFlag = './assets/images/flags/us_flag.jpg';
-    } else {
-      html?.setAttribute('dir', 'rtl');
-      this.currentFlag = './assets/images/flags/uae_flag.jpg';
-    }
+    const direction = language === 'en' ? 'ltr' : 'rtl';
+    this.appStateService.updateState({ direction });
     
     // Set the language in the translate service
     this.translateService.use(language);
     
     // Optional: Force update all translations on the page
-    // This might be needed depending on how your app is structured
     this.translateService.reloadLang(language);
     
     // Store the selection in localStorage
     localStorage.setItem('language', language);
-
-          if (language=='en') {
-             this.userTaxType = this.authService.currentUserValue?.TaxType==1 ? 'Customer Type: Sales Tax' : 'Customer Type: Income Tax';
-          } else {
-             this.userTaxType = this.authService.currentUserValue?.TaxType==1 ? 'نوع العميل : ضريبة مبيعات' : 'نوع العميل : ضريبة دخل';
-          }
-
   }
   
   setDefaultLanguage() {

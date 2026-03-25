@@ -1,67 +1,93 @@
 
+<div class="login-page">
 
-<div class="login-background">
+  <!-- Left brand panel -->
+  <div class="brand-panel">
+    <div class="brand-panel__inner">
+      <div class="brand-logo">
+        <svg viewBox="0 0 210 54" xmlns="http://www.w3.org/2000/svg" class="brand-svg">
+          <polygon points="12,2  50,2  42,16  4,16"  fill="#c41230"/>
+          <polygon points="8,20  46,20  38,34  0,34"  fill="#c41230"/>
+          <polygon points="12,38 50,38  42,52  4,52"  fill="#c41230"/>
+          <text x="60" y="31" font-family="'Segoe UI', Arial, sans-serif" font-weight="800"
+                font-size="19" letter-spacing="1" fill="#ffffff" text-anchor="start">SKYLINE</text>
+          <text x="60" y="46" font-family="'Segoe UI', Arial, sans-serif" font-weight="400"
+                font-size="7.5" letter-spacing="3.8" fill="#7a93bf" text-anchor="start">INNOVATION</text>
+        </svg>
+      </div>
+      <h2 class="brand-tagline">Enterprise Resource<br>Planning System</h2>
+      <p class="brand-desc">Manage your business operations seamlessly with real-time insights and powerful tools.</p>
+      <div class="brand-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
 
-    <div class="container">
-    
-        <!-- Login Form Section -->
-        <div class="login-section">
-            <div class="login-card">
-                <h1 class="welcome-title">WELCOME BACK</h1>
-                <p class="welcome-subtitle">Please Enter Your Credentials</p>
-                
-                <form class="login-form" id="loginForm" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-                    <div class="form-group">
-                <label for="Login_Name">Username</label>
-                        <input 
-                            type="text" 
-                            id="Login_Name" 
-                            name="username" 
-                            formControlName="Login_Name"
-                            [ngClass]="{'is-invalid': loginForm.get('Login_Name')?.invalid && loginForm.get('Login_Name')?.touched}"
-                            placeholder="Enter your Username"
-                            required>
-                    </div>
-                    
-                    <div class="form-group" >
-                        <label for="password">Password</label>
-                        <input 
-                            [type]="showPassword ? 'text' : 'password'" 
-                            id="password" 
-                            formControlName="Password"
-                            name="password" 
-                            placeholder="**********"
-                            required
-                            [ngClass]="{'is-invalid': loginForm.get('Password')?.invalid && loginForm.get('Password')?.touched}">
-                            <button type="button"  
-                                (click)="togglePassword()">
-                                <i class="ri-{{toggleClass}} align-middle"></i>
-                            </button>
-                    </div>
-                    
-                    <div class="form-options">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="remember">
-                            <span>Remember me</span>
-                        </label>
-                        <a href="#" class="forgot-password">Forgot password</a>
-                    </div>
-                    
-                    <button type="submit" class="signin-btn">Sign in</button>
-                    
-                    <div class="signup-link">
-                        <span>Don't have an account?</span>
-                        <a href="#" class="signup-text">Sign up</a>
-                    </div>
-                </form>
-            </div>
-            
-            <!-- Logo Section -->
-            <div class="logo-container">
-                <img src="../../../assets/Login/img/logo.png" alt="SKYLINE INNOVATION" class="logo-image">
-            </div>
+  <!-- Right form panel -->
+  <div class="form-panel">
+    <div class="form-panel__inner">
+
+      <div class="form-header">
+        <h1 class="form-title">Welcome back</h1>
+        <p class="form-subtitle">Sign in to your account to continue</p>
+      </div>
+
+      <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+        <div class="field-group">
+          <label class="field-label" for="Login_Name">Username</label>
+          <div class="field-wrap">
+            <i class="bi bi-person field-icon"></i>
+            <input
+              class="field-input"
+              type="text"
+              id="Login_Name"
+              formControlName="Login_Name"
+              placeholder="Enter your username"
+              [class.field-input--error]="loginForm.get('Login_Name')?.invalid && loginForm.get('Login_Name')?.touched"
+              autocomplete="username">
+          </div>
+          @if (loginForm.get('Login_Name')?.invalid && loginForm.get('Login_Name')?.touched) {
+            <span class="field-error">Username is required</span>
+          }
         </div>
-    </div>
+
+        <div class="field-group">
+          <label class="field-label" for="password">Password</label>
+          <div class="field-wrap">
+            <i class="bi bi-lock field-icon"></i>
+            <input
+              class="field-input"
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              formControlName="Password"
+              placeholder="Enter your password"
+              [class.field-input--error]="loginForm.get('Password')?.invalid && loginForm.get('Password')?.touched"
+              autocomplete="current-password">
+            <button type="button" class="toggle-pw" (click)="togglePassword()">
+              <i class="bi bi-{{toggleClass}}"></i>
+            </button>
+          </div>
+          @if (loginForm.get('Password')?.invalid && loginForm.get('Password')?.touched) {
+            <span class="field-error">Password is required</span>
+          }
+        </div>
+
+        <div class="form-options">
+          <label class="remember-label">
+            <input type="checkbox" id="remember">
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="loginForm.invalid">
+          Sign In
+        </button>
+
+      </form>
 
     </div>
-    <script src="../../../assets/script.js"></script>
+  </div>
+
+</div>

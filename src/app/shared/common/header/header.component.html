@@ -26,13 +26,6 @@
       </div>
       <!-- End::header-element -->
 
-      <!-- Start::header-element -->
-      <div class="header-element mx-lg-0 mx-2">
-        <a aria-label="Hide Sidebar" (click)="toggleSidebar()"
-          class="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle"
-          data-bs-toggle="sidebar"><span></span></a>
-      </div>
-      <!-- End::header-element -->
 
       <!-- Start::header-element -->
       <!-- Start::header-element header-search -->
@@ -104,6 +97,8 @@
         </a>
       </li>
       <!-- End::header-element -->
+
+      <!-- End::header-element -->
         <li class="header-element header-theme-mode">
           <div class="d-flex align-items-center">
             <!-- <div class="me-sm-2 me-0">
@@ -114,36 +109,6 @@
             </div>
           </div>
         </li>
-      <!-- Start::header-element -->
-      <li ngbDropdown class="header-element country-selector" [autoClose]="'outside'">
-        <!-- Start::header-link|dropdown-toggle -->
-        <a ngbDropdownToggle href="javascript:void(0);" class="header-link dropdown-toggle" data-bs-auto-close="outside"
-          data-bs-toggle="dropdown">
-          <img [src]="currentFlag" alt="img" class="rounded-circle" >
-        </a>
-        <!-- End::header-link|dropdown-toggle -->
-        <ul ngbDropdownMenu class="main-header-dropdown dropdown-menu dropdown-menu-end full-width"
-          data-popper-placement="none">
-          <li>
-            <a ngbDropdownItem class="dropdown-item d-flex align-items-center" href="javascript:void(0);" (click)="changeLanguage('en')">
-              <span class="avatar avatar-xs lh-1 me-2">
-                <img src="./assets/images/flags/us_flag.jpg" alt="img" >
-              </span>
-              English
-            </a>
-          </li>
-          <li>
-            <a ngbDropdownItem class="dropdown-item d-flex align-items-center" href="javascript:void(0);" (click)="changeLanguage('ar')">
-              <span class="avatar avatar-xs lh-1 me-2">
-                <img src="./assets/images/flags/uae_flag.jpg" alt="img">
-              </span>
-              Arabic
-            </a>
-          </li>
-        </ul>
-      </li>
-      <!-- End::header-element -->
-
       <!-- Start::header-element themes-->
       <li class="header-element header-theme-mode">
         <!-- Start::header-link|layout-setting -->
@@ -162,6 +127,7 @@
         <!-- End::header-link|layout-setting -->
       </li>
       <!-- End::header-element -->
+
 
 
       <!-- Start::header-element fullscreen -->

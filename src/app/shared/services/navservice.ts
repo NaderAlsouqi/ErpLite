@@ -85,10 +85,15 @@ export class NavService implements OnDestroy {
       });
     }
 
-    // Subscribe to language changes to update menu titles
-    this.translateService.onLangChange.subscribe(() => {
+    // Subscribe to language changes to update menu titles and layout direction
+    this.translateService.onLangChange.subscribe((event) => {
       this.updateMenuItems();
+      this.updateLayoutDirection(event.lang);
     });
+
+    // Set initial layout direction
+    const initialLang = this.translateService.currentLang || this.translateService.defaultLang || localStorage.getItem('language') || 'en';
+    this.updateLayoutDirection(initialLang);
 
     // Subscribe to auth changes to update menu when user logs in/out
     this.authService.currentUser$.subscribe(() => {
@@ -97,6 +102,13 @@ export class NavService implements OnDestroy {
 
     // Set initial menu items
     this.updateMenuItems();
+  }
+
+  private updateLayoutDirection(lang: string) {
+    const dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.setAttribute('dir', dir);
+    document.documentElement.setAttribute('lang', lang);
+    localStorage.setItem('language', lang);
   }
 
   ngOnDestroy() {

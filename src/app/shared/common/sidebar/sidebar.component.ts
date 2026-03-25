@@ -2,13 +2,16 @@ import {
   Component,
   Renderer2,
   HostListener,
-  ElementRef,
   ChangeDetectorRef,
 } from '@angular/core';
 import { Menu, NavService } from '../../services/navservice';
 import { Subscription, fromEvent } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
 import { checkHoriMenu } from './sidebar';
+import { AuthService } from '../../services/auth.service';
+import { TranslateService } from '@ngx-translate/core';
+import { AppStateService } from '../../services/app-state.service';
+
 
 @Component({
   selector: 'app-sidebar',
@@ -27,11 +30,11 @@ export class SidebarComponent {
     private navServices: NavService,
     public router: Router,
     public renderer: Renderer2,
-    private elementRef: ElementRef,
-    private cd: ChangeDetectorRef,) {
-    let html = this.elementRef.nativeElement.ownerDocument.documentElement;
-
-
+    private cd: ChangeDetectorRef,
+    public auth: AuthService,
+    public translate: TranslateService,
+    private appStateService: AppStateService
+  ) {
   }
 
   clearNavDropdown() {
@@ -76,6 +79,11 @@ export class SidebarComponent {
       if (event?.ctrlKey) {
         return;
       }
+      // Auto-close sidebar on mobile after navigating to a page
+      if (window.innerWidth <= 992) {
+        document.documentElement.setAttribute('data-toggled', 'close');
+        document.querySelector('#responsive-overlay')?.classList.remove('active');
+      }
     }
     let html = document.documentElement;
     if (html.getAttribute('data-nav-style') != "icon-hover" && html.getAttribute('data-nav-style') != "menu-hover") {
@@ -119,7 +127,6 @@ export class SidebarComponent {
   hasParentLevel = 0;
   setMenuAncestorsActive(targetObject: Menu) {
     const parent = this.getParentObject(this.menuItems, targetObject);
-    let html = document.documentElement;
     if (parent) {
       if (this.hasParentLevel > 2) {
         this.hasParent = true;
@@ -404,7 +411,7 @@ export class SidebarComponent {
       document.documentElement.scrollTop ||
       document.body.scrollTop;
 
-    sections.forEach((ele, i) => {
+    sections.forEach((_, i) => {
       const currLink = sections[i];
       const val: any = currLink.getAttribute('value');
       const refElement: any = document.querySelector('#' + val);
@@ -426,7 +433,7 @@ export class SidebarComponent {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize(event: any): void {
+  onResize(_event: any): void {
     this.menuResizeFn();
 
     this.screenWidth = window.innerWidth;
@@ -465,5 +472,28 @@ export class SidebarComponent {
         document.querySelector('#responsive-overlay')?.classList.remove('active');
       }
     }
+  }
+
+  get userName() {
+    return this.auth.currentUserValue?.DeliveryName || 'User';
+  }
+
+  get currentLang() {
+    return this.translate.currentLang;
+  }
+
+  toggleLanguage() {
+    const lang = this.currentLang === 'ar' ? 'en' : 'ar';
+    this.translate.use(lang);
+    localStorage.setItem('language', lang);
+    
+    // Update the layout direction in AppStateService
+    const direction = lang === 'ar' ? 'rtl' : 'ltr';
+    this.appStateService.updateState({ direction });
+  }
+
+  logout() {
+    this.auth.logout();
+    this.router.navigate(['/auth/login']);
   }
 }

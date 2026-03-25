@@ -1,0 +1,259 @@
+:host {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--nav-width);
+  background: var(--color-primary) !important;
+  z-index: 1030;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+[dir="rtl"] :host {
+  left: auto;
+  right: 0;
+}
+
+.app-sidebar {
+  width: 100%;
+  height: 100%;
+  background: var(--color-primary) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border-right: none !important;
+}
+
+.sidebar-logo {
+  padding: 16px 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  .logo-svg {
+    width: 100%;
+    height: auto;
+    max-height: 58px;
+    display: block;
+  }
+}
+
+.nav-list {
+  list-style: none;
+  padding: 12px 0;
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 12px 20px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  border-left: 3px solid transparent;
+  width: 100%;
+  border-radius: 0;
+  text-decoration: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+  }
+
+  &.active {
+    background: rgba(196, 18, 48, 0.18);
+    color: #fff;
+    border-left-color: var(--color-accent);
+
+    .nav-icon {
+      color: var(--color-accent);
+    }
+  }
+}
+
+[dir="rtl"] .nav-item {
+  border-left: none;
+  border-right: 3px solid transparent;
+  padding: 12px 20px 12px 16px;
+
+  &.active {
+    border-right-color: var(--color-accent);
+  }
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.55);
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+  font-size: 1.25rem;
+}
+
+.nav-item:hover .nav-icon {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-footer {
+  padding: 10px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lang-btn,
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: rgba(255,255,255,0.6);
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+}
+
+.logout-btn:hover {
+  background: rgba(196, 18, 48, 0.2);
+  border-color: rgba(196, 18, 48, 0.4);
+  svg { fill: var(--color-accent); }
+}
+
+// ── Expandable parent button ─────────────────────────────────────────────────
+.nav-parent {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: start;
+
+  .nav-label { flex: 1; }
+}
+
+[dir="rtl"] .nav-parent {
+  text-align: right;
+}
+
+.nav-chevron {
+  width: 16px;
+  height: 16px;
+  fill: rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+
+  &.rotated { transform: rotate(180deg); }
+}
+
+// ── Sub-menu children ────────────────────────────────────────────────────────
+.nav-children,
+.nav-children-nested {
+  list-style: none;
+  padding: 2px 0 4px;
+  background: rgba(0, 0, 0, 0.15);
+  margin-bottom: 0;
+}
+
+.nav-children-nested {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.nav-child-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px 9px 36px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  border-left: 2px solid transparent;
+  text-decoration: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  &.active {
+    color: #fff;
+    border-left-color: var(--color-accent);
+    background: rgba(196, 18, 48, 0.12);
+
+    .nav-child-dot { background: var(--color-accent); }
+  }
+}
+
+[dir="rtl"] .nav-child-item {
+  padding: 9px 36px 9px 16px;
+  border-left: none;
+  border-right: 2px solid transparent;
+
+  &.active {
+    border-right-color: var(--color-accent);
+  }
+}
+
+.nav-child-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+// Hide the scrollbar but keep functionality
+.nav-list::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
