@@ -542,7 +542,7 @@ export class FotaraService {
       TaxInclusiveAmount: computedTaxInclusive,
       AllowanceTotalAmount: computedTotalDiscount,
       PrepaidAmount: finalOriginalTotal,
-      PayableAmount: finalOriginalTotal,
+      PayableAmount: computedTaxInclusive,
       item_taxs: JSON.stringify(processedItemTaxs),
       items: JSON.stringify(processedItems)
     };
