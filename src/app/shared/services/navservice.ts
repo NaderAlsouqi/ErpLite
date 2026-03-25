@@ -85,10 +85,15 @@ export class NavService implements OnDestroy {
       });
     }
 
-    // Subscribe to language changes to update menu titles
-    this.translateService.onLangChange.subscribe(() => {
+    // Subscribe to language changes to update menu titles and layout direction
+    this.translateService.onLangChange.subscribe((event) => {
       this.updateMenuItems();
+      this.updateLayoutDirection(event.lang);
     });
+
+    // Set initial layout direction
+    const initialLang = this.translateService.currentLang || this.translateService.defaultLang || localStorage.getItem('language') || 'en';
+    this.updateLayoutDirection(initialLang);
 
     // Subscribe to auth changes to update menu when user logs in/out
     this.authService.currentUser$.subscribe(() => {
@@ -97,6 +102,13 @@ export class NavService implements OnDestroy {
 
     // Set initial menu items
     this.updateMenuItems();
+  }
+
+  private updateLayoutDirection(lang: string) {
+    const dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.setAttribute('dir', dir);
+    document.documentElement.setAttribute('lang', lang);
+    localStorage.setItem('language', lang);
   }
 
   ngOnDestroy() {
@@ -421,6 +433,46 @@ export class NavService implements OnDestroy {
           selected: false,
           path: '/accounting/virtual/receipt-vouchers',
           roles: ['Admin', 'Manager', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
+        },
+        {
+          title: 'General Ledger',
+          translationKey: 'Nav.Accounting.GeneralLedger',
+          dirchange: false,
+          type: 'link',
+          active: false,
+          selected: false,
+          path: '/accounting/general-ledger',
+          roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
+        },
+        {
+          title: 'Accounts Receivable',
+          translationKey: 'Nav.Accounting.AccountsReceivable',
+          dirchange: false,
+          type: 'link',
+          active: false,
+          selected: false,
+          path: '/accounting/accounts-receivable',
+          roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
+        },
+        {
+          title: 'Accounts Payable',
+          translationKey: 'Nav.Accounting.AccountsPayable',
+          dirchange: false,
+          type: 'link',
+          active: false,
+          selected: false,
+          path: '/accounting/accounts-payable',
+          roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
+        },
+        {
+          title: 'Cheques',
+          translationKey: 'Nav.Accounting.Cheques',
+          dirchange: false,
+          type: 'link',
+          active: false,
+          selected: false,
+          path: '/accounting/cheques',
+          roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
         },
       ]
     },

@@ -1,4 +1,9 @@
 {
+    "UnderConstruction": {
+        "Title": "قيد الإنشاء",
+        "BeingBuilt": "قيد الإنشاء حالياً.",
+        "CheckBack": "تحقق مرة أخرى قريباً!"
+    },
     "AccountStatement": {
         "Title": "كشف حساب",
         "Reports": "التقارير",
@@ -418,7 +423,11 @@
         "Accounting": {
             "Title": "المحاسبة",
             "ReceiptVouchers": "سندات القبض",
-            "VirtualReceiptVouchers": "سندات القبض الافتراضية"
+            "VirtualReceiptVouchers": "سندات القبض الافتراضية",
+            "GeneralLedger": "دفتر الأستاذ العام",
+            "AccountsReceivable": "الذمم المدينة",
+            "AccountsPayable": "الذمم الدائنة",
+            "Cheques": "الشيكات"
         },
         "Reports": {
             "Title": "التقارير",

@@ -1,4 +1,9 @@
 {
+  "UnderConstruction": {
+    "Title": "Under Construction",
+    "BeingBuilt": "is currently being built.",
+    "CheckBack": "Check back soon!"
+  },
   "AccountStatement": {
     "Title": "Account Statement",
     "Reports": "Reports",
@@ -425,7 +430,11 @@
     "Accounting": {
       "Title": "Accounting",
       "ReceiptVouchers": "Receipt Vouchers",
-      "VirtualReceiptVouchers": "Virtual Receipt Vouchers"
+      "VirtualReceiptVouchers": "Virtual Receipt Vouchers",
+      "GeneralLedger": "General Ledger",
+      "AccountsReceivable": "Accounts Receivable",
+      "AccountsPayable": "Accounts Payable",
+      "Cheques": "Cheques"
     },
     "Reports": {
       "Title": "Reports",

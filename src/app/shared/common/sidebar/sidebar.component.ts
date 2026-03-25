@@ -9,6 +9,9 @@ import { Menu, NavService } from '../../services/navservice';
 import { Subscription, fromEvent } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
 import { checkHoriMenu } from './sidebar';
+import { AuthService } from '../../services/auth.service';
+import { TranslateService } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'app-sidebar',
@@ -28,7 +31,10 @@ export class SidebarComponent {
     public router: Router,
     public renderer: Renderer2,
     private elementRef: ElementRef,
-    private cd: ChangeDetectorRef,) {
+    private cd: ChangeDetectorRef,
+    public auth: AuthService,
+    public translate: TranslateService
+  ) {
     let html = this.elementRef.nativeElement.ownerDocument.documentElement;
 
 
@@ -75,6 +81,11 @@ export class SidebarComponent {
     if (event) {
       if (event?.ctrlKey) {
         return;
+      }
+      // Auto-close sidebar on mobile after navigating to a page
+      if (window.innerWidth <= 992) {
+        document.documentElement.setAttribute('data-toggled', 'close');
+        document.querySelector('#responsive-overlay')?.classList.remove('active');
       }
     }
     let html = document.documentElement;
@@ -465,5 +476,22 @@ export class SidebarComponent {
         document.querySelector('#responsive-overlay')?.classList.remove('active');
       }
     }
+  }
+
+  get userName() {
+    return this.auth.currentUserValue?.DeliveryName || 'User';
+  }
+
+  get currentLang() {
+    return this.translate.currentLang;
+  }
+
+  toggleLanguage() {
+    const lang = this.currentLang === 'ar' ? 'en' : 'ar';
+    this.translate.use(lang);
+  }
+
+  logout() {
+    this.auth.logout();
   }
 }

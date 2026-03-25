@@ -10,22 +10,55 @@
 @import "../node_modules/dropzone/dist/min/dropzone.min.css";
 
 @import '../node_modules/overlayscrollbars/styles/overlayscrollbars.css';
-@import '../node_modules/@kolkov/angular-editor/themes/default.scss';
+@import '../node_modules/@kolkov/angular-editor/themes/default.scss';// ═════════════════════════════════════════════════════════════════════════════
+// SKYLINE ERP — Brand override layer
+// ═════════════════════════════════════════════════════════════════════════════
+
+:root {
+  // ── Our tokens ──────────────────────────────────────────────────────────────
+  --color-primary:      #1b2b4a;
+  --color-accent:       #c41230;
+  --color-accent-hover: #a00f27;
+  --color-bg:           #f4f5f7;
+  --color-surface:      #ffffff;
+  --color-text:         #1b2b4a;
+  --color-text-muted:   #6b7a99;
+  --color-border:       #dde1ea;
+  --nav-width:          260px; // Slightly wider for premium feel
+  --nav-collapsed-width: 0px; // Hide completely when toggled if needed
+  --header-height:      60px;
+
+  // ── Font ─────────────────────────────────────────────────────────────────────
+  --font-arabic:        'Almarai', 'Cairo', Arial, sans-serif;
+  --font-latin:         'Segoe UI', 'Roboto', Tahoma, Geneva, Verdana, sans-serif;
+  --default-font-family: var(--font-latin);
+
+  // ── Override ErpLite primary/danger RGB ─────────────────────────────────────
+  --primary-rgb:   27, 43, 74;      // navy  #1b2b4a
+  --danger-rgb:   196, 18, 48;      // crimson #c41230
+  --primary-color: rgb(var(--primary-rgb));
+  --primary-border: rgb(var(--primary-rgb));
+}
+
+[dir="rtl"], [lang="ar"] {
+  --default-font-family: var(--font-arabic) !important;
+}
+
+body {
+  font-family: var(--default-font-family) !important;
+}
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 .modal {
     z-index: 9999 !important;
@@ -468,4 +501,320 @@ app-footer{
 }
 .collapse-horizontal.collapse{
   transition:none !important
+}
+
+// ── App shell & content area (matching ERP) ──────────────────────────────────
+.page {
+  display: block !important;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  flex-shrink: 0;
+  height: 100vh !important;
+  width: var(--nav-width) !important;
+  background: var(--color-primary) !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1030;
+  transition: all 0.3s ease;
+  border-right: none !important;
+  box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+}
+
+[dir="rtl"] .app-sidebar {
+  left: auto !important;
+  right: 0 !important;
+  border-right: none !important;
+  border-left: none !important;
+  box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+}
+
+.app-content {
+  margin-left: var(--nav-width) !important;
+  margin-top: 0 !important; // Header might be fixed
+  padding-top: var(--header-height) !important;
+  background: var(--color-bg) !important;
+  min-height: 100vh !important;
+  transition: all 0.3s ease;
+}
+
+[dir="rtl"] .app-content {
+  margin-left: 0 !important;
+  margin-right: var(--nav-width) !important;
+}
+
+.app-header {
+  margin-left: var(--nav-width) !important;
+  width: calc(100% - var(--nav-width)) !important;
+  background: #fff !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+  position: fixed !important;
+  top: 0;
+  right: 0;
+  z-index: 1020;
+  height: var(--header-height) !important;
+  transition: all 0.3s ease;
+}
+
+[dir="rtl"] .app-header {
+  margin-left: 0 !important;
+  margin-right: var(--nav-width) !important;
+  right: auto !important;
+  left: 0 !important;
+}
+
+// When sidebar is hidden/toggled — content/header take full width
+[data-toggled="close-menu-sidebar"] .app-content,
+[data-toggled="close-menu-sidebar"] .app-header,
+[data-toggled="close"] .app-content,
+[data-toggled="close"] .app-header {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
+}
+
+// ── Mobile & Tablet Layout Overrides ──────────────────────────────────────
+@media (max-width: 991.98px) {
+  // The outer <app-sidebar> host element is position:fixed at left:0.
+  // We use transform to slide it off-screen so it doesn't show as a background strip.
+  app-sidebar {
+    transform: translateX(calc(-1 * var(--nav-width)));
+  }
+
+  [dir="rtl"] app-sidebar {
+    transform: translateX(var(--nav-width));
+  }
+
+  // Slide in when toggled open
+  [data-toggled="open"] app-sidebar {
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  [dir="rtl"][data-toggled="open"] app-sidebar {
+    transform: translateX(0) !important;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  // Show dim overlay behind sidebar when it is open (CSS-driven — no JS needed)
+  [data-toggled="open"] #responsive-overlay {
+    visibility: visible;
+  }
+
+  .app-content, .app-header {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+  }
+
+  .main-header-container {
+    padding: 0 0.75rem !important;
+  }
+}
+
+// ── Table Responsiveness ────────────────────────────────────────────────────
+.table-responsive {
+  border-radius: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// ── Tablet responsiveness (768px – 991px) ──────────────────────────────────
+@media (max-width: 991.98px) {
+  .card-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    .card-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  }
+
+  // Reduce card padding slightly on tablet
+  .card.custom-card .card-body {
+    padding: 1rem !important;
+  }
+
+  // Make angular material paginator wrap nicely
+  .mat-mdc-paginator-container {
+    flex-wrap: wrap;
+    justify-content: center !important;
+  }
+}
+
+// ── Mobile responsiveness (<= 767px) ─────────────────────────────────────
+@media (max-width: 767.98px) {
+  // Stack card header actions below title
+  .card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+
+    .card-options {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+
+      .btn {
+        flex: 1 !important;
+        min-width: 100px;
+      }
+    }
+  }
+
+  // Full-width buttons in button groups that are inside card options
+  .card-options .btn-group {
+    width: 100% !important;
+    display: flex !important;
+    .btn { flex: 1 !important; }
+  }
+
+  // Smaller text in table cells to fit more on screen
+  .mat-mdc-cell, .mat-mdc-header-cell {
+    font-size: 0.78rem !important;
+    padding: 0 8px !important;
+  }
+
+  // Reduce container padding
+  .container-fluid {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .card-header {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    align-items: flex-start !important;
+
+    .btn-group, .card-options {
+      width: 100% !important;
+      .btn { flex: 1 !important; }
+    }
+  }
+
+  .btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.825rem !important;
+  }
+
+  // Ensure form controls are full-width and touch-friendly
+  .form-control, .form-select, .ng-select {
+    font-size: 16px !important; // Prevents iOS zoom on focus
+  }
+
+  // Touch-friendly minimum tap targets
+  .btn, .nav-link, .dropdown-item {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+// ── Angular Material — table (MATCHING ERP) ──────────────────────────────────
+.mat-mdc-header-row {
+  background-color: #f8fafd !important; // Light background
+}
+
+.mat-mdc-header-cell,
+th.mdc-data-table__header-cell,
+.mat-mdc-header-cell .mat-sort-header-button,
+.mat-mdc-header-cell .mat-sort-header-content,
+.mat-mdc-header-cell .mdc-data-table__header-cell-label {
+  color: var(--color-primary) !important; // Dark text
+  font-weight: 700 !important;
+  font-size: .8rem !important;
+  letter-spacing: .03em;
+  border-bottom: 2px solid var(--color-border) !important;
+}
+
+.mat-sort-header-arrow { color: var(--color-primary) !important; }
+
+.mat-mdc-row {
+  &:nth-child(even) { background: #f8f9fc; }
+  &:hover { background: rgba(27,43,74,.04) !important; cursor: pointer; }
+}
+
+.mat-mdc-cell,
+td.mdc-data-table__cell {
+  color: var(--color-text) !important;
+  border-bottom-color: var(--color-border) !important;
+}
+
+// Material paginator
+.mat-mdc-paginator {
+  background: transparent !important;
+  border-top: 1px solid var(--color-border);
+}
+
+// ── Cards (Premium looks) ──────────────────────────────────────────────────
+.card.custom-card {
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(27, 43, 74, 0.08) !important;
+  overflow: hidden;
+
+  .card-header {
+    background: #fff !important;
+    border-bottom: 2px solid var(--color-bg) !important;
+    padding: 1rem 1.25rem !important;
+    
+    .card-title {
+      font-weight: 700 !important;
+      color: var(--color-primary) !important;
+      font-size: 1.1rem !important;
+      margin: 0 !important;
+    }
+  }
+
+  .card-body {
+    padding: 1.25rem !important;
+  }
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+.badge.bg-primary { background-color: var(--color-primary) !important; }
+.badge.bg-danger  { background-color: var(--color-accent)  !important; }
+.badge.bg-success { background-color: #1a7f5a !important; }
+.badge.bg-warning { background-color: #d97706 !important; color: #fff !important; }
+
+// ── Form Controls (Skyline Focus) ──────────────────────────────────────────────
+.form-control:focus,
+.form-select:focus,
+.ng-select .ng-select-container:focus-within {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(27, 43, 74, .15) !important;
+}
+
+// ── Page Placeholders ──────────────────────────────────────────────────────────
+.page-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  background: #fff;
+  border-radius: 12px;
+  border: 2px dashed var(--color-border);
+  color: var(--color-text-muted);
+
+  svg { 
+    width: 64px; 
+    height: 64px; 
+    fill: var(--color-accent); 
+    opacity: .3; 
+  }
+  
+  p { 
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
 }
