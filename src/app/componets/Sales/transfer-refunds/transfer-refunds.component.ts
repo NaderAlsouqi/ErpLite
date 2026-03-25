@@ -335,6 +335,7 @@ export class TransferRefundsComponent implements OnInit {
     // Set loading state to prevent multiple transfers
     this.transferInProgress = true;
     this.loading = true;
+    let hasSuccessfulTransfers = false;
 
     try {
       // Track successful and failed transfers
@@ -413,9 +414,8 @@ export class TransferRefundsComponent implements OnInit {
         this.toastr.warning(failureDetail, warningMessage);
       }
 
-      // Reload data to reflect changes
       if (successfulTransfers.length > 0) {
-        this.loadData(this.deliveryId);
+        hasSuccessfulTransfers = true;
       }
     } catch (error) {
       console.error('Error in transfer process:', error);
@@ -426,6 +426,10 @@ export class TransferRefundsComponent implements OnInit {
     } finally {
       this.transferInProgress = false;
       this.loading = false;
+    }
+
+    if (hasSuccessfulTransfers) {
+      this.loadData(this.deliveryId);
     }
   }
 
