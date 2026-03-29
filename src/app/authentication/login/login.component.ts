@@ -5,13 +5,15 @@ import { Router, RouterModule } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../shared/services/auth.service';
-import { Renderer2 } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { firstValueFrom } from 'rxjs';
 import { BiFotaraService } from "../../shared/services/bifotara.service";
 import { InvoiceService } from '../../shared/services/invoice.service';
 import { ServiceInvoiceService, ServiceInvoiceMainData } from '../../shared/services/service-invoice.service';
 import { EventListenerFocusTrapInertStrategy } from '@angular/cdk/a11y';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import emailjs from '@emailjs/browser';
+import { environment } from '../../../environments/environment';
 
 
 interface VirtualInvoiceData {
@@ -27,7 +29,7 @@ interface VirtualInvoiceData {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, RouterModule, NgbModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, NgbModule, ReactiveFormsModule, TranslateModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 
@@ -37,13 +39,19 @@ interface VirtualInvoiceData {
 
 export class LoginComponent implements OnInit, OnDestroy {
   loginForm!: FormGroup;
+  forgotForm!: FormGroup;
   showPassword = false;
   toggleClass = 'eye-off-line';
   active = 'Angular';
   loading = false;
+  showForgotModal = false;
+  forgotLoading = false;
+
+  get currentLang(): string {
+    return this.translateService.currentLang || localStorage.getItem('language') || 'en';
+  }
 
   constructor(
-    private renderer: Renderer2,
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router,
@@ -51,10 +59,14 @@ export class LoginComponent implements OnInit, OnDestroy {
     private fotaraService: BiFotaraService,
     private invoiceService: InvoiceService,
     private serviceInvoiceService: ServiceInvoiceService,
+    private translateService: TranslateService,
+  ) {}
 
-  ) {
-    //this.renderer.setStyle(document.body, 'background', 'url("../../../assets/images/form-bg.png")');
-
+  toggleLanguage(): void {
+    const lang = this.currentLang === 'ar' ? 'en' : 'ar';
+    localStorage.setItem('language', lang);
+    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    this.translateService.use(lang);
   }
 
   ngOnInit(): void {
@@ -64,6 +76,12 @@ export class LoginComponent implements OnInit, OnDestroy {
       Login_Name: ['', [Validators.required]],
       Password: ['', [Validators.required]]
     });
+
+    this.forgotForm = this.formBuilder.group({
+      email: ['', [Validators.required, Validators.email]]
+    });
+
+    emailjs.init(environment.emailJs.publicKey);
   }
 
   ngOnDestroy(): void {
@@ -71,7 +89,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    debugger;
     if (this.loginForm.invalid || this.loading) {
       return;
     }
@@ -84,7 +101,10 @@ export class LoginComponent implements OnInit, OnDestroy {
         if (response.Token) {
           this.transferData();
 
-          this.toastr.success('Login successful', 'Welcome!');
+          this.toastr.success(
+            this.translateService.instant('LOGIN_PAGE.LOGIN_SUCCESS'),
+            this.translateService.instant('LOGIN_PAGE.WELCOME')
+          );
 
           // Get appropriate homepage based on user's role
           const homepage = this.authService.getHomepageByRole();
@@ -92,13 +112,13 @@ export class LoginComponent implements OnInit, OnDestroy {
           // this.router.navigate([homepage]);   
           this.router.navigateByUrl(homepage)
         } else {
-          this.toastr.error('Login failed');
+          this.toastr.error(this.translateService.instant('LOGIN_PAGE.LOGIN_FAILED'));
           this.loading = false;
         }
       },
       error: (error) => {
         console.error('Login error:', error);
-        this.toastr.error(error.error?.message || 'An error occurred during login');
+        this.toastr.error(error.error?.message || this.translateService.instant('LOGIN_PAGE.LOGIN_ERROR'));
         this.loading = false;
       },
       complete: () => {
@@ -108,6 +128,38 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
 
+
+  openForgotModal(event: Event): void {
+    event.preventDefault();
+    this.forgotForm.reset();
+    this.showForgotModal = true;
+  }
+
+  closeForgotModal(): void {
+    this.showForgotModal = false;
+  }
+
+  async submitForgotPassword(): Promise<void> {
+    if (this.forgotForm.invalid || this.forgotLoading) return;
+
+    this.forgotLoading = true;
+    const userEmail = this.forgotForm.value.email;
+
+    try {
+      await emailjs.send(
+        environment.emailJs.serviceId,
+        environment.emailJs.templateId,
+        { user_email: userEmail }
+      );
+      this.toastr.success(this.translateService.instant('LOGIN_PAGE.FORGOT_SUCCESS'));
+      this.closeForgotModal();
+    } catch (error) {
+      console.error('EmailJS error:', error);
+      this.toastr.error(this.translateService.instant('LOGIN_PAGE.FORGOT_ERROR'));
+    } finally {
+      this.forgotLoading = false;
+    }
+  }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
@@ -137,8 +189,6 @@ export class LoginComponent implements OnInit, OnDestroy {
 
 
   async transferInvoices(): Promise<void> {
-    debugger;
-
     if (this.selectedTransactionNumbers.size === 0) {
       return;
     }
@@ -164,7 +214,6 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.fotaraService.getTransferInvoice(transactionNumber, financialYear)
           );
 
-          debugger;
           // Step 2: Send to Fotara API
           console.log(`Sending transaction ${transactionNumber} to Fotara API`);
           const fotaraResponse = await firstValueFrom(this.fotaraService.sendToFotaraApi(invoiceData));
@@ -282,7 +331,6 @@ export class LoginComponent implements OnInit, OnDestroy {
    * Load invoices data from service
    */
   private loadInvoices(): void {
-    debugger;
     this.selectedTransactionNumbers.clear(); // Clear selections when loading new data
 
     this.invoiceService.GetUntransferredInvoicesMainData(0).subscribe({

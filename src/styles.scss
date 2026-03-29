@@ -819,6 +819,178 @@ td.mdc-data-table__cell {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// DARK THEME — Skyline navy-tinted overrides
+// ══════════════════════════════════════════════════════════════════════════════
+[data-theme-mode=dark] {
+  // Navy-tinted dark palette (replaces neutral gray)
+  --body-bg-rgb:           15, 21, 38;
+  --body-bg-rgb2:          21, 30, 54;
+  --default-background:    rgb(21, 30, 54);
+  --default-body-bg-color: rgb(15, 21, 38);
+  --custom-white:          rgb(21, 30, 54);
+  --custom-black:          rgba(255, 255, 255, 0.87);
+  --default-border:        rgba(255, 255, 255, 0.08);
+  --input-border:          rgba(255, 255, 255, 0.12);
+  --form-control-bg:       rgb(15, 21, 38);
+  --default-text-color:    rgba(255, 255, 255, 0.87);
+  --text-muted:            rgba(255, 255, 255, 0.50);
+  --list-hover-focus-bg:   rgba(255, 255, 255, 0.06);
+  --bootstrap-card-border: rgba(255, 255, 255, 0.07);
+  --menu-bg:               #111d33;
+  --header-bg:             rgb(15, 21, 38);
+  --header-border-color:   rgba(255, 255, 255, 0.06);
+  --menu-border-color:     rgba(255, 255, 255, 0.06);
+
+  // Brand surface tokens for dark
+  --color-bg:      rgb(15, 21, 38);
+  --color-surface: rgb(21, 30, 54);
+  --color-border:  rgba(255, 255, 255, 0.08);
+  --color-text-muted: rgba(255, 255, 255, 0.50);
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────────
+[data-theme-mode=dark] .app-header {
+  background: rgb(15, 21, 38) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+
+  span, .fw-medium { color: rgba(255, 255, 255, 0.80) !important; }
+  .bi, i           { color: rgba(255, 255, 255, 0.65) !important; }
+}
+
+// ── Cards ──────────────────────────────────────────────────────────────────────
+[data-theme-mode=dark] .card.custom-card {
+  background: rgb(21, 30, 54) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+
+  .card-header {
+    background: rgb(21, 30, 54) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+    .card-title { color: rgba(255, 255, 255, 0.90) !important; }
+  }
+}
+
+// ── Angular Material table ──────────────────────────────────────────────────────
+[data-theme-mode=dark] {
+  .mat-mdc-header-row { background: rgba(255, 255, 255, 0.04) !important; }
+
+  .mat-mdc-header-cell,
+  th.mdc-data-table__header-cell,
+  .mat-mdc-header-cell .mat-sort-header-button,
+  .mat-mdc-header-cell .mat-sort-header-content,
+  .mat-mdc-header-cell .mdc-data-table__header-cell-label {
+    color: rgba(255, 255, 255, 0.75) !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .mat-sort-header-arrow { color: rgba(255, 255, 255, 0.55) !important; }
+
+  .mat-mdc-row {
+    &:nth-child(even) { background: rgba(255, 255, 255, 0.025) !important; }
+    &:hover           { background: rgba(196, 18, 48, 0.08) !important; }
+  }
+
+  .mat-mdc-cell, td.mdc-data-table__cell {
+    color: rgba(255, 255, 255, 0.80) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+  }
+
+  .mat-mdc-paginator {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+    border-top-color: rgba(255, 255, 255, 0.07) !important;
+  }
+
+  .mat-mdc-paginator-icon,
+  .mat-mdc-icon-button svg            { fill: rgba(255, 255, 255, 0.65) !important; }
+  .mat-mdc-select-value,
+  .mat-mdc-paginator-page-size-label,
+  .mat-mdc-paginator-range-label      { color: rgba(255, 255, 255, 0.65) !important; }
+}
+
+// ── Form controls ──────────────────────────────────────────────────────────────
+[data-theme-mode=dark] {
+  .form-control,
+  .form-select {
+    background-color: rgb(15, 21, 38) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: rgba(255, 255, 255, 0.87) !important;
+
+    &::placeholder { color: rgba(255, 255, 255, 0.28) !important; }
+    &:focus {
+      background-color: rgb(15, 21, 38) !important;
+      border-color: rgba(196, 18, 48, 0.55) !important;
+      box-shadow: 0 0 0 0.2rem rgba(196, 18, 48, 0.14) !important;
+    }
+  }
+
+  .input-group-text {
+    background-color: rgb(25, 35, 60) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+  }
+
+  .ng-select .ng-select-container {
+    background-color: rgb(15, 21, 38) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: rgba(255, 255, 255, 0.87) !important;
+  }
+  .ng-select .ng-placeholder { color: rgba(255, 255, 255, 0.28) !important; }
+  .ng-select .ng-value         { color: rgba(255, 255, 255, 0.87) !important; }
+
+  label, .form-label { color: rgba(255, 255, 255, 0.72) !important; }
+}
+
+// ── Dropdowns ──────────────────────────────────────────────────────────────────
+[data-theme-mode=dark] .dropdown-menu {
+  background-color: rgb(21, 30, 54) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+
+  .dropdown-item {
+    color: rgba(255, 255, 255, 0.80) !important;
+    &:hover, &:focus {
+      background-color: rgba(196, 18, 48, 0.12) !important;
+      color: #fff !important;
+    }
+  }
+  .dropdown-divider { border-color: rgba(255, 255, 255, 0.07) !important; }
+}
+
+// ── Modals ─────────────────────────────────────────────────────────────────────
+[data-theme-mode=dark] {
+  .modal-content {
+    background-color: rgb(21, 30, 54) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6) !important;
+  }
+  .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+    .modal-title { color: rgba(255, 255, 255, 0.90) !important; }
+  }
+  .modal-footer { border-top-color: rgba(255, 255, 255, 0.07) !important; }
+}
+
+// ── Misc ───────────────────────────────────────────────────────────────────────
+[data-theme-mode=dark] {
+  .page-placeholder  { background: rgb(21, 30, 54) !important; border-color: rgba(255,255,255,0.07) !important; }
+  hr                 { border-color: rgba(255, 255, 255, 0.07) !important; }
+  .text-muted        { color: rgba(255, 255, 255, 0.45) !important; }
+  .page-header-breadcrumb h4 { color: rgba(255, 255, 255, 0.90) !important; }
+
+  // Bootstrap plain tables
+  .table {
+    --bs-table-color:         rgba(255, 255, 255, 0.80);
+    --bs-table-border-color:  rgba(255, 255, 255, 0.08);
+    --bs-table-striped-bg:    rgba(255, 255, 255, 0.025);
+    --bs-table-hover-bg:      rgba(196, 18, 48, 0.08);
+    thead th { color: rgba(255,255,255,0.75) !important; border-bottom-color: rgba(255,255,255,0.12) !important; }
+    td, th   { border-color: rgba(255,255,255,0.07) !important; }
+  }
+}
+
 // ── Toastr — Error Toast ───────────────────────────────────────────────────────
 #toast-container > .toast-error {
   background-color: #fff !important;

@@ -476,18 +476,11 @@ export class HeaderComponent implements OnInit {
     
     // Optional: Force update all translations on the page
     this.translateService.reloadLang(language);
-    
-    // Store the selection in localStorage
-    localStorage.setItem('language', language);
   }
-  
+
   setDefaultLanguage() {
-    const storedLanguage = localStorage.getItem('language');
-    if (!storedLanguage) {
-      this.changeLanguage('en'); // Set default language to English
-    } else {
-      this.changeLanguage(storedLanguage);
-    }
+    const lang = localStorage.getItem('language') || 'en';
+    this.changeLanguage(lang);
   }
   
   isActiveLanguage(language: string): boolean {

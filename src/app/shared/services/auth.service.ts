@@ -81,7 +81,6 @@ export class AuthService {
   }
 
   login(loginRequest: LoginRequest): Observable<LoginResponse> {
-    debugger
     return this.http.post<LoginResponse>(`${this.apiUrl}/Login`, loginRequest)
       .pipe(
         tap(response => {
@@ -134,7 +133,6 @@ export class AuthService {
 
   // Get homepage based on user role
   getHomepageByRole(): string {
-    debugger;
     const roles = this.getUserRoles();
     
     // Redirect based on priority of roles

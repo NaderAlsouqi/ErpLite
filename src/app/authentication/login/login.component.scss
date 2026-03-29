@@ -14,6 +14,25 @@ $white:        #ffffff;
   display: flex;
   min-height: 100vh;
   font-family: 'Segoe UI', 'Cairo', sans-serif;
+  position: relative;
+}
+
+// ── Language Toggle ───────────────────────────────────────────────────────────
+.lang-toggle-btn {
+  position: absolute;
+  top: 1rem;
+  inset-inline-end: 1rem;
+  z-index: 10;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: $white;
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover { background: rgba(255,255,255,0.28); }
 }
 
 // ── Brand Panel (left) ───────────────────────────────────────────────────────
@@ -278,6 +297,98 @@ $white:        #ffffff;
     cursor: not-allowed;
     box-shadow: none;
   }
+}
+
+// ── Forgot Password Modal ─────────────────────────────────────────────────────
+.fp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fp-fade-in .15s ease;
+}
+
+@keyframes fp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.fp-modal {
+  background: $white;
+  border-radius: 16px;
+  padding: 2.25rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 40px rgba($primary, .18);
+  animation: fp-slide-up .2s ease;
+}
+
+@keyframes fp-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.fp-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: $text;
+  margin-bottom: .375rem;
+}
+
+.fp-subtitle {
+  font-size: .875rem;
+  color: $text-muted;
+  margin-bottom: 1.5rem;
+}
+
+.fp-actions {
+  display: flex;
+  gap: .75rem;
+  margin-top: 1.5rem;
+}
+
+.fp-btn {
+  flex: 1;
+  padding: .75rem;
+  border-radius: 8px;
+  font-size: .9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background .2s, transform .15s;
+
+  &--cancel {
+    background: #f0f2f5;
+    color: $text-muted;
+    &:hover { background: #e4e7ed; }
+  }
+
+  &--send {
+    background: $accent;
+    color: $white;
+    box-shadow: 0 4px 12px rgba($accent, .3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &:hover:not(:disabled) { background: $accent-hover; }
+    &:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+  }
+}
+
+.fp-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba($white, .35);
+  border-top-color: $white;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────

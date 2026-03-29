@@ -1,11 +1,16 @@
 
-<div class="login-page">
+<div class="login-page" [dir]="currentLang === 'ar' ? 'rtl' : 'ltr'">
+
+  <!-- Language toggle -->
+  <button class="lang-toggle-btn" type="button" (click)="toggleLanguage()">
+    {{ 'LOGIN_PAGE.TOGGLE_LANG' | translate }}
+  </button>
 
   <!-- Left brand panel -->
   <div class="brand-panel">
     <div class="brand-panel__inner">
       <div class="brand-logo">
-        <svg viewBox="0 0 210 54" xmlns="http://www.w3.org/2000/svg" class="brand-svg">
+        <svg viewBox="0 0 210 54" xmlns="http://www.w3.org/2000/svg" class="brand-svg" direction="ltr">
           <polygon points="12,2  50,2  42,16  4,16"  fill="#c41230"/>
           <polygon points="8,20  46,20  38,34  0,34"  fill="#c41230"/>
           <polygon points="12,38 50,38  42,52  4,52"  fill="#c41230"/>
@@ -15,8 +20,9 @@
                 font-size="7.5" letter-spacing="3.8" fill="#7a93bf" text-anchor="start">INNOVATION</text>
         </svg>
       </div>
-      <h2 class="brand-tagline">Enterprise Resource<br>Planning System</h2>
-      <p class="brand-desc">Manage your business operations seamlessly with real-time insights and powerful tools.</p>
+      <!-- <h2 class="brand-tagline">{{ 'LOGIN_PAGE.ENTERPRISE_TAGLINE' | translate }}</h2> -->
+      <!-- <p class="brand-desc">{{ 'LOGIN_PAGE.BRAND_DESC' | translate }}</p> -->
+      <p class="brand-desc">JoFawtara</p>
       <div class="brand-dots">
         <span></span><span></span><span></span>
       </div>
@@ -28,14 +34,14 @@
     <div class="form-panel__inner">
 
       <div class="form-header">
-        <h1 class="form-title">Welcome back</h1>
-        <p class="form-subtitle">Sign in to your account to continue</p>
+        <h1 class="form-title">{{ 'LOGIN_PAGE.WELCOME_BACK' | translate }}</h1>
+        <p class="form-subtitle">{{ 'LOGIN_PAGE.SIGN_IN_SUBTITLE' | translate }}</p>
       </div>
 
       <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
         <div class="field-group">
-          <label class="field-label" for="Login_Name">Username</label>
+          <label class="field-label" for="Login_Name">{{ 'LOGIN_PAGE.USERNAME' | translate }}</label>
           <div class="field-wrap">
             <i class="bi bi-person field-icon"></i>
             <input
@@ -43,17 +49,17 @@
               type="text"
               id="Login_Name"
               formControlName="Login_Name"
-              placeholder="Enter your username"
+              [placeholder]="'LOGIN_PAGE.ENTER_USERNAME' | translate"
               [class.field-input--error]="loginForm.get('Login_Name')?.invalid && loginForm.get('Login_Name')?.touched"
               autocomplete="username">
           </div>
           @if (loginForm.get('Login_Name')?.invalid && loginForm.get('Login_Name')?.touched) {
-            <span class="field-error">Username is required</span>
+            <span class="field-error">{{ 'LOGIN_PAGE.USERNAME_REQUIRED' | translate }}</span>
           }
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="password">Password</label>
+          <label class="field-label" for="password">{{ 'LOGIN_PAGE.PASSWORD' | translate }}</label>
           <div class="field-wrap">
             <i class="bi bi-lock field-icon"></i>
             <input
@@ -61,7 +67,7 @@
               [type]="showPassword ? 'text' : 'password'"
               id="password"
               formControlName="Password"
-              placeholder="Enter your password"
+              [placeholder]="'LOGIN_PAGE.ENTER_PASSWORD' | translate"
               [class.field-input--error]="loginForm.get('Password')?.invalid && loginForm.get('Password')?.touched"
               autocomplete="current-password">
             <button type="button" class="toggle-pw" (click)="togglePassword()">
@@ -69,25 +75,69 @@
             </button>
           </div>
           @if (loginForm.get('Password')?.invalid && loginForm.get('Password')?.touched) {
-            <span class="field-error">Password is required</span>
+            <span class="field-error">{{ 'LOGIN_PAGE.PASSWORD_REQUIRED' | translate }}</span>
           }
         </div>
 
         <div class="form-options">
           <label class="remember-label">
             <input type="checkbox" id="remember">
-            <span>Remember me</span>
+            <span>{{ 'LOGIN_PAGE.REMEMBER_ME' | translate }}</span>
           </label>
-          <a href="#" class="forgot-link">Forgot password?</a>
+          <a href="#" class="forgot-link" (click)="openForgotModal($event)">{{ 'LOGIN_PAGE.FORGOT_PASSWORD' | translate }}</a>
         </div>
 
         <button type="submit" class="submit-btn" [disabled]="loginForm.invalid">
-          Sign In
+          {{ 'LOGIN_PAGE.LOGIN' | translate }}
         </button>
 
       </form>
 
     </div>
   </div>
+
+  <!-- Forgot Password Modal -->
+  @if (showForgotModal) {
+    <div class="fp-overlay" (click)="closeForgotModal()">
+      <div class="fp-modal" [dir]="currentLang === 'ar' ? 'rtl' : 'ltr'" (click)="$event.stopPropagation()">
+        <h2 class="fp-title">{{ 'LOGIN_PAGE.FORGOT_MODAL_TITLE' | translate }}</h2>
+        <p class="fp-subtitle">{{ 'LOGIN_PAGE.FORGOT_MODAL_SUBTITLE' | translate }}</p>
+
+        <form [formGroup]="forgotForm" (ngSubmit)="submitForgotPassword()">
+          <div class="field-group">
+            <label class="field-label">{{ 'LOGIN_PAGE.FORGOT_EMAIL_LABEL' | translate }}</label>
+            <div class="field-wrap">
+              <i class="bi bi-envelope field-icon"></i>
+              <input
+                class="field-input"
+                type="email"
+                formControlName="email"
+                [placeholder]="'LOGIN_PAGE.FORGOT_EMAIL_PLACEHOLDER' | translate"
+                [class.field-input--error]="forgotForm.get('email')?.invalid && forgotForm.get('email')?.touched">
+            </div>
+            @if (forgotForm.get('email')?.hasError('required') && forgotForm.get('email')?.touched) {
+              <span class="field-error">{{ 'LOGIN_PAGE.FORGOT_EMAIL_REQUIRED' | translate }}</span>
+            }
+            @if (forgotForm.get('email')?.hasError('email') && forgotForm.get('email')?.touched) {
+              <span class="field-error">{{ 'LOGIN_PAGE.FORGOT_EMAIL_INVALID' | translate }}</span>
+            }
+          </div>
+
+          <div class="fp-actions">
+            <button type="button" class="fp-btn fp-btn--cancel" (click)="closeForgotModal()">
+              {{ 'LOGIN_PAGE.FORGOT_CANCEL' | translate }}
+            </button>
+            <button type="submit" class="fp-btn fp-btn--send" [disabled]="forgotForm.invalid || forgotLoading">
+              @if (forgotLoading) {
+                <span class="fp-spinner"></span>
+              } @else {
+                {{ 'LOGIN_PAGE.FORGOT_SEND' | translate }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
 
 </div>

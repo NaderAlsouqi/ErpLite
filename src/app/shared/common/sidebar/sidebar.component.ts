@@ -486,7 +486,7 @@ export class SidebarComponent {
     const lang = this.currentLang === 'ar' ? 'en' : 'ar';
     this.translate.use(lang);
     localStorage.setItem('language', lang);
-    
+
     // Update the layout direction in AppStateService
     const direction = lang === 'ar' ? 'rtl' : 'ltr';
     this.appStateService.updateState({ direction });

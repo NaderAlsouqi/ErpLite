@@ -92,7 +92,7 @@ export class NavService implements OnDestroy {
     });
 
     // Set initial layout direction
-    const initialLang = this.translateService.currentLang || this.translateService.defaultLang || localStorage.getItem('language') || 'en';
+    const initialLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
     this.updateLayoutDirection(initialLang);
 
     // Subscribe to auth changes to update menu when user logs in/out
@@ -108,7 +108,6 @@ export class NavService implements OnDestroy {
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.setAttribute('dir', dir);
     document.documentElement.setAttribute('lang', lang);
-    localStorage.setItem('language', lang);
   }
 
   ngOnDestroy() {
