@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { ToastrService } from 'ngx-toastr';
 import { formatDate } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
+import { AuthService } from './auth.service';
 
 // Customer interface
 export interface Customer {
@@ -50,8 +51,42 @@ export class ReportService {
   constructor(
     private http: HttpClient,
     private toastr: ToastrService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private authService: AuthService
   ) { }
+
+  /**
+   * Get company logo URL from server
+   */
+  getCompanyLogoUrl(): Observable<string> {
+    return this.http.get(`${this.apiUrl}/Image`, { responseType: 'text' });
+  }
+
+  /**
+   * Fetch company logo as base64 data URI for embedding in print/export
+   */
+  getCompanyLogoBase64(): Observable<string> {
+    return new Observable<string>(obs => {
+      this.http.get(`${this.apiUrl}/Image/file`, { responseType: 'blob' }).subscribe({
+        next: (blob) => {
+          const reader = new FileReader();
+          reader.onloadend = () => { obs.next(reader.result as string); obs.complete(); };
+          reader.onerror = () => { obs.next(''); obs.complete(); };
+          reader.readAsDataURL(blob);
+        },
+        error: () => {
+          fetch('/assets/images/brand-logos/desktop-logo.png')
+            .then(r => r.blob())
+            .then(blob => {
+              const reader = new FileReader();
+              reader.onloadend = () => { obs.next(reader.result as string); obs.complete(); };
+              reader.readAsDataURL(blob);
+            })
+            .catch(() => { obs.next(''); obs.complete(); });
+        }
+      });
+    });
+  }
 
   /**
    * Get customers by delivery ID
@@ -402,5 +437,93 @@ export class ReportService {
     );
   }
 
+  /**
+   * Print a standardized report with company logo
+   */
+  printReport(title: string, cols: { label: string }[], rows: string): void {
+    this.getCompanyLogoBase64().subscribe(logoBase64 => {
+      const win = window.open('', '_blank');
+      if (!win) return;
 
+      const isRtl = this.translate.currentLang === 'ar';
+      const direction = isRtl ? 'rtl' : 'ltr';
+      const textAlign = isRtl ? 'right' : 'left';
+      const now = new Date();
+      const createdAt = isRtl
+        ? `${now.toLocaleDateString('ar-EG')} \u00A0 \u00A0 ${now.toLocaleTimeString('ar-EG')}`
+        : now.toLocaleString('en-US');
+      const createdBy = this.authService.currentUserValue?.DeliveryName || 'User';
+      const createdByLabel = this.translate.instant('Reports.CreatedBy');
+      const createdAtLabel = this.translate.instant('Reports.CreatedAt');
+      const companyName = this.authService.currentUserValue?.DeliveryName || 'ErpLite';
+
+      win.document.write(`
+        <!DOCTYPE html>
+        <html dir="${direction}">
+        <head>
+          <meta charset="UTF-8">
+          <title>${title}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: ${direction}; padding: 30px; margin: 0; color: #334155; display: flex; flex-direction: column; min-height: 95vh; }
+            .print-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; }
+            .header-left { display: flex; align-items: center; }
+            .print-header img { height: 50px; width: auto; object-fit: contain; }
+            .print-header .company-name { margin: 0 15px; font-size: 18px; font-weight: 700; color: #1e293b; }
+            .print-header h2 { margin: 0; font-size: 20px; color: #1e293b; font-weight: 700; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; flex-grow: 1; }
+            th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: ${textAlign}; }
+            th { background-color: #f1f5f9; font-weight: 600; color: #334155; text-transform: uppercase; font-size: 10px; letter-spacing: 0.025em; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            .print-footer { margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; font-size: 11px; color: #64748b; }
+            @media print {
+              body { padding: 15px; }
+              th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; }
+              .print-footer { position: fixed; bottom: 0; width: 100%; left: 0; background: white; padding: 10px 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-header">
+            <div class="header-left">
+              <img id="print-logo" src="${logoBase64 || ''}" alt="Logo" style="${!logoBase64 ? 'display:none' : ''}" />
+              <span class="company-name">${companyName}</span>
+            </div>
+            <h2>${title}</h2>
+          </div>
+          <table>
+            <thead>
+              <tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+          <div class="print-footer">
+            <div><strong>${createdByLabel}:</strong> ${createdBy}</div>
+            <div><strong>${createdAtLabel}:</strong> ${createdAt}</div>
+          </div>
+          <script>
+            window.onload = () => {
+              const img = document.getElementById('print-logo');
+              const doPrint = () => {
+                window.print();
+                setTimeout(() => { window.close(); }, 500);
+              };
+
+              if (img && img.src && img.complete) {
+                doPrint();
+              } else if (img && img.src) {
+                img.onload = doPrint;
+                img.onerror = doPrint;
+              } else {
+                doPrint();
+              }
+            };
+          </script>
+        </body>
+        </html>
+      `);
+      win.document.close();
+    });
+  }
 }

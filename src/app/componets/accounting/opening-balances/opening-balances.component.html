@@ -1,0 +1,235 @@
+<app-page-header
+  [title]="'OpeningBalances.Title' | translate"
+  [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'Nav.Accounting.OpeningBalances' | translate">
+</app-page-header>
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="card-title">{{ 'OpeningBalances.Title' | translate }}</div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary me-1" (click)="printTable()">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-outline-success me-1" (click)="exportToExcel()">
+            <i class="ti ti-file-spreadsheet me-1"></i>
+            {{ 'ChartOfAccounts.ExportExcel' | translate }}
+          </button>
+          <button class="btn btn-outline-info me-2" (click)="triggerImport()">
+            <i class="ti ti-upload me-1"></i>
+            {{ 'ChartOfAccounts.ImportExcel' | translate }}
+          </button>
+          <input #importFileInput type="file" accept=".xlsx,.xls" class="d-none"
+            (change)="onImportFile($event)" />
+          <ng-container *ngIf="dirtyCount > 0">
+            <button class="btn btn-outline-danger me-1" (click)="discard()" [disabled]="saving">
+              <i class="ti ti-x me-1"></i>
+              {{ 'General.Discard' | translate }}
+            </button>
+            <button class="btn btn-danger me-2" (click)="save()" [disabled]="saving">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+              {{ 'OpeningBalances.Save' | translate }}
+              <span class="badge bg-white text-danger ms-1">{{ dirtyCount }}</span>
+            </button>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Chart-of-accounts unsaved warning -->
+        <div *ngIf="chartOfAccountsDirty" class="ob-coa-warning mb-3">
+          <i class="ti ti-alert-triangle me-2"></i>
+          {{ 'OpeningBalances.ChartOfAccountsDirtyWarning' | translate }}
+        </div>
+
+        <!-- Info bar: main currency -->
+        <div class="ob-info-bar mb-3">
+          <div class="ob-info-item">
+            <span class="ob-info-label">
+              <i class="ti ti-calendar me-1"></i>
+              {{ 'OpeningBalances.OpeningDate' | translate }}
+            </span>
+            <span class="ob-info-value">{{ openingDate ?? '—' }}</span>
+          </div>
+          <div class="ob-info-sep"></div>
+          <div class="ob-info-item">
+            <span class="ob-info-label">
+              <i class="ti ti-currency me-1"></i>
+              {{ 'OpeningBalances.MainCurrency' | translate }}
+            </span>
+            <span class="ob-info-value">{{ mainCurrency?.cur ?? '—' }}</span>
+          </div>
+          <div class="ob-info-sep"></div>
+          <!-- Search -->
+          <div class="ob-search ms-auto">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="ti ti-search"></i></span>
+              <input type="text" class="form-control" [(ngModel)]="searchTerm"
+                [placeholder]="'General.Search' | translate" />
+              <button *ngIf="searchTerm" class="btn btn-outline-secondary" type="button"
+                (click)="searchTerm = ''">
+                <i class="ti ti-x"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="!loading" class="ob-table-wrapper">
+          <div class="table-responsive">
+            <table class="ob-table">
+              <thead>
+                <tr>
+                  <th class="col-no">{{ 'OpeningBalances.No' | translate }}</th>
+                  <th class="col-name">{{ 'OpeningBalances.AccountName' | translate }}</th>
+                  <th class="col-debit text-center">{{ 'OpeningBalances.Debit' | translate }}</th>
+                  <th class="col-credit text-center">{{ 'OpeningBalances.Credit' | translate }}</th>
+                  <th class="col-cur text-center">{{ 'OpeningBalances.Currency' | translate }}</th>
+                  <th class="col-curname text-center">{{ 'OpeningBalances.CurrencyName' | translate }}</th>
+                  <th class="col-rate text-center">{{ 'OpeningBalances.Rate' | translate }}</th>
+                  <th class="col-fbb text-center">{{ 'OpeningBalances.ForeignAmount' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of filteredRows; trackBy: trackByNo"
+                  class="ob-row"
+                  [class.ob-row-dirty]="row._dirty"
+                  [class.ob-row-debit]="isDebit(row.bb) && !row._dirty"
+                  [class.ob-row-credit]="isCredit(row.bb) && !row._dirty">
+
+                  <!-- No -->
+                  <td class="col-no">
+                    <span class="account-no-text">{{ row.no }}</span>
+                  </td>
+
+                  <!-- Name -->
+                  <td class="col-name">{{ row.name }}</td>
+
+                  <!-- Debit -->
+                  <td class="col-debit">
+                    <input type="number" min="0" step="0.001"
+                      class="form-control form-control-sm ob-input input-debit text-center"
+                      [(ngModel)]="row._debitInput"
+                      (ngModelChange)="onDebitChange(row)"
+                      [placeholder]="'0.000'" />
+                  </td>
+
+                  <!-- Credit -->
+                  <td class="col-credit">
+                    <input type="number" min="0" step="0.001"
+                      class="form-control form-control-sm ob-input input-credit text-center"
+                      [(ngModel)]="row._creditInput"
+                      (ngModelChange)="onCreditChange(row)"
+                      [placeholder]="'0.000'" />
+                  </td>
+
+                  <!-- Currency -->
+                  <td class="col-cur">
+                    <ng-select
+                      [items]="currencies"
+                      bindValue="cur_no"
+                      bindLabel="cur"
+                      [searchable]="true"
+                      [clearable]="false"
+                      [(ngModel)]="row.CurNo"
+                      (change)="onCurrencyChange(row)"
+                      class="ob-select">
+                    </ng-select>
+                  </td>
+
+                  <!-- Currency Name -->
+                  <td class="col-curname text-center">
+                    <span class="text-muted-light">{{ getCurrencyName(row.CurNo) }}</span>
+                  </td>
+
+                  <!-- Rate -->
+                  <td class="col-rate text-center">
+                    <span class="text-muted-light">{{ (row.LRate ?? 1) | number:'1.3-3' }}</span>
+                  </td>
+
+                  <!-- Foreign Amount (calculated) -->
+                  <td class="col-fbb text-center">
+                    <span class="text-muted-light">
+                      {{ calcForeignAmount(row) | number:'1.3-3' }}
+                    </span>
+                  </td>
+
+                </tr>
+
+                <!-- Empty state -->
+                <tr *ngIf="filteredRows.length === 0">
+                  <td colspan="8" class="text-center py-4 text-muted">
+                    <i class="ti ti-inbox fs-2 d-block mb-2"></i>
+                    {{ 'General.NoRecordsFound' | translate }}
+                  </td>
+                </tr>
+              </tbody>
+
+              <tfoot>
+                <!-- Totals -->
+                <tr class="ob-totals-row">
+                  <td colspan="2" class="text-end fw-semibold pe-3">
+                    {{ 'OpeningBalances.Total' | translate }}
+                  </td>
+                  <td class="text-center">
+                    <span class="debit-value">{{ totalDebit | number:'1.3-3' }}</span>
+                  </td>
+                  <td class="text-center">
+                    <span class="credit-value">{{ totalCredit | number:'1.3-3' }}</span>
+                  </td>
+                  <td colspan="4"></td>
+                </tr>
+                <!-- Difference -->
+                <tr class="ob-diff-row" [class.balanced]="isBalanced" [class.unbalanced]="!isBalanced">
+                  <td colspan="2" class="text-end pe-3">
+                    <span *ngIf="isBalanced" class="balance-badge balanced">
+                      <i class="ti ti-circle-check me-1"></i>
+                      {{ 'OpeningBalances.Balanced' | translate }}
+                    </span>
+                    <span *ngIf="!isBalanced" class="balance-badge unbalanced">
+                      <i class="ti ti-alert-triangle me-1"></i>
+                      {{ 'OpeningBalances.Difference' | translate }}
+                    </span>
+                  </td>
+                  <td class="text-center" *ngIf="!isBalanced && totalDebit > totalCredit">
+                    <span class="debit-value diff-value">+{{ balanceDiff | number:'1.3-3' }}</span>
+                  </td>
+                  <td class="text-center" *ngIf="!isBalanced && totalCredit >= totalDebit"></td>
+                  <td class="text-center" *ngIf="!isBalanced && totalCredit > totalDebit">
+                    <span class="credit-value diff-value">+{{ balanceDiff | number:'1.3-3' }}</span>
+                  </td>
+                  <td class="text-center" *ngIf="!isBalanced && totalDebit >= totalCredit"></td>
+                  <td colspan="4" *ngIf="isBalanced"></td>
+                  <td colspan="4" *ngIf="!isBalanced"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Bottom info -->
+          <div class="ob-footer">
+            <small class="text-muted">
+              <i class="ti ti-info-circle me-1"></i>
+              {{ 'OpeningBalances.LeafAccountsInfo' | translate: { count: rows.length } }}
+            </small>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

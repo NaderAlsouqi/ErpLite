@@ -1,0 +1,274 @@
+:host {
+  display: block;
+}
+
+// ── Card header ───────────────────────────────────────────────────────────────
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  margin-bottom: 0;
+}
+
+.card-options {
+  display: flex;
+  align-items: center;
+}
+
+// ── Add form ──────────────────────────────────────────────────────────────────
+.lga-add-form {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+}
+
+.lga-add-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lga-field {
+  flex: 1;
+  min-width: 220px;
+}
+
+.lga-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.3rem;
+}
+
+.lga-add-icon {
+  font-size: 1.2rem;
+  color: #94a3b8;
+  padding-bottom: 0.25rem;
+  flex-shrink: 0;
+}
+
+.lga-add-btn {
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 1.25rem;
+}
+
+// ── Toolbar ───────────────────────────────────────────────────────────────────
+.lga-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lga-count-badge {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  background: #e2e8f0;
+  padding: 3px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.lga-search {
+  margin-left: auto;
+  min-width: 220px;
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+.lga-table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead tr {
+    background: #f1f5f9;
+  }
+
+  th {
+    padding: 0.75rem 0.875rem;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.5rem 0.875rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    color: #334155;
+  }
+
+  .col-acc-no {
+    width: 110px;
+  }
+
+  .col-acc-name {
+    min-width: 180px;
+  }
+
+  .col-grp-no {
+    width: 100px;
+  }
+
+  .col-grp-name {
+    min-width: 150px;
+  }
+
+  .col-grp-ename {
+    min-width: 150px;
+  }
+
+  .col-actions {
+    width: 70px;
+  }
+}
+
+.lga-row {
+  transition: background 0.1s;
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.lga-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  color: #334155;
+}
+
+// ── ng-select overrides ───────────────────────────────────────────────────────
+.lga-select {
+  font-size: 0.875rem;
+
+  .ng-select-container {
+    min-height: 38px !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+  }
+
+  &.ng-select-focused .ng-select-container,
+  &.ng-select-opened .ng-select-container {
+    border-color: var(--primary-color, #6366f1) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+  }
+
+  .ng-value-container {
+    padding: 0 0.625rem !important;
+
+    .ng-value {
+      font-size: 0.875rem;
+      color: #1e293b;
+      font-weight: 500;
+    }
+
+    .ng-placeholder {
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+
+    .ng-input>input {
+      font-size: 0.875rem;
+    }
+  }
+
+  .ng-arrow-wrapper {
+    width: 24px;
+    padding-right: 6px;
+
+    .ng-arrow {
+      border-color: #94a3b8 transparent transparent;
+      border-width: 5px 5px 0;
+    }
+  }
+
+  &.ng-select-opened .ng-arrow-wrapper .ng-arrow {
+    border-color: transparent transparent var(--primary-color, #6366f1);
+    border-width: 0 5px 5px;
+  }
+
+  .ng-clear-wrapper {
+    color: #94a3b8;
+
+    &:hover {
+      color: #dc2626;
+    }
+  }
+}
+
+// Dropdown panel — appended to body, must be global
+::ng-deep .ng-dropdown-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  font-size: 0.875rem;
+  z-index: 9999;
+
+  .ng-dropdown-panel-items {
+    background: #ffffff;
+    max-height: 260px;
+
+    .ng-option {
+      background: #ffffff;
+      padding: 0.45rem 0.75rem;
+      color: #334155;
+      transition: background 0.1s;
+
+      &.ng-option-marked {
+        background: rgba(99, 102, 241, 0.07);
+        color: #1e293b;
+      }
+
+      &.ng-option-selected {
+        background: var(--primary-color, #6366f1);
+        color: #ffffff;
+        font-weight: 600;
+
+        &.ng-option-marked {
+          background: var(--primary-color, #6366f1);
+          color: #ffffff;
+          filter: brightness(1.1);
+        }
+      }
+
+      &.ng-option-disabled {
+        color: #94a3b8;
+      }
+    }
+  }
+}
+
+.lga-opt-no {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-inline-end: 6px;
+}
+
+.lga-opt-name {
+  font-size: 0.85rem;
+  margin-inline-end: 6px;
+}
+
+.lga-opt-ename {
+  font-size: 0.78rem;
+}

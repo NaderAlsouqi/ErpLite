@@ -1,0 +1,311 @@
+<app-page-header
+  [title]="'ClearCostCenters.Title' | translate"
+  [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'Nav.Accounting.ClearCostCenters' | translate">
+</app-page-header>
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header">
+        <div class="card-title">{{ 'ClearCostCenters.Title' | translate }}</div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary me-1" (click)="printTable()">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-outline-primary me-1" (click)="expandAll()">
+            <i class="ti ti-unfold-more me-1"></i>
+            {{ 'ClearCostCenters.ExpandAll' | translate }}
+          </button>
+          <button class="btn btn-outline-primary me-1" (click)="collapseAll()">
+            <i class="ti ti-fold me-1"></i>
+            {{ 'ClearCostCenters.CollapseAll' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="addNewRow()">
+            <i class="ti ti-plus me-1"></i>
+            {{ 'ClearCostCenters.AddCostCenter' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Search -->
+        <div class="row mb-3">
+          <div class="col-md-5">
+            <div class="form-group">
+              <label class="form-label">{{ 'General.Search' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearch()"
+                  [placeholder]="'ClearCostCenters.SearchPlaceholder' | translate" />
+                <button class="btn btn-outline-secondary" type="button" *ngIf="searchTerm" (click)="searchTerm=''; onSearch()">
+                  <i class="ti ti-x"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-7 d-flex align-items-end justify-content-end gap-2">
+            <span *ngIf="isDirty" class="dirty-banner">
+              <i class="ti ti-pencil me-1"></i>
+              {{ 'ClearCostCenters.UnsavedChanges' | translate }}
+            </span>
+            <span *ngIf="searchMode" class="badge bg-primary-subtle text-primary">
+              <i class="ti ti-search me-1"></i>
+              {{ 'ClearCostCenters.SearchResults' | translate }}: {{ searchResults.length }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Tree Table -->
+        <div *ngIf="!loading" class="table-responsive">
+          <table class="cc-tree-table">
+            <thead>
+              <tr>
+                <th class="col-no">{{ 'ClearCostCenters.CcntrNo' | translate }}</th>
+                <th class="col-name">{{ 'ClearCostCenters.ArabicName' | translate }}</th>
+                <th class="col-ename">{{ 'ClearCostCenters.EnglishName' | translate }}</th>
+                <th class="col-level text-center">{{ 'ClearCostCenters.Level' | translate }}</th>
+                <th class="col-belong">{{ 'ClearCostCenters.Belong' | translate }}</th>
+                <th class="col-actions text-center">{{ 'ClearCostCenters.Actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let item of displayItems; trackBy: trackByDisplayItem">
+
+                <!-- ── Existing row — view mode ───────────────────────────── -->
+                <tr *ngIf="item.kind === 'existing' && !editingRows[item.node!.data.CcntrNo]">
+                  <td class="col-no">
+                    <div class="cc-no-cell" [style.padding-inline-start.px]="searchMode ? 0 : getIndent(item.node!)">
+                      <button
+                        *ngIf="item.node!.hasChildren && !searchMode"
+                        class="btn-tree-toggle"
+                        [class.expanded]="item.node!.expanded"
+                        (click)="toggleExpand(item.node!, $event)">
+                        <i class="ti"
+                          [class.ti-chevron-down]="item.node!.expanded"
+                          [class.ti-chevron-left]="!item.node!.expanded"></i>
+                      </button>
+                      <span *ngIf="!item.node!.hasChildren && !searchMode" class="tree-leaf-dot"></span>
+                      <span class="cc-no">{{ item.node!.data.CcntrNo }}</span>
+                    </div>
+                  </td>
+                  <td class="col-name">
+                    <span class="cc-aname" dir="rtl">{{ item.node!.data.CcAname }}</span>
+                  </td>
+                  <td class="col-ename">
+                    <span class="cc-ename" dir="ltr">{{ item.node!.data.Ccename }}</span>
+                  </td>
+                  <td class="col-level text-center">
+                    <span class="level-badge level-{{ item.node!.data.level }}">{{ item.node!.data.level ?? '—' }}</span>
+                  </td>
+                  <td class="col-belong">{{ item.node!.data.belong || '—' }}</td>
+                  <td class="col-actions text-center">
+                    <button class="btn btn-sm btn-outline-success me-1"
+                      (click)="addNewRow(item.node!)"
+                      [title]="'ClearCostCenters.AddChild' | translate">
+                      <i class="ti ti-git-branch"></i>
+                    </button>
+                    <button class="btn btn-sm btn-warning"
+                      (click)="initiateClear(item.node!)"
+                      [title]="'ClearCostCenters.ClearBtn' | translate">
+                      <i class="ti ti-arrows-exchange me-1"></i>
+                      {{ 'ClearCostCenters.ClearBtn' | translate }}
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- ── Existing row — edit mode ───────────────────────────── -->
+                <tr *ngIf="item.kind === 'existing' && editingRows[item.node!.data.CcntrNo]" class="row-editing">
+                  <td class="col-no">
+                    <div class="cc-no-cell" [style.padding-inline-start.px]="searchMode ? 0 : getIndent(item.node!)">
+                      <span class="cc-no">{{ item.node!.data.CcntrNo }}</span>
+                    </div>
+                  </td>
+                  <td class="col-name">
+                    <input type="text" class="form-control inline-input"
+                      [(ngModel)]="editingRows[item.node!.data.CcntrNo].CcAname"
+                      [class.is-invalid]="submitted && !editingRows[item.node!.data.CcntrNo].CcAname?.trim()"
+                      dir="rtl"
+                      [placeholder]="'ClearCostCenters.ArabicName' | translate" />
+                  </td>
+                  <td class="col-ename">
+                    <input type="text" class="form-control inline-input"
+                      [(ngModel)]="editingRows[item.node!.data.CcntrNo].Ccename"
+                      [class.is-invalid]="submitted && !editingRows[item.node!.data.CcntrNo].Ccename?.trim()"
+                      dir="ltr"
+                      [placeholder]="'ClearCostCenters.EnglishName' | translate" />
+                  </td>
+                  <td class="col-level text-center">
+                    <span class="level-badge level-{{ editingRows[item.node!.data.CcntrNo].level }}">
+                      {{ editingRows[item.node!.data.CcntrNo].level ?? '—' }}
+                    </span>
+                  </td>
+                  <td class="col-belong">
+                    <ng-select
+                      class="inline-select"
+                      [items]="flatList"
+                      bindValue="CcntrNo"
+                      [searchable]="true"
+                      [(ngModel)]="editingRows[item.node!.data.CcntrNo].belong"
+                      (change)="onBelongChange(editingRows[item.node!.data.CcntrNo])"
+                      [placeholder]="'ClearCostCenters.NoParent' | translate">
+                      <ng-template ng-label-tmp let-cc="item">{{ cc.CcntrNo }} — {{ cc.CcAname }}</ng-template>
+                      <ng-template ng-option-tmp let-cc="item">{{ cc.CcntrNo }} — {{ cc.CcAname }}</ng-template>
+                    </ng-select>
+                  </td>
+                  <td class="col-actions text-center">
+                    <button class="btn btn-sm btn-success me-1"
+                      (click)="saveEditedRow(item.node!.data.CcntrNo)"
+                      [disabled]="saving"
+                      [title]="'General.Save' | translate">
+                      <span *ngIf="saving" class="spinner-border spinner-border-sm"></span>
+                      <i *ngIf="!saving" class="ti ti-check"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary"
+                      (click)="cancelEdit(item.node!.data.CcntrNo)"
+                      [disabled]="saving"
+                      [title]="'General.Cancel' | translate">
+                      <i class="ti ti-x"></i>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- ── New inline row ─────────────────────────────────────── -->
+                <tr *ngIf="item.kind === 'new'" class="row-new">
+                  <td class="col-no">
+                    <input type="number" class="form-control inline-input"
+                      [(ngModel)]="item.row!.CcntrNo"
+                      [class.is-invalid]="submitted && (!item.row!.CcntrNo || item.row!.CcntrNo <= 0)"
+                      [placeholder]="'ClearCostCenters.CcntrNo' | translate" />
+                  </td>
+                  <td class="col-name">
+                    <input type="text" class="form-control inline-input"
+                      [(ngModel)]="item.row!.CcAname"
+                      [class.is-invalid]="submitted && !item.row!.CcAname?.trim()"
+                      dir="rtl"
+                      [placeholder]="'ClearCostCenters.ArabicName' | translate" />
+                  </td>
+                  <td class="col-ename">
+                    <input type="text" class="form-control inline-input"
+                      [(ngModel)]="item.row!.Ccename"
+                      [class.is-invalid]="submitted && !item.row!.Ccename?.trim()"
+                      dir="ltr"
+                      [placeholder]="'ClearCostCenters.EnglishName' | translate" />
+                  </td>
+                  <td class="col-level text-center">
+                    <span class="level-badge level-{{ item.row!.level }}">{{ item.row!.level ?? 1 }}</span>
+                  </td>
+                  <td class="col-belong">
+                    <ng-select
+                      class="inline-select"
+                      [items]="flatList"
+                      bindValue="CcntrNo"
+                      [searchable]="true"
+                      [(ngModel)]="item.row!.belong"
+                      (change)="onBelongChange(item.row!)"
+                      [placeholder]="'ClearCostCenters.NoParent' | translate">
+                      <ng-template ng-label-tmp let-cc="item">{{ cc.CcntrNo }} — {{ cc.CcAname }}</ng-template>
+                      <ng-template ng-option-tmp let-cc="item">{{ cc.CcntrNo }} — {{ cc.CcAname }}</ng-template>
+                    </ng-select>
+                  </td>
+                  <td class="col-actions text-center">
+                    <button class="btn btn-sm btn-success me-1"
+                      (click)="saveNewRow(item.row!)"
+                      [disabled]="saving"
+                      [title]="'General.Save' | translate">
+                      <span *ngIf="saving" class="spinner-border spinner-border-sm"></span>
+                      <i *ngIf="!saving" class="ti ti-check"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary"
+                      (click)="removeNewRow(item.row!._tempId!)"
+                      [disabled]="saving"
+                      [title]="'General.Cancel' | translate">
+                      <i class="ti ti-x"></i>
+                    </button>
+                  </td>
+                </tr>
+
+              </ng-container>
+
+              <tr *ngIf="displayItems.length === 0">
+                <td colspan="6" class="text-center text-muted py-4">
+                  {{ 'General.NoRecordsFound' | translate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Clear Modal -->
+<ng-template #clearModal>
+  <div class="modal-header">
+    <h5 class="modal-title">{{ 'ClearCostCenters.ModalTitle' | translate }}</h5>
+    <button type="button" class="btn-close" (click)="cancelClear()" [disabled]="saving"></button>
+  </div>
+  <div class="modal-body">
+    <div *ngIf="pendingFromNode" class="ccc-from-info mb-3">
+      <span class="text-muted small">{{ 'ClearCostCenters.From' | translate }}:</span>
+      <span class="fw-semibold ms-2">{{ pendingFromNode.data.CcntrNo }} — {{ pendingFromNode.data.CcAname }}</span>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">
+        {{ 'ClearCostCenters.To' | translate }}
+        <span class="text-danger ms-1">*</span>
+      </label>
+      <select
+        class="form-select ccc-select-list"
+        [(ngModel)]="targetCcntrNo"
+        [size]="8">
+        <option [ngValue]="null" disabled hidden>{{ 'ClearCostCenters.SelectTargetPlaceholder' | translate }}</option>
+        <option *ngFor="let cc of flatList" [ngValue]="cc.CcntrNo">
+          {{ cc.CcntrNo }} — {{ cc.CcAname }}
+        </option>
+      </select>
+    </div>
+
+    <div class="ccc-warning">
+      <i class="ti ti-alert-triangle me-2"></i>
+      {{ 'ClearCostCenters.Warning' | translate }}
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="cancelClear()" [disabled]="saving">
+      {{ 'General.Cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-warning" (click)="confirmClear()" [disabled]="saving || !targetCcntrNo">
+      <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+      <i *ngIf="!saving" class="ti ti-transfer me-1"></i>
+      {{ 'ClearCostCenters.ConfirmClear' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<app-confirmation-modal
+  #transferConfirmModal
+  [title]="'ChartOfAccounts.TransferConfirmTitle' | translate"
+  [message]="''"
+  [confirmButtonText]="'ChartOfAccounts.TransferYes' | translate"
+  [cancelButtonText]="'ChartOfAccounts.TransferNo' | translate"
+  (confirm)="onConfirmTransfer()"
+  (cancel)="onCancelTransfer()"
+></app-confirmation-modal>

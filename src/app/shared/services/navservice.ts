@@ -121,6 +121,203 @@ export class NavService implements OnDestroy {
 
   // Original menu items with translation keys and role restrictions
   ORIGINALMENU: Menu[] = [
+    { headTitle: 'Nav.Accounting.Title' },
+    {
+      title: 'Accounting',
+      translationKey: 'Nav.Accounting.Title',
+      icon: 'bi-cash-coin',
+      dirchange: false,
+      type: 'sub',
+      active: false,
+      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
+      children: [
+        // {
+        //   title: 'Receipt Vouchers',
+        //   translationKey: 'Nav.Accounting.ReceiptVouchers',
+        //   dirchange: false,
+        //   type: 'link',
+        //   active: false,
+        //   selected: false,
+        //   path: '/accounting/receipt-vouchers',
+        //   roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
+        // },
+        {
+          title: 'Virtual Receipt Vouchers',
+          translationKey: 'Nav.Accounting.VirtualReceiptVouchers',
+          dirchange: false,
+          type: 'link',
+          active: false,
+          selected: false,
+          path: '/accounting/virtual/receipt-vouchers',
+          roles: ['Admin', 'Manager', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
+        },
+        // General Ledger
+        {
+          title: 'General Ledger',
+          translationKey: 'Nav.Accounting.GeneralLedger',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            {
+              title: 'شاشات الادخال',
+              translationKey: 'Nav.Accounting.InputScreens',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: [
+                { title: 'سندات القيد',  translationKey: 'Nav.Accounting.JournalVouchers', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/vouchers/journal' },
+                { title: 'زمر الحسابات', translationKey: 'Nav.Accounting.AccountGroups',  dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/account-groups' },
+                { title: 'الضراىب',      translationKey: 'Nav.Accounting.Taxes',           dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/taxes' },
+                { title: 'مراكز الكلف',  translationKey: 'Nav.Accounting.CostCenters',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/cost-centers' },
+                { title: 'البنوك',        translationKey: 'Nav.Accounting.Banks',           dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/banks' },
+                { title: 'العملات',       translationKey: 'Nav.Accounting.Currencies',      dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/currencies' },
+              ]
+            },
+            {
+              title: 'اعداد الحسابات',
+              translationKey: 'Nav.Accounting.AccountSetup',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: [
+                { title: 'قائمة الحسابات',       translationKey: 'Nav.Accounting.AccountsList',              dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/accounts-list' },
+                { title: 'الأرصدة الافتتاحية',  translationKey: 'Nav.Accounting.OpeningBalances',           dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/opening-balances' },
+                { title: 'الغاء حساب',           translationKey: 'Nav.Accounting.CancelAccount',            dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/cancel-account' },
+                { title: 'ربط الزمر بالحسابات',  translationKey: 'Nav.Accounting.LinkGroupsToAccounts',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/link-groups-accounts' },
+                { title: 'ربط الحسابات',          translationKey: 'Nav.Accounting.LinkAccounts',             dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/link-accounts' },
+                { title: 'تعديل اسم حساب',        translationKey: 'Nav.Accounting.EditAccountName',          dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/edit-account-name' },
+                { title: 'تفريغ مراكز الكلف',     translationKey: 'Nav.Accounting.ClearCostCenters',         dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/clear-cost-centers' },
+                { title: 'نقل حركات حساب',        translationKey: 'Nav.Accounting.TransferAccountMovements', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/transfer-account-movements' },
+                { title: 'الارصدة الافتتاحية لمراكز الكلف', translationKey: 'Nav.Accounting.CcOpeningBalances', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/cc-opening-balances' },
+              ]
+            },
+            {
+              title: 'التقارير',
+              translationKey: 'Nav.Accounting.GLReports',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: []
+            },
+          ]
+        },
+        // Accounts Receivable
+        {
+          title: 'Accounts Receivable',
+          translationKey: 'Nav.Accounting.AccountsReceivable',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            {
+              title: 'شاشات الادخال',
+              translationKey: 'Nav.Accounting.InputScreens',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: [
+                { title: 'سندات القبض', translationKey: 'Nav.Accounting.ReceiptVouchers', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/receipt-vouchers' },
+                { title: 'العملاء',            translationKey: 'Nav.Accounting.Customers',          dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/ar/customers' },
+              ]
+            },
+            {
+              title: 'التقارير',
+              translationKey: 'Nav.Accounting.ARReports',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: []
+            },
+          ]
+        },
+        // Accounts Payable
+        {
+          title: 'Accounts Payable',
+          translationKey: 'Nav.Accounting.AccountsPayable',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            {
+              title: 'شاشات الادخال',
+              translationKey: 'Nav.Accounting.InputScreens',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: [
+                { title: 'سند صرف نقدي',  translationKey: 'Nav.Accounting.CashPaymentVoucher',  dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/vouchers/cash-payment' },
+                { title: 'الموردين',       translationKey: 'Nav.Accounting.Suppliers',            dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/ap/suppliers' },
+              ]
+            },
+            {
+              title: 'التقارير',
+              translationKey: 'Nav.Accounting.APReports',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: []
+            },
+          ]
+        },
+        // الشيكات
+        {
+          title: 'الشيكات',
+          translationKey: 'Nav.Accounting.Cheques',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            {
+              title: 'شاشات الادخال',
+              translationKey: 'Nav.Accounting.InputScreens',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: [
+                { title: 'سند قبض شيكات',        translationKey: 'Nav.Accounting.ChequeReceiptVoucher', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/ar/cheque-receipt-vouchers' },
+                { title: 'شيكات واردة اول مرة',  translationKey: 'Nav.Accounting.IncomingCheques',   dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/incoming-first' },
+                { title: 'شيكات صادرة اول مرة',  translationKey: 'Nav.Accounting.OutgoingCheques',   dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/outgoing-first' },
+                { title: 'ايداع الشيكات',         translationKey: 'Nav.Accounting.ChequeDeposit',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/deposit' },
+                { title: 'تحصيل الشيكات',         translationKey: 'Nav.Accounting.ChequeCollection',  dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/collection' },
+                { title: 'ارجاع الشيكات',         translationKey: 'Nav.Accounting.ChequeReturn',      dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/return' },
+                { title: 'اعادة شيكات راجعة',     translationKey: 'Nav.Accounting.ChequeReReturn',    dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/re-return' },
+                { title: 'سحب الشيكات',           translationKey: 'Nav.Accounting.ChequeWithdrawal',  dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/withdrawal' },
+                { title: 'تجيير الشيكات',         translationKey: 'Nav.Accounting.ChequeEndorsement', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/endorse' },
+              ]
+            },
+            {
+              title: 'التقارير',
+              translationKey: 'Nav.Accounting.ChequesReports',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: []
+            },
+          ]
+        },
+      ]
+    },
+    { headTitle: 'Nav.Warehouse.Title' },
+    {
+      title: 'نظام ادارة المستودعات',
+      translationKey: 'Nav.Warehouse.Title',
+      icon: 'bi-boxes',
+      dirchange: false,
+      type: 'sub',
+      active: false,
+      children: []
+    },
+    { headTitle: 'Nav.Purchases.Title' },
+    {
+      title: 'نظام ادارة المشتريات',
+      translationKey: 'Nav.Purchases.Title',
+      icon: 'bi-cart',
+      dirchange: false,
+      type: 'sub',
+      active: false,
+      children: []
+    },
     { headTitle: 'Nav.Sales.Title' },
     {
       title: 'Sales',
@@ -403,37 +600,25 @@ export class NavService implements OnDestroy {
         }
       ]
     },
-    { headTitle: 'Nav.Accounting.Title' },
+    { headTitle: 'Nav.Assets.Title' },
     {
-      title: 'Accounting',
-      translationKey: 'Nav.Accounting.Title',
-      icon: 'bi-cash-coin',
+      title: 'نظام ادارة الاصول',
+      translationKey: 'Nav.Assets.Title',
+      icon: 'bi-building',
       dirchange: false,
       type: 'sub',
       active: false,
-      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
-      children: [
-        {
-          title: 'Receipt Vouchers',
-          translationKey: 'Nav.Accounting.ReceiptVouchers',
-          dirchange: false,
-          type: 'link',
-          active: false,
-          selected: false,
-          path: '/accounting/receipt-vouchers',
-          roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
-        },
-        {
-          title: 'Virtual Receipt Vouchers',
-          translationKey: 'Nav.Accounting.VirtualReceiptVouchers',
-          dirchange: false,
-          type: 'link',
-          active: false,
-          selected: false,
-          path: '/accounting/virtual/receipt-vouchers',
-          roles: ['Admin', 'Manager', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
-        },
-      ]
+      children: []
+    },
+    { headTitle: 'Nav.Production.Title' },
+    {
+      title: 'نظام ادارة الانتاج',
+      translationKey: 'Nav.Production.Title',
+      icon: 'bi-gear',
+      dirchange: false,
+      type: 'sub',
+      active: false,
+      children: []
     },
     { headTitle: 'Nav.Reports.Title' },
     {

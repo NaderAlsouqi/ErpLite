@@ -1,0 +1,439 @@
+<app-page-header [title]="'ChartOfAccounts.Title' | translate" [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'Nav.Accounting.AccountsList' | translate">
+</app-page-header>
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="card-title">{{ 'ChartOfAccounts.Title' | translate }}</div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary me-1" (click)="expandAll()"
+            [title]="'ChartOfAccounts.ExpandAll' | translate">
+            <i class="ti ti-unfold-more me-1"></i>
+            {{ 'ChartOfAccounts.ExpandAll' | translate }}
+          </button>
+          <button class="btn btn-outline-primary me-2" (click)="collapseAll()"
+            [title]="'ChartOfAccounts.CollapseAll' | translate">
+            <i class="ti ti-fold me-1"></i>
+            {{ 'ChartOfAccounts.CollapseAll' | translate }}
+          </button>
+          <button class="btn btn-outline-primary me-2" (click)="printTable()">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-outline-success me-1" (click)="exportToExcel()"
+            [title]="'ChartOfAccounts.ExportExcel' | translate">
+            <i class="ti ti-file-spreadsheet me-1"></i>
+            {{ 'ChartOfAccounts.ExportExcel' | translate }}
+          </button>
+          <button class="btn btn-outline-info me-2" (click)="triggerImport()"
+            [title]="'ChartOfAccounts.ImportExcel' | translate">
+            <i class="ti ti-upload me-1"></i>
+            {{ 'ChartOfAccounts.ImportExcel' | translate }}
+          </button>
+          <input #importFileInput type="file" accept=".xlsx,.xls" class="d-none"
+            (change)="onImportFile($event)" />
+
+          <!-- Dirty state actions -->
+          <ng-container *ngIf="isDirty">
+            <button class="btn btn-outline-danger me-1" (click)="discardAll()" [disabled]="loading">
+              <i class="ti ti-x me-1"></i>
+              {{ 'ChartOfAccounts.DiscardAll' | translate }}
+            </button>
+            <button class="btn btn-danger me-2" (click)="saveAll()" [disabled]="loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <i *ngIf="!loading" class="ti ti-device-floppy me-1"></i>
+              {{ 'ChartOfAccounts.SaveAll' | translate }}
+              <span class="badge bg-white text-danger ms-1">
+                {{ editingCount + newRows.length }}
+              </span>
+            </button>
+          </ng-container>
+
+          <button class="btn btn-primary" (click)="addNewRow()">
+            <i class="ti ti-plus me-1"></i>
+            {{ 'ChartOfAccounts.AddAccount' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Search -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">{{ 'General.Search' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input type="text" class="form-control" [(ngModel)]="searchTerm" (input)="onSearch()"
+                  [placeholder]="'ChartOfAccounts.SearchPlaceholder' | translate" />
+                <button *ngIf="searchTerm" class="btn btn-outline-secondary" type="button"
+                  (click)="searchTerm=''; onSearch()">
+                  <i class="ti ti-x"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6"></div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading && !isDirty" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Tree / Search Table -->
+        <div *ngIf="!loading || isDirty" class="accounts-table-wrapper">
+
+          <!-- Search mode badge -->
+          <div *ngIf="searchMode" class="search-info mb-2">
+            <span class="badge bg-primary-subtle text-primary">
+              <i class="ti ti-search me-1"></i>
+              {{ 'ChartOfAccounts.SearchResults' | translate }}: {{ totalItems }}
+            </span>
+          </div>
+
+          <!-- Unsaved changes banner -->
+          <div *ngIf="isDirty" class="dirty-banner mb-2">
+            <i class="ti ti-pencil me-1"></i>
+            {{ 'ChartOfAccounts.UnsavedChanges' | translate: { edits: editingCount, newRows: newRows.length } }}
+          </div>
+
+          <div class="table-responsive">
+            <table class="accounts-table">
+              <thead>
+                <tr>
+                  <th class="col-no">{{ 'ChartOfAccounts.No' | translate }}</th>
+                  <th class="col-name">{{ 'ChartOfAccounts.ArabicName' | translate }}</th>
+                  <th class="col-ename">{{ 'ChartOfAccounts.EnglishName' | translate }}</th>
+                  <th class="col-level text-center">{{ 'ChartOfAccounts.Level' | translate }}</th>
+                  <th class="col-belong text-center">{{ 'ChartOfAccounts.Belong' | translate }}</th>
+                  <th class="col-credit text-center">{{ 'ChartOfAccounts.Credit' | translate }}</th>
+                  <th class="col-debit text-center">{{ 'ChartOfAccounts.Debit' | translate }}</th>
+                  <!-- <th class="col-subtotal-credit text-center">{{ 'ChartOfAccounts.TotalCredit' | translate }}</th> -->
+                  <!-- <th class="col-subtotal-debit text-center">{{ 'ChartOfAccounts.TotalDebit' | translate }}</th> -->
+                  <th class="col-ccntr text-center">{{ 'ChartOfAccounts.CcntrNo' | translate }}</th>
+                  <th class="col-actions text-center">{{ 'InvoicesPage.Action' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let item of displayRows; trackBy: trackByDisplayItem">
+
+                  <!-- ── Existing row ──────────────────────────────────── -->
+                  <tr *ngIf="item.kind === 'existing'" class="account-row"
+                    [class.row-parent]="item.node!.hasChildren && !editingRows[item.node!.data.no]"
+                    [class.row-leaf]="!item.node!.hasChildren && !editingRows[item.node!.data.no]"
+                    [class.row-with-balance]="(item.node!.data.bb ?? 0) !== 0 && !editingRows[item.node!.data.no]"
+                    [class.row-expanded]="item.node!.expanded"
+                    [class.row-stopped]="item.node!.data.Stopped && !editingRows[item.node!.data.no]"
+                    [class.row-editing]="editingRows[item.node!.data.no]"
+                    [attr.data-level]="item.node!.data.level ?? 0">
+
+                    <!-- Account Number -->
+                    <td class="col-no">
+                      <div class="account-no-cell"
+                        [style.padding-inline-start.px]="searchMode ? 0 : getIndent(item.node!)">
+                        <button *ngIf="item.node!.hasChildren && !searchMode && !editingRows[item.node!.data.no]"
+                          class="btn-tree-toggle" [class.expanded]="item.node!.expanded"
+                          (click)="toggleExpand(item.node!, $event)"
+                          [title]="(item.node!.expanded ? 'ChartOfAccounts.Collapse' : 'ChartOfAccounts.Expand') | translate">
+                          <i class="ti" [class.ti-chevron-down]="item.node!.expanded"
+                            [class.ti-chevron-left]="!item.node!.expanded"></i>
+                        </button>
+                        <span *ngIf="!item.node!.hasChildren && !searchMode && !editingRows[item.node!.data.no]"
+                          class="tree-leaf-dot"></span>
+                        <span class="account-no-text" [class.fw-semibold]="item.node!.hasChildren">{{ item.node!.data.no
+                          }}</span>
+                      </div>
+                    </td>
+
+                    <!-- Arabic Name (read-only) -->
+                    <td class="col-name">
+                      <span [class.fw-semibold]="item.node!.hasChildren" [class.text-muted]="item.node!.data.Stopped">
+                        {{ item.node!.data.name }}
+                      </span>
+                      <span *ngIf="item.node!.data.Stopped" class="badge bg-secondary ms-1 badge-stopped">
+                        <i class="ti ti-ban"></i>
+                      </span>
+                    </td>
+
+                    <!-- English Name (read-only) -->
+                    <td class="col-ename">
+                      <span class="text-muted-light">{{ item.node!.data.Ename }}</span>
+                    </td>
+
+                    <!-- Level -->
+                    <td class="col-level text-center">
+                      <span class="level-chip level-{{ item.node!.data.level ?? 0 }}">{{ item.node!.data.level ?? 0
+                        }}</span>
+                    </td>
+
+                    <!-- Belong -->
+                    <td class="col-belong text-center">
+                      <ng-container *ngIf="editingRows[item.node!.data.no] as draft; else belongDisplay">
+                        <ng-select [items]="allData" bindValue="no" bindLabel="name" [searchFn]="accountSearchFn"
+                          [searchable]="true" [clearable]="true" [(ngModel)]="draft.belong"
+                          [placeholder]="'ChartOfAccounts.EnterBelong' | translate" class="inline-select">
+                          <ng-template ng-label-tmp let-item="item">{{ item.no }}</ng-template>
+                          <ng-template ng-option-tmp let-item="item">{{ item.no }} — {{ item.name }}</ng-template>
+                        </ng-select>
+                      </ng-container>
+                      <ng-template #belongDisplay>
+                        <span class="text-muted-light">{{ item.node!.data.belong || '—' }}</span>
+                      </ng-template>
+                    </td>
+
+                    <!-- دائن (bb < 0) -->
+                    <td class="col-credit text-center">
+                      <ng-container *ngIf="editingRows[item.node!.data.no] as draft; else creditDisplay">
+                        <input type="number" min="0" step="0.001"
+                          class="form-control form-control-sm inline-input text-center input-credit"
+                          [(ngModel)]="draft._creditInput" (ngModelChange)="onInlineCreditChange(draft)"
+                          [placeholder]="'ChartOfAccounts.EnterCredit' | translate" />
+                      </ng-container>
+                      <ng-template #creditDisplay>
+                        <span *ngIf="isCredit(item.node!.data.bb)" class="credit-value">
+                          {{ (item.node!.data.bb! * -1) | number:'1.3-3' }}
+                        </span>
+                        <span *ngIf="!isCredit(item.node!.data.bb)" class="text-muted-light">—</span>
+                      </ng-template>
+                    </td>
+
+                    <!-- مدين (bb > 0) -->
+                    <td class="col-debit text-center">
+                      <ng-container *ngIf="editingRows[item.node!.data.no] as draft; else debitDisplay">
+                        <input type="number" min="0" step="0.001"
+                          class="form-control form-control-sm inline-input text-center input-debit"
+                          [(ngModel)]="draft._debitInput" (ngModelChange)="onInlineDebitChange(draft)"
+                          [placeholder]="'ChartOfAccounts.EnterDebit' | translate" />
+                      </ng-container>
+                      <ng-template #debitDisplay>
+                        <span *ngIf="isDebit(item.node!.data.bb)" class="debit-value">
+                          {{ item.node!.data.bb! | number:'1.3-3' }}
+                        </span>
+                        <span *ngIf="!isDebit(item.node!.data.bb)" class="text-muted-light">—</span>
+                      </ng-template>
+                    </td>
+
+                    <!-- مجموع الدائن -->
+                    <!-- <td class="col-subtotal-credit text-center">
+                      <span *ngIf="subtotalMap.get(item.node!.data.no)?.credit" class="subtotal-credit-value">
+                        {{ subtotalMap.get(item.node!.data.no)!.credit | number:'1.3-3' }}
+                      </span>
+                      <span *ngIf="!subtotalMap.get(item.node!.data.no)?.credit" class="text-muted-light">—</span>
+                    </td> -->
+
+                    <!-- مجموع المدين -->
+                    <!-- <td class="col-subtotal-debit text-center">
+                      <span *ngIf="subtotalMap.get(item.node!.data.no)?.debit" class="subtotal-debit-value">
+                        {{ subtotalMap.get(item.node!.data.no)!.debit | number:'1.3-3' }}
+                      </span>
+                      <span *ngIf="!subtotalMap.get(item.node!.data.no)?.debit" class="text-muted-light">—</span>
+                    </td> -->
+
+                    <!-- Cost Center -->
+                    <td class="col-ccntr text-center">
+                      <ng-container *ngIf="editingRows[item.node!.data.no] as draft; else ccntrDisplay">
+                        <ng-select [items]="costCenters" bindValue="CcntrNo" bindLabel="CcAname"
+                          [searchable]="true" [clearable]="true" [(ngModel)]="draft.CcntrNo"
+                          [placeholder]="'ChartOfAccounts.CcntrNo' | translate" class="inline-select">
+                        </ng-select>
+                      </ng-container>
+                      <ng-template #ccntrDisplay>
+                        <span class="text-muted-light">{{ getCostCenterName(item.node!.data.CcntrNo) }}</span>
+                      </ng-template>
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="col-actions text-center">
+                      <ng-container *ngIf="!editingRows[item.node!.data.no]">
+                        <button class="btn btn-sm btn-outline-primary me-1" (click)="addNewRow(item.node!.data)"
+                          [title]="'ChartOfAccounts.AddChild' | translate">
+                          <i class="ti ti-plus"></i>
+                        </button>
+                        <button class="btn btn-sm btn-primary me-1" (click)="startEdit(item.node!.data)"
+                          [title]="'General.Edit' | translate">
+                          <i class="ti ti-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="deleteAccount(item.node!)"
+                          [title]="'General.Delete' | translate"
+                          [disabled]="deleting || (item.node!.data.no >= 1 && item.node!.data.no <= 7)">
+                          <i class="ti ti-trash"></i>
+                        </button>
+                      </ng-container>
+                      <ng-container *ngIf="editingRows[item.node!.data.no]">
+                        <button class="btn btn-sm btn-outline-danger" (click)="cancelEdit(item.node!.data.no)"
+                          [title]="'General.Cancel' | translate">
+                          <i class="ti ti-x"></i>
+                        </button>
+                      </ng-container>
+                    </td>
+                  </tr>
+
+                  <!-- ── New row ────────────────────────────────────────── -->
+                  <tr *ngIf="item.kind === 'new'" class="account-row row-new" [attr.data-tempid]="item.row!._tempId">
+
+                    <td class="col-no">
+                      <input type="number" step="1" class="form-control form-control-sm inline-input"
+                        [(ngModel)]="item.row!.no"
+                        [class.is-invalid]="submitted && (!item.row!.no || item.row!.no <= 0)"
+                        [placeholder]="'ChartOfAccounts.EnterNo' | translate" />
+                    </td>
+
+                    <td class="col-name">
+                      <input type="text" class="form-control form-control-sm inline-input" [(ngModel)]="item.row!.name"
+                        [class.is-invalid]="submitted && !item.row!.name?.trim()"
+                        [placeholder]="'ChartOfAccounts.EnterArabicName' | translate" />
+                    </td>
+
+                    <td class="col-ename">
+                      <input type="text" class="form-control form-control-sm inline-input" [(ngModel)]="item.row!.Ename"
+                        [class.is-invalid]="submitted && !item.row!.Ename?.trim()"
+                        [placeholder]="'ChartOfAccounts.EnterEnglishName' | translate" />
+                    </td>
+
+                    <td class="col-level text-center">
+                      <span class="level-chip level-{{ item.row!.level ?? 0 }}">{{ item.row!.level ?? '—' }}</span>
+                    </td>
+
+                    <td class="col-belong">
+                      <ng-select [items]="allData" bindValue="no" bindLabel="name" [searchFn]="accountSearchFn"
+                        [searchable]="true" [clearable]="true" [(ngModel)]="item.row!.belong"
+                        (change)="onNewRowBelongChange(item.row!)"
+                        [placeholder]="'ChartOfAccounts.EnterBelong' | translate" class="inline-select">
+                        <ng-template ng-label-tmp let-item="item">{{ item.no }}</ng-template>
+                        <ng-template ng-option-tmp let-item="item">{{ item.no }} — {{ item.name }}</ng-template>
+                      </ng-select>
+                    </td>
+
+                    <td class="col-credit">
+                      <input type="number" min="0" step="0.001"
+                        class="form-control form-control-sm inline-input text-center input-credit"
+                        [(ngModel)]="item.row!._creditInput" (ngModelChange)="onInlineCreditChange(item.row!)"
+                        [placeholder]="'ChartOfAccounts.EnterCredit' | translate" />
+                    </td>
+
+                    <td class="col-debit">
+                      <input type="number" min="0" step="0.001"
+                        class="form-control form-control-sm inline-input text-center input-debit"
+                        [(ngModel)]="item.row!._debitInput" (ngModelChange)="onInlineDebitChange(item.row!)"
+                        [placeholder]="'ChartOfAccounts.EnterDebit' | translate" />
+                    </td>
+
+                    <!-- <td class="col-subtotal-credit text-center">
+                      <span class="text-muted-light">—</span>
+                    </td>
+                    <td class="col-subtotal-debit text-center">
+                      <span class="text-muted-light">—</span>
+                    </td> -->
+
+                    <td class="col-ccntr text-center">
+                      <ng-select [items]="costCenters" bindValue="CcntrNo" bindLabel="CcAname"
+                        [searchable]="true" [clearable]="true" [(ngModel)]="item.row!.CcntrNo"
+                        [placeholder]="'ChartOfAccounts.CcntrNo' | translate" class="inline-select">
+                      </ng-select>
+                    </td>
+
+                    <td class="col-actions text-center">
+                      <button class="btn btn-sm btn-outline-danger" (click)="removeNewRow(item.row!._tempId!)"
+                        [title]="'General.Delete' | translate">
+                        <i class="ti ti-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+
+                </ng-container>
+
+                <!-- Empty state -->
+                <tr *ngIf="displayRows.length === 0">
+                  <td colspan="9" class="text-center py-4 text-muted">
+                    <i class="ti ti-inbox fs-2 d-block mb-2"></i>
+                    {{ 'General.NoRecordsFound' | translate }}
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="totals-row">
+                  <td colspan="5" class="text-end fw-semibold pe-3" style="font-size:0.82rem;color:#475569;">
+                    {{ 'ChartOfAccounts.Total' | translate }}
+                  </td>
+                  <td class="col-credit text-center">
+                    <span class="credit-value">
+                      {{ (isDirty ? pendingTotalCredit : totalCredit) | number:'1.3-3' }}
+                    </span>
+                  </td>
+                  <td class="col-debit text-center">
+                    <span class="debit-value">
+                      {{ (isDirty ? pendingTotalDebit : totalDebit) | number:'1.3-3' }}
+                    </span>
+                  </td>
+                  <td colspan="2"></td>
+                </tr>
+                <!-- Balance status row — shown only when there are pending changes -->
+                <tr *ngIf="isDirty" class="balance-status-row" [class.balanced]="isBalanced"
+                  [class.unbalanced]="!isBalanced">
+                  <td colspan="5" class="text-end pe-3">
+                    <span *ngIf="isBalanced" class="balance-badge-inline balanced">
+                      <i class="ti ti-circle-check me-1"></i>
+                      {{ 'ChartOfAccounts.Balanced' | translate }}
+                    </span>
+                    <span *ngIf="!isBalanced" class="balance-badge-inline unbalanced">
+                      <i class="ti ti-alert-triangle me-1"></i>
+                      {{ 'ChartOfAccounts.NotBalanced' | translate }}
+                    </span>
+                  </td>
+                  <td class="col-credit text-center" *ngIf="!isBalanced">
+                    <span *ngIf="pendingTotalCredit > pendingTotalDebit" class="diff-value credit-value">
+                      +{{ balanceDiff | number:'1.3-3' }}
+                    </span>
+                  </td>
+                  <td class="col-debit text-center" *ngIf="!isBalanced">
+                    <span *ngIf="pendingTotalDebit > pendingTotalCredit" class="diff-value debit-value">
+                      +{{ balanceDiff | number:'1.3-3' }}
+                    </span>
+                  </td>
+                  <td *ngIf="isBalanced" colspan="4"></td>
+                  <td colspan="2"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Pagination (search mode only) -->
+          <mat-paginator *ngIf="searchMode" [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize"
+            [pageIndex]="pageIndex" [length]="totalItems" (page)="onPageChange($event)" showFirstLastButtons>
+          </mat-paginator>
+
+          <!-- Tree mode info bar -->
+          <div *ngIf="!searchMode" class="tree-footer">
+            <small class="text-muted">
+              <i class="ti ti-info-circle me-1"></i>
+              {{ 'ChartOfAccounts.TreeInfo' | translate: { total: allData.length, visible: visibleNodes.length } }}
+            </small>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transfer Transactions Confirmation Dialog -->
+<app-confirmation-modal #transferConfirmModal
+  confirmButtonClass="btn-primary"
+  (confirm)="onTransferConfirm()"
+  (cancel)="onTransferCancel()">
+</app-confirmation-modal>
+
+<!-- Delete Account Confirmation Dialog -->
+<app-confirmation-modal #deleteConfirmModal
+  confirmButtonClass="btn-danger"
+  (confirm)="onDeleteConfirm()"
+  (cancel)="onDeleteCancel()">
+</app-confirmation-modal>

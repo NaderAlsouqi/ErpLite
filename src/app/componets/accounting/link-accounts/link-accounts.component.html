@@ -1,0 +1,102 @@
+<app-page-header
+  [title]="'LinkAccounts.Title' | translate"
+  [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'LinkAccounts.Title' | translate">
+</app-page-header>
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header">
+        <div class="card-title">
+          <i class="ti ti-link me-2"></i>
+          {{ 'LinkAccounts.Title' | translate }}
+        </div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary me-2" (click)="printTable()" [disabled]="loading">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-danger me-2" (click)="save()" [disabled]="saving || loading">
+            <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+            <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+            {{ 'General.Save' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!loading">
+
+          <div class="la-form-wrapper">
+            <table class="la-table">
+              <thead>
+                <tr>
+                  <th class="col-label">{{ 'LinkAccounts.AccountType' | translate }}</th>
+                  <th class="col-picker">{{ 'LinkAccounts.AccountNumber' | translate }}</th>
+                  <th class="col-name">{{ 'LinkAccounts.AccountName' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of rows; trackBy: trackByKey" class="la-row">
+
+                  <!-- Label -->
+                  <td class="col-label">
+                    <span class="la-label" [class.la-required]="row.required">
+                      {{ row.labelKey | translate }}
+                      <span *ngIf="row.required" class="la-req-star">*</span>
+                    </span>
+                  </td>
+
+                  <!-- Account Picker -->
+                  <td class="col-picker">
+                    <ng-select
+                      [items]="accounts"
+                      bindValue="no"
+                      [searchFn]="accountSearchFn"
+                      [searchable]="true"
+                      [clearable]="true"
+                      [ngModel]="getFormValue(row.key)"
+                      (ngModelChange)="setFormValue(row.key, $event)"
+                      [placeholder]="'LinkAccounts.SelectAccount' | translate"
+                      appendTo="body"
+                      class="la-select"
+                      [class.la-select-required]="row.required && !getFormValue(row.key)">
+                      <ng-template ng-label-tmp let-item="item">
+                        {{ item.no }}
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item">
+                        <span class="la-opt-no">{{ item.no }}</span>
+                        <span class="la-opt-name">{{ item.name }}</span>
+                        <span *ngIf="item.Ename" class="la-opt-ename text-muted">{{ item.Ename }}</span>
+                      </ng-template>
+                    </ng-select>
+                  </td>
+
+                  <!-- Account Name -->
+                  <td class="col-name">
+                    <span class="la-acc-name" *ngIf="getFormValue(row.key)">
+                      {{ getAccountName(getFormValue(row.key)) }}
+                    </span>
+                    <span class="la-acc-name-empty text-muted" *ngIf="!getFormValue(row.key)">—</span>
+                  </td>
+
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

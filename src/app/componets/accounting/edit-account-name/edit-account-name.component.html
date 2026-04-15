@@ -1,0 +1,185 @@
+<app-page-header
+  [title]="'EditAccountName.Title' | translate"
+  [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'Nav.Accounting.EditAccountName' | translate">
+</app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header">
+        <div class="card-title">
+          {{ 'EditAccountName.Title' | translate }}
+        </div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary me-1" (click)="printTable()">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+          <ng-container *ngIf="dirtyCount > 0">
+            <button class="btn btn-outline-danger me-1" (click)="discardAll()" [disabled]="saving">
+              <i class="ti ti-x me-1"></i>
+              {{ 'General.Discard' | translate }}
+            </button>
+            <button class="btn btn-danger me-2" (click)="saveAll()" [disabled]="saving">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+              {{ 'EditAccountName.SaveAll' | translate }}
+              <span class="badge bg-white text-danger ms-1">{{ dirtyCount }}</span>
+            </button>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Search -->
+        <div class="row mb-3">
+          <div class="col-md-5">
+            <div class="form-group">
+              <label class="form-label">{{ 'General.Search' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearch()"
+                  [placeholder]="'EditAccountName.SearchPlaceholder' | translate" />
+                <button class="btn btn-outline-secondary" type="button" *ngIf="searchTerm" (click)="searchTerm=''; onSearch()">
+                  <i class="ti ti-x"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-7 d-flex align-items-end justify-content-end">
+            <span class="text-muted small">
+              {{ 'EditAccountName.TotalAccounts' | translate: { total: totalItems } }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="!loading" class="table-responsive">
+          <table
+            mat-table
+            [dataSource]="dataSource"
+            matSort
+            (matSortChange)="onSortChange($event)"
+            class="table table-bordered edit-name-table">
+
+            <!-- Account No -->
+            <ng-container matColumnDef="no">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-no">
+                {{ 'EditAccountName.AccountNo' | translate }}
+              </th>
+              <td mat-cell *matCellDef="let row" class="col-no">
+                <span class="account-no">{{ row.no }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Arabic Name -->
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-name">
+                {{ 'EditAccountName.ArabicName' | translate }}
+              </th>
+              <td mat-cell *matCellDef="let row" class="col-name" [class.cell-dirty]="row.name !== row._origName">
+                <input
+                  type="text"
+                  class="inline-input"
+                  [(ngModel)]="row.name"
+                  [placeholder]="'EditAccountName.EnterArabicName' | translate"
+                  dir="rtl" />
+              </td>
+            </ng-container>
+
+            <!-- English Name -->
+            <ng-container matColumnDef="Ename">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-name">
+                {{ 'EditAccountName.EnglishName' | translate }}
+              </th>
+              <td mat-cell *matCellDef="let row" class="col-name" [class.cell-dirty]="row.Ename !== row._origEname">
+                <input
+                  type="text"
+                  class="inline-input"
+                  [(ngModel)]="row.Ename"
+                  [placeholder]="'EditAccountName.EnterEnglishName' | translate"
+                  dir="ltr" />
+              </td>
+            </ng-container>
+
+            <!-- Level -->
+            <ng-container matColumnDef="level">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-sm-field text-center">
+                {{ 'EditAccountName.Level' | translate }}
+              </th>
+              <td mat-cell *matCellDef="let row" class="col-sm-field text-center">
+                <span class="level-badge level-{{ row.level }}">{{ row.level ?? '—' }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Belong To -->
+            <ng-container matColumnDef="belong">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-sm-field text-center">
+                {{ 'EditAccountName.BelongTo' | translate }}
+              </th>
+              <td mat-cell *matCellDef="let row" class="col-sm-field text-center">
+                {{ row.belong ?? '—' }}
+              </td>
+            </ng-container>
+
+            <!-- Stopped -->
+            <ng-container matColumnDef="Stopped">
+              <th mat-header-cell *matHeaderCellDef class="col-sm-field text-center">
+                {{ 'EditAccountName.Stopped' | translate }}
+              </th>
+              <td mat-cell *matCellDef="let row" class="col-sm-field text-center">
+                <span *ngIf="row.Stopped" class="badge bg-danger-transparent text-danger">
+                  {{ 'General.Yes' | translate }}
+                </span>
+                <span *ngIf="!row.Stopped" class="badge bg-success-transparent text-success">
+                  {{ 'General.No' | translate }}
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: displayedColumns;"
+              [class.row-dirty]="isDirty(row)">
+            </tr>
+
+            <!-- No data row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
+                {{ 'General.NoRecordsFound' | translate }}
+              </td>
+            </tr>
+          </table>
+
+          <!-- Pagination -->
+          <mat-paginator
+            [pageSizeOptions]="pageSizeOptions"
+            [pageSize]="pageSize"
+            [pageIndex]="pageIndex"
+            [length]="totalItems"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End::row-1 -->

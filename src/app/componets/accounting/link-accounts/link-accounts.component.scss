@@ -1,0 +1,220 @@
+:host {
+  display: block;
+}
+
+// ── Card header ───────────────────────────────────────────────────────────────
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.card-title {
+  margin-bottom: 0;
+}
+
+.card-options {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+// ── Form wrapper ──────────────────────────────────────────────────────────────
+.la-form-wrapper {
+  overflow-x: auto;
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+.la-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead tr {
+    background: #f1f5f9;
+  }
+
+  th {
+    padding: 0.65rem 1rem;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.45rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+
+  .col-label {
+    width: 220px;
+    min-width: 180px;
+  }
+
+  .col-picker {
+    width: 180px;
+    min-width: 160px;
+  }
+
+  .col-name {
+    min-width: 200px;
+  }
+}
+
+.la-row {
+  transition: background 0.1s;
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+// ── Label ─────────────────────────────────────────────────────────────────────
+.la-label {
+  font-weight: 500;
+  color: #334155;
+  font-size: 0.875rem;
+}
+
+.la-required {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.la-req-star {
+  color: #dc2626;
+  margin-inline-start: 3px;
+}
+
+// ── Account name display ───────────────────────────────────────────────────────
+.la-acc-name {
+  font-size: 0.85rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+// ── ng-select ─────────────────────────────────────────────────────────────────
+.la-select {
+  font-size: 0.875rem;
+
+  .ng-select-container {
+    min-height: 36px !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+  }
+
+  &.ng-select-focused .ng-select-container,
+  &.ng-select-opened .ng-select-container {
+    border-color: var(--primary-color, #6366f1) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+  }
+
+  &.la-select-required .ng-select-container {
+    border-color: #fca5a5 !important;
+    background: #fff5f5 !important;
+  }
+
+  .ng-value-container {
+    padding: 0 0.5rem !important;
+
+    .ng-value {
+      font-size: 0.875rem;
+      color: #1e293b;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+    }
+
+    .ng-placeholder {
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    .ng-input > input {
+      font-size: 0.875rem;
+    }
+  }
+
+  .ng-arrow-wrapper {
+    width: 22px;
+    padding-right: 4px;
+
+    .ng-arrow {
+      border-color: #94a3b8 transparent transparent;
+      border-width: 4px 4px 0;
+    }
+  }
+
+  &.ng-select-opened .ng-arrow-wrapper .ng-arrow {
+    border-color: transparent transparent var(--primary-color, #6366f1);
+    border-width: 0 4px 4px;
+  }
+
+  .ng-clear-wrapper {
+    color: #94a3b8;
+    &:hover { color: #dc2626; }
+  }
+}
+
+// Dropdown panel (global, appended to body)
+::ng-deep .ng-dropdown-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  font-size: 0.875rem;
+  z-index: 9999;
+
+  .ng-dropdown-panel-items {
+    background: #ffffff;
+    max-height: 260px;
+
+    .ng-option {
+      background: #ffffff;
+      padding: 0.4rem 0.75rem;
+      color: #334155;
+      transition: background 0.1s;
+
+      &.ng-option-marked {
+        background: rgba(99, 102, 241, 0.07);
+        color: #1e293b;
+      }
+
+      &.ng-option-selected {
+        background: var(--primary-color, #6366f1);
+        color: #ffffff;
+        font-weight: 600;
+
+        &.ng-option-marked {
+          filter: brightness(1.1);
+        }
+      }
+    }
+  }
+}
+
+.la-opt-no {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-inline-end: 8px;
+}
+
+.la-opt-name {
+  font-size: 0.85rem;
+  margin-inline-end: 6px;
+}
+
+.la-opt-ename {
+  font-size: 0.78rem;
+}

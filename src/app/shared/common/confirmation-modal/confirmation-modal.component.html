@@ -1,25 +1,36 @@
-<ng-template #confirmationContent let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">{{ title }}</h5>
-      <button type="button" class="btn-close" aria-label="Close" (click)="onCancel()"></button>
-    </div>
-    <div class="modal-body">
-      <p>{{ message }}</p>
-      
-      <!-- Display detail items if provided -->
-      <div *ngIf="details && details.length > 0">
-        <p *ngFor="let detail of details">
-          <strong>{{ detail.label }}:</strong> {{ detail.value }}
-        </p>
+<ng-template #confirmationContent>
+  <div class="delete-confirm-modal">
+
+    <!-- Icon -->
+    <div class="delete-confirm-icon">
+      <div class="icon-circle">
+        <i class="ti ti-trash"></i>
       </div>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+
+    <!-- Content -->
+    <div class="delete-confirm-body">
+      <h5 class="delete-confirm-title">{{ title }}</h5>
+      <p class="delete-confirm-message">{{ message }}</p>
+
+      <div *ngIf="details && details.length > 0" class="delete-confirm-details">
+        <div *ngFor="let detail of details" class="detail-row">
+          <span class="detail-label">{{ detail.label }}:</span>
+          <span class="detail-value">{{ detail.value }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="delete-confirm-actions">
+      <button type="button" class="btn btn-light btn-cancel" (click)="onCancel()">
         {{ cancelButtonText }}
       </button>
-      <button type="button" [class]="'btn ' + confirmButtonClass" (click)="onConfirm()" [disabled]="processing">
-        <span *ngIf="processing" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+      <button type="button" [class]="'btn btn-confirm ' + confirmButtonClass" (click)="onConfirm()" [disabled]="processing">
+        <span *ngIf="processing" class="spinner-border spinner-border-sm me-1" role="status"></span>
         {{ processing ? processingText : confirmButtonText }}
       </button>
     </div>
-  </ng-template>
+
+  </div>
+</ng-template>

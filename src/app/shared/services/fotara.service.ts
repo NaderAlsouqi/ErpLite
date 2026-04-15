@@ -128,8 +128,8 @@ export interface FotaraInvoicePayload {
  * Field names match C# ReturnInvoiceRequest mixed casing
  */
 export interface FotaraRefundInvoicePayload {
-  inv_number: number;
-  serial_number: number;
+  inv_number: number | string;
+  serial_number: number | string;
   inv_date: string;
   type_code: string;
   note: string;
@@ -137,6 +137,7 @@ export interface FotaraRefundInvoicePayload {
   original_serial_number: string;
   original_total_amount: string;
   the_tax_number: string;
+  the_global_tax_number: string;
   the_company_name: string;
   zip_code: string;
   city_code: string;
@@ -150,7 +151,7 @@ export interface FotaraRefundInvoicePayload {
   TaxInclusiveAmount: number;
   AllowanceTotalAmount: number;
   PrepaidAmount: number;
-  PayableAmount: number;
+  PayableAmount: number | string;
   item_taxs: string;
   items: string;
   Test?: boolean;
@@ -402,7 +403,13 @@ export class FotaraService {
     const cleanPayload = this.createCleanRefundPayload(refundInvoiceData);
 
     if (this.taxType == 2) {
-      cleanPayload.PayableAmount = parseFloat(refundInvoiceData.PayableAmount as any) || 0;
+      // returnIncome expects inv_number, serial_number, PayableAmount as strings
+      cleanPayload.inv_number = cleanPayload.inv_number.toString();
+      cleanPayload.serial_number = cleanPayload.serial_number.toString();
+      cleanPayload.PayableAmount = (parseFloat(refundInvoiceData.PayableAmount as any) || 0).toString();
+    } else {
+      // returnInvoice expects PayableAmount as a number (decimal)
+      cleanPayload.PayableAmount = parseFloat(cleanPayload.PayableAmount as any) || 0;
     }
 
     console.log('=== Fotara Refund Payload ===');
@@ -529,6 +536,7 @@ export class FotaraService {
       original_serial_number: refundInvoiceData.original_serial_number || '',
       original_total_amount: finalOriginalTotal.toString(),
       the_tax_number: refundInvoiceData.the_tax_number || '',
+      the_global_tax_number: refundInvoiceData.the_global_tax_number || '',
       the_company_name: refundInvoiceData.the_company_name || '',
       zip_code: refundInvoiceData.zip_code || '',
       city_code: refundInvoiceData.city_code || '',

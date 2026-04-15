@@ -1,0 +1,244 @@
+<app-page-header
+  [title]="'Banks.Title' | translate"
+  [title1]="'Nav.Accounting.Definitions' | translate"
+  [activeTitle]="'Nav.Accounting.Banks' | translate">
+</app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+      <div class="card-header">
+        <div class="card-title">
+          {{ 'Banks.Title' | translate }}
+        </div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary me-2" (click)="printTable()">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-outline-primary" (click)="openAddModal()">
+            <i class="ti ti-plus me-1"></i>
+            {{ 'Banks.AddBank' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Search -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">{{ 'General.Search' | translate }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearch()"
+                  [placeholder]="'Banks.SearchPlaceholder' | translate" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="!loading" class="table-responsive">
+          <table
+            mat-table
+            [dataSource]="dataSource"
+            matSort
+            (matSortChange)="onSortChange($event)"
+            class="table table-bordered">
+
+            <!-- Bank Number -->
+            <ng-container matColumnDef="bank_num">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Banks.BankNumber' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.bank_num }}</td>
+            </ng-container>
+
+            <!-- Arabic Name -->
+            <ng-container matColumnDef="Bank">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Banks.ArabicName' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.Bank }}</td>
+            </ng-container>
+
+            <!-- English Name -->
+            <ng-container matColumnDef="BEName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Banks.EnglishName' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.BEName }}</td>
+            </ng-container>
+
+            <!-- Account Number -->
+            <ng-container matColumnDef="Accno">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Banks.AccountNumber' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.Accno ?? '—' }}</td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="Actions">
+              <th mat-header-cell *matHeaderCellDef class="text-center">{{ 'InvoicesPage.Action' | translate }}</th>
+              <td mat-cell *matCellDef="let row" class="text-center">
+                <button class="btn btn-sm btn-primary me-1" (click)="openEditModal(row)" [title]="'General.Edit' | translate">
+                  <i class="ti ti-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="confirmDelete(row)" [title]="'General.Delete' | translate">
+                  <i class="ti ti-trash"></i>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- No data row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
+                {{ 'General.NoRecordsFound' | translate }}
+              </td>
+            </tr>
+          </table>
+
+          <!-- Pagination -->
+          <mat-paginator
+            [pageSizeOptions]="pageSizeOptions"
+            [pageSize]="pageSize"
+            [pageIndex]="pageIndex"
+            [length]="totalItems"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End::row-1 -->
+
+<!-- Add / Edit Modal -->
+<ng-template #bankFormModal let-modal>
+  <div class="form-modal-header">
+    <div class="form-modal-icon" [class.edit-mode]="isEditMode">
+      <i class="ti" [class.ti-building-bank]="!isEditMode" [class.ti-pencil]="isEditMode"></i>
+    </div>
+    <div class="form-modal-title-group">
+      <h5 class="form-modal-title">
+        {{ (isEditMode ? 'Banks.EditBank' : 'Banks.AddBank') | translate }}
+      </h5>
+      <p class="form-modal-subtitle" *ngIf="isEditMode">
+        {{ 'Banks.BankNumber' | translate }}: {{ bankForm.bank_num }}
+      </p>
+    </div>
+    <button type="button" class="form-modal-close" (click)="modal.dismiss()">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+
+  <div class="form-modal-body">
+
+    <!-- Bank Number (Add mode only) -->
+    <div class="form-field" *ngIf="!isEditMode">
+      <label class="form-field-label">
+        <i class="ti ti-hash"></i>
+        {{ 'Banks.BankNumber' | translate }}
+        <span class="required">*</span>
+      </label>
+      <input
+        type="number"
+        class="form-control form-field-input"
+        [(ngModel)]="bankForm.bank_num"
+        [class.is-invalid]="submitted && !isEditMode && (!bankForm.bank_num || bankForm.bank_num <= 0)"
+        [placeholder]="'Banks.EnterBankNumber' | translate" />
+      <div class="invalid-feedback" *ngIf="submitted && !isEditMode && (!bankForm.bank_num || bankForm.bank_num <= 0)">
+        {{ 'Banks.BankNumberRequired' | translate }}
+      </div>
+    </div>
+
+    <div class="form-fields-grid">
+
+      <!-- Arabic Name -->
+      <div class="form-field">
+        <label class="form-field-label">
+          <i class="ti ti-language"></i>
+          {{ 'Banks.ArabicName' | translate }}
+          <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          class="form-control form-field-input"
+          [(ngModel)]="bankForm.Bank"
+          [class.is-invalid]="submitted && !bankForm.Bank.trim()"
+          [placeholder]="'Banks.EnterArabicName' | translate" />
+        <div class="invalid-feedback" *ngIf="submitted && !bankForm.Bank?.trim()">
+          {{ 'Banks.ArabicNameRequired' | translate }}
+        </div>
+      </div>
+
+      <!-- English Name -->
+      <div class="form-field">
+        <label class="form-field-label">
+          <i class="ti ti-language"></i>
+          {{ 'Banks.EnglishName' | translate }}
+          <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          class="form-control form-field-input"
+          [(ngModel)]="bankForm.BEName"
+          [class.is-invalid]="submitted && !bankForm.BEName.trim()"
+          [placeholder]="'Banks.EnterEnglishName' | translate" />
+        <div class="invalid-feedback" *ngIf="submitted && !bankForm.BEName?.trim()">
+          {{ 'Banks.EnglishNameRequired' | translate }}
+        </div>
+      </div>
+
+      <!-- Account Number -->
+      <div class="form-field">
+        <label class="form-field-label">
+          <i class="ti ti-credit-card"></i>
+          {{ 'Banks.AccountNumber' | translate }}
+        </label>
+        <select class="form-select form-field-input" [(ngModel)]="bankForm.Accno">
+          <option [ngValue]="null">{{ 'General.Select' | translate }}</option>
+          <option *ngFor="let acc of accounts" [ngValue]="acc.no">
+            {{ acc.no }} - {{ acc.name }}
+          </option>
+        </select>
+      </div>
+
+
+    </div>
+  </div>
+
+  <div class="form-modal-footer">
+    <button type="button" class="btn btn-light form-btn-cancel" (click)="modal.dismiss()">
+      <i class="ti ti-x me-1"></i>
+      {{ 'General.Cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary form-btn-save" (click)="saveBank()" [disabled]="loading">
+      <span *ngIf="loading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+      <i *ngIf="!loading" class="ti ti-device-floppy me-1"></i>
+      {{ 'General.Save' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'Banks.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="deleteBank()">
+</app-confirmation-modal>

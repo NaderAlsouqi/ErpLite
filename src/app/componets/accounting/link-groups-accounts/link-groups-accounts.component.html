@@ -1,0 +1,177 @@
+<app-page-header
+  [title]="'LinkGroupsAccounts.Title' | translate"
+  [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'Nav.Accounting.LinkGroupsToAccounts' | translate">
+</app-page-header>
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="card-title">{{ 'LinkGroupsAccounts.Title' | translate }}</div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary" (click)="printTable()">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!loading">
+
+          <!-- Add Link Form -->
+          <div class="lga-add-form mb-4">
+            <div class="lga-add-row">
+              <div class="lga-field">
+                <label class="lga-label">
+                  <i class="ti ti-book me-1"></i>
+                  {{ 'LinkGroupsAccounts.Account' | translate }}
+                </label>
+                <ng-select
+                  [items]="accounts"
+                  bindValue="no"
+                  [searchFn]="accountSearchFn"
+                  [searchable]="true"
+                  [clearable]="true"
+                  [(ngModel)]="selectedAccNo"
+                  [placeholder]="'LinkGroupsAccounts.SelectAccount' | translate"
+                  appendTo="body"
+                  class="lga-select">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.no }} — {{ item.name }}
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    <span class="lga-opt-no">{{ item.no }}</span>
+                    <span class="lga-opt-name">{{ item.name }}</span>
+                    <span *ngIf="item.Ename" class="lga-opt-ename">{{ item.Ename }}</span>
+                  </ng-template>
+                </ng-select>
+              </div>
+
+              <div class="lga-add-icon">
+                <i class="ti ti-link"></i>
+              </div>
+
+              <div class="lga-field">
+                <label class="lga-label">
+                  <i class="ti ti-stack me-1"></i>
+                  {{ 'LinkGroupsAccounts.Group' | translate }}
+                </label>
+                <ng-select
+                  [items]="groups"
+                  bindValue="GroupNo"
+                  [searchFn]="groupSearchFn"
+                  [searchable]="true"
+                  [clearable]="true"
+                  [(ngModel)]="selectedGroupNo"
+                  [placeholder]="'LinkGroupsAccounts.SelectGroup' | translate"
+                  appendTo="body"
+                  class="lga-select">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.GroupNo }} — {{ item.GroupName }}
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    <span class="lga-opt-no">{{ item.GroupNo }}</span>
+                    <span class="lga-opt-name">{{ item.GroupName }}</span>
+                    <span *ngIf="item.GroupEname" class="lga-opt-ename">{{ item.GroupEname }}</span>
+                  </ng-template>
+                </ng-select>
+              </div>
+
+              <button class="btn btn-primary lga-add-btn"
+                (click)="addLink()"
+                [disabled]="saving || !selectedAccNo || !selectedGroupNo">
+                <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                <i *ngIf="!saving" class="ti ti-plus me-1"></i>
+                {{ 'LinkGroupsAccounts.AddLink' | translate }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Search + count bar -->
+          <div class="lga-toolbar mb-3">
+            <div class="lga-count-badge">
+              <i class="ti ti-link me-1"></i>
+              {{ links.length }} {{ 'LinkGroupsAccounts.TotalLinks' | translate }}
+            </div>
+            <div class="lga-search">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="ti ti-search"></i></span>
+                <input type="text" class="form-control"
+                  [(ngModel)]="searchTerm"
+                  [placeholder]="'General.Search' | translate" />
+                <button *ngIf="searchTerm" class="btn btn-outline-secondary" type="button"
+                  (click)="searchTerm = ''">
+                  <i class="ti ti-x"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Links Table -->
+          <div class="table-responsive">
+            <table class="lga-table">
+              <thead>
+                <tr>
+                  <th class="col-acc-no">{{ 'LinkGroupsAccounts.AccountNo' | translate }}</th>
+                  <th class="col-acc-name">{{ 'LinkGroupsAccounts.AccountName' | translate }}</th>
+                  <th class="col-grp-no">{{ 'LinkGroupsAccounts.GroupNo' | translate }}</th>
+                  <th class="col-grp-name">{{ 'LinkGroupsAccounts.GroupName' | translate }}</th>
+                  <th class="col-grp-ename">{{ 'LinkGroupsAccounts.GroupEname' | translate }}</th>
+                  <th class="col-actions text-center">{{ 'General.Actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let link of filteredLinks; trackBy: trackByLink" class="lga-row">
+                  <td class="col-acc-no">
+                    <span class="lga-mono">{{ link.AccNo }}</span>
+                  </td>
+                  <td class="col-acc-name">{{ link.AccountName ?? '—' }}</td>
+                  <td class="col-grp-no">
+                    <span class="lga-mono">{{ link.GroupNo }}</span>
+                  </td>
+                  <td class="col-grp-name">{{ link.GroupName ?? '—' }}</td>
+                  <td class="col-grp-ename text-muted">{{ link.GroupEname ?? '' }}</td>
+                  <td class="col-actions text-center">
+                    <button class="btn btn-sm btn-outline-danger"
+                      (click)="confirmDelete(link)"
+                      [title]="'General.Delete' | translate">
+                      <i class="ti ti-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Empty -->
+                <tr *ngIf="filteredLinks.length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    <i class="ti ti-link-off fs-2 d-block mb-2"></i>
+                    {{ 'General.NoRecordsFound' | translate }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation -->
+<app-confirmation-modal #deleteConfirmModal
+  confirmButtonClass="btn-danger"
+  (confirm)="onDeleteConfirm()"
+  (cancel)="onDeleteCancel()">
+</app-confirmation-modal>

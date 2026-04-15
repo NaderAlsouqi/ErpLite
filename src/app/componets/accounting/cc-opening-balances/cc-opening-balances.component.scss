@@ -1,0 +1,171 @@
+:host { display: block; }
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.card-title { margin-bottom: 0; }
+.card-options { display: flex; align-items: center; gap: 0.375rem; }
+
+// ── Info bar ──────────────────────────────────────────────────────────────────
+.ccob-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.625rem 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.ccob-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.ccob-cc-selector { flex: 1; min-width: 280px; gap: 0.5rem; }
+
+.ccob-info-label { color: #64748b; white-space: nowrap; }
+.ccob-info-value { font-weight: 600; color: #1e293b; }
+
+.ccob-info-sep {
+  width: 1px;
+  height: 24px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.ccob-select { flex: 1; min-width: 220px; font-size: 0.85rem; }
+.ccob-search { min-width: 220px; }
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.ccob-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: #94a3b8;
+
+  i { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  p { font-size: 0.9rem; margin: 0; }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+.ccob-table-wrapper { position: relative; }
+
+.ccob-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead tr { background: #f1f5f9; }
+
+  th {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    color: #334155;
+  }
+}
+
+.col-no     { width: 120px; min-width: 90px; }
+.col-name   { min-width: 200px; }
+.col-debit  { width: 150px; }
+.col-credit { width: 150px; }
+.col-action { width: 44px; }
+
+.account-no-text {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+// ── Row states ────────────────────────────────────────────────────────────────
+.ccob-row {
+  transition: background 0.1s;
+  &:hover td { background: rgba(0, 0, 0, 0.02); }
+}
+
+.ccob-row-debit  td { background: rgba(59, 130, 246, 0.04); }
+.ccob-row-credit td { background: rgba(239, 68,  68,  0.04); }
+
+.ccob-row-dirty {
+  background: rgba(245, 158, 11, 0.07) !important;
+  td { color: #1e293b !important; }
+  > td:first-child { border-inline-start: 3px solid #f59e0b; }
+}
+
+// ── Inputs ────────────────────────────────────────────────────────────────────
+.ccob-input {
+  height: 30px;
+  font-size: 0.82rem;
+  border-radius: 6px;
+
+  &:focus { border-color: var(--primary-color, #6366f1); box-shadow: 0 0 0 2px rgba(99,102,241,0.12); }
+}
+
+.input-debit:not([value=""]):not(:placeholder-shown) {
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.04);
+}
+.input-credit:not([value=""]):not(:placeholder-shown) {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.04);
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.ccob-totals-row td {
+  padding: 0.5rem 0.5rem;
+  background: #f8fafc;
+  border-top: 2px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.875rem;
+}
+
+.ccob-diff-row td {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.debit-value  { color: #2563eb; font-weight: 600; }
+.credit-value { color: #dc2626; font-weight: 600; }
+.diff-value   { font-size: 0.95em; }
+
+.balance-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  &.balanced   { background: #dcfce7; color: #15803d; }
+  &.unbalanced { background: #fef2f2; color: #dc2626; }
+}
+
+// ── Account search ────────────────────────────────────────────────────────────
+.ccob-account-search {
+  max-width: 480px;
+
+  .acc-no   { font-family: monospace; font-weight: 600; color: #374151; }
+  .acc-name { font-size: 0.85em; }
+}

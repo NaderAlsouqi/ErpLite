@@ -1,0 +1,233 @@
+:host {
+  display: block;
+}
+
+// ── Form container ────────────────────────────────────────────────────────────
+.tam-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+// ── Account row ───────────────────────────────────────────────────────────────
+.tam-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tam-label {
+  flex-shrink: 0;
+  width: 140px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0;
+}
+
+.tam-required {
+  color: #dc2626;
+  margin-inline-start: 3px;
+}
+
+.tam-picker-wrap {
+  flex: 1;
+}
+
+// ── Arrow divider ─────────────────────────────────────────────────────────────
+.tam-arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.25rem 0;
+  color: #94a3b8;
+  font-size: 1.25rem;
+}
+
+// ── Checkbox row ──────────────────────────────────────────────────────────────
+.tam-checkbox-row {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid #f1f5f9;
+
+  .form-check-label {
+    font-size: 0.875rem;
+    color: #475569;
+    cursor: pointer;
+  }
+
+  .form-check-input {
+    cursor: pointer;
+    &:checked { background-color: #dc2626; border-color: #dc2626; }
+  }
+}
+
+// ── Warning box ───────────────────────────────────────────────────────────────
+.tam-warning {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.65rem 1rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #92400e;
+
+  i { color: #f59e0b; font-size: 1rem; }
+}
+
+// ── Action bar ────────────────────────────────────────────────────────────────
+.tam-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1.25rem;
+}
+
+.tam-btn {
+  min-width: 140px;
+}
+
+// ── ng-select ─────────────────────────────────────────────────────────────────
+.tam-select {
+  font-size: 0.875rem;
+
+  .ng-select-container {
+    min-height: 38px !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+  }
+
+  &.ng-select-focused .ng-select-container,
+  &.ng-select-opened .ng-select-container {
+    border-color: var(--primary-color, #6366f1) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+  }
+
+  .ng-value-container {
+    padding: 0 0.625rem !important;
+
+    .ng-value {
+      font-size: 0.875rem;
+      color: #1e293b;
+    }
+
+    .ng-placeholder {
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+
+    .ng-input > input { font-size: 0.875rem; }
+  }
+
+  .ng-arrow-wrapper {
+    width: 24px;
+    padding-right: 6px;
+
+    .ng-arrow {
+      border-color: #94a3b8 transparent transparent;
+      border-width: 5px 5px 0;
+    }
+  }
+
+  &.ng-select-opened .ng-arrow-wrapper .ng-arrow {
+    border-color: transparent transparent var(--primary-color, #6366f1);
+    border-width: 0 5px 5px;
+  }
+
+  .ng-clear-wrapper {
+    color: #94a3b8;
+    &:hover { color: #dc2626; }
+  }
+}
+
+// ── Selected label display ────────────────────────────────────────────────────
+.tam-val-no {
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #6366f1;
+  margin-inline-end: 6px;
+}
+
+.tam-val-name {
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+// ── Dropdown panel ────────────────────────────────────────────────────────────
+::ng-deep .ng-dropdown-panel {
+  background: #ffffff;
+  border: 1px solid #dde3ed;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  font-size: 0.875rem;
+  z-index: 9999;
+
+  // Search input inside dropdown
+  .ng-dropdown-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 0.5rem 0.75rem;
+    background: #f8fafc;
+  }
+
+  .ng-dropdown-panel-items {
+    background: #ffffff;
+    max-height: 280px;
+
+    .ng-option {
+      background: #ffffff;
+      padding: 0.5rem 0.875rem;
+      color: #334155;
+      font-size: 0.875rem;
+      border-bottom: 1px solid #f8fafc;
+      transition: background 0.1s;
+
+      &:last-child { border-bottom: none; }
+
+      &.ng-option-marked {
+        background: #f5f7ff;
+        color: #1e293b;
+      }
+
+      &.ng-option-selected {
+        background: #eef2ff;
+        color: #3730a3;
+        font-weight: 600;
+
+        .tam-opt-no    { color: #4f46e5; }
+        .tam-opt-name  { color: #3730a3; }
+        .tam-opt-ename { color: #6366f1; }
+
+        &.ng-option-marked {
+          background: #e0e7ff;
+        }
+      }
+    }
+  }
+}
+
+.tam-opt-no {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-inline-end: 8px;
+  color: #6366f1;
+}
+
+.tam-opt-name {
+  font-size: 0.875rem;
+  margin-inline-end: 6px;
+}
+
+.tam-opt-ename {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}

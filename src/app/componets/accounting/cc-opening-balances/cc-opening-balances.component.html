@@ -1,0 +1,233 @@
+<app-page-header
+  [title]="'CcOpeningBalances.Title' | translate"
+  [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'Nav.Accounting.CcOpeningBalances' | translate">
+</app-page-header>
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="card-title">{{ 'CcOpeningBalances.Title' | translate }}</div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary me-1" (click)="printTable()" [disabled]="!selectedCcntrNo">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+          <ng-container *ngIf="dirtyCount > 0">
+            <button class="btn btn-outline-danger me-1" (click)="discard()" [disabled]="saving">
+              <i class="ti ti-x me-1"></i>
+              {{ 'General.Discard' | translate }}
+            </button>
+            <button class="btn btn-danger" (click)="save()" [disabled]="saving">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+              {{ 'CcOpeningBalances.Save' | translate }}
+              <span class="badge bg-white text-danger ms-1">{{ dirtyCount }}</span>
+            </button>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Info / selector bar -->
+        <div class="ccob-info-bar mb-3">
+
+          <!-- Opening date -->
+          <div class="ccob-info-item">
+            <span class="ccob-info-label">
+              <i class="ti ti-calendar me-1"></i>
+              {{ 'OpeningBalances.OpeningDate' | translate }}
+            </span>
+            <span class="ccob-info-value">{{ openingDate ?? '—' }}</span>
+          </div>
+
+          <div class="ccob-info-sep"></div>
+
+          <!-- Currency -->
+          <div class="ccob-info-item" *ngIf="mainCurrency">
+            <span class="ccob-info-label">
+              <i class="ti ti-currency me-1"></i>
+              {{ 'General.Currency' | translate }}
+            </span>
+            <span class="ccob-info-value">{{ mainCurrency.cur }} — {{ mainCurrency.ename }}</span>
+          </div>
+
+          <div class="ccob-info-sep" *ngIf="mainCurrency"></div>
+
+          <!-- Cost center selector -->
+          <div class="ccob-info-item ccob-cc-selector">
+            <span class="ccob-info-label">
+              <i class="ti ti-chart-pie me-1"></i>
+              {{ 'CcOpeningBalances.CostCenter' | translate }}
+            </span>
+            <ng-select
+              class="ccob-select"
+              [items]="costCenters"
+              bindValue="CcntrNo"
+              [searchable]="true"
+              [clearable]="true"
+              [(ngModel)]="selectedCcntrNo"
+              (change)="onCostCenterChange()"
+              [placeholder]="'CcOpeningBalances.SelectCostCenter' | translate">
+              <ng-template ng-label-tmp let-cc="item">
+                {{ cc.CcntrNo }} — {{ cc.CcAname }}
+              </ng-template>
+              <ng-template ng-option-tmp let-cc="item">
+                {{ cc.CcntrNo }} — {{ cc.CcAname }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+        </div>
+
+        <!-- Loading spinner (initial) -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- No cost center selected -->
+        <div *ngIf="!loading && !selectedCcntrNo" class="ccob-empty-state">
+          <i class="ti ti-chart-pie"></i>
+          <p>{{ 'CcOpeningBalances.SelectCostCenterFirst' | translate }}</p>
+        </div>
+
+        <!-- Loading rows for selected cost center -->
+        <div *ngIf="!loading && selectedCcntrNo && loadingRows" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Account search + table -->
+        <div *ngIf="!loading && selectedCcntrNo && !loadingRows">
+
+          <!-- Account search dropdown -->
+          <div class="ccob-account-search mb-3">
+            <ng-select
+              [items]="availableAccounts"
+              [searchable]="true"
+              [clearable]="true"
+              [searchFn]="accountSearchFn"
+              bindLabel="name"
+              [(ngModel)]="selectedAccountAdd"
+              (change)="onAccountSelect($event)"
+              [placeholder]="'CcOpeningBalances.SearchAccount' | translate"
+              [notFoundText]="'General.NoRecordsFound' | translate">
+              <ng-template ng-option-tmp let-acc="item">
+                <span class="acc-no me-2">{{ acc.no }}</span>
+                <span class="acc-name text-muted">{{ acc.name ?? acc.Ename }}</span>
+              </ng-template>
+              <ng-template ng-label-tmp let-acc="item">
+                {{ acc.no }} — {{ acc.name ?? acc.Ename }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <!-- Table -->
+          <div class="ccob-table-wrapper" *ngIf="rows.length > 0">
+            <div class="table-responsive">
+              <table class="ccob-table">
+                <thead>
+                  <tr>
+                    <th class="col-no">{{ 'CcOpeningBalances.AccountNo' | translate }}</th>
+                    <th class="col-name">{{ 'CcOpeningBalances.AccountName' | translate }}</th>
+                    <th class="col-debit text-center">{{ 'CcOpeningBalances.Debit' | translate }}</th>
+                    <th class="col-credit text-center">{{ 'CcOpeningBalances.Credit' | translate }}</th>
+                    <th class="col-action"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of rows; trackBy: trackByAccNo"
+                    class="ccob-row"
+                    [class.ccob-row-dirty]="row._dirty"
+                    [class.ccob-row-debit]="row.bb > 0 && !row._dirty"
+                    [class.ccob-row-credit]="row.bb < 0 && !row._dirty">
+
+                    <td class="col-no">
+                      <span class="account-no-text">{{ row.accNo }}</span>
+                    </td>
+
+                    <td class="col-name">{{ row.accName }}</td>
+
+                    <td class="col-debit">
+                      <input type="number" min="0" step="0.001"
+                        class="form-control form-control-sm ccob-input input-debit text-center"
+                        [(ngModel)]="row._debitInput"
+                        (ngModelChange)="onDebitChange(row)"
+                        placeholder="0.000" />
+                    </td>
+
+                    <td class="col-credit">
+                      <input type="number" min="0" step="0.001"
+                        class="form-control form-control-sm ccob-input input-credit text-center"
+                        [(ngModel)]="row._creditInput"
+                        (ngModelChange)="onCreditChange(row)"
+                        placeholder="0.000" />
+                    </td>
+
+                    <td class="col-action text-center">
+                      <button type="button" class="btn btn-sm btn-ghost-danger px-1"
+                        (click)="removeRow(row)" title="Remove">
+                        <i class="ti ti-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+
+                <tfoot>
+                  <!-- Totals -->
+                  <tr class="ccob-totals-row">
+                    <td colspan="2" class="text-end fw-semibold pe-3">
+                      {{ 'CcOpeningBalances.Total' | translate }}
+                    </td>
+                    <td class="text-center">
+                      <span class="debit-value">{{ totalDebit | number:'1.3-3' }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="credit-value">{{ totalCredit | number:'1.3-3' }}</span>
+                    </td>
+                    <td></td>
+                  </tr>
+                  <!-- Difference -->
+                  <tr class="ccob-diff-row" [class.balanced]="isBalanced" [class.unbalanced]="!isBalanced">
+                    <td colspan="2" class="text-end pe-3">
+                      <span *ngIf="isBalanced" class="balance-badge balanced">
+                        <i class="ti ti-circle-check me-1"></i>
+                        {{ 'OpeningBalances.Balanced' | translate }}
+                      </span>
+                      <span *ngIf="!isBalanced" class="balance-badge unbalanced">
+                        <i class="ti ti-alert-triangle me-1"></i>
+                        {{ 'OpeningBalances.Difference' | translate }}
+                      </span>
+                    </td>
+                    <td class="text-center" *ngIf="!isBalanced && totalDebit > totalCredit">
+                      <span class="debit-value diff-value">+{{ balanceDiff | number:'1.3-3' }}</span>
+                    </td>
+                    <td class="text-center" *ngIf="!isBalanced && totalCredit >= totalDebit"></td>
+                    <td class="text-center" *ngIf="!isBalanced && totalCredit > totalDebit">
+                      <span class="credit-value diff-value">+{{ balanceDiff | number:'1.3-3' }}</span>
+                    </td>
+                    <td class="text-center" *ngIf="!isBalanced && totalDebit >= totalCredit"></td>
+                    <td colspan="2" *ngIf="isBalanced"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Empty state when no rows yet -->
+          <div *ngIf="rows.length === 0" class="ccob-empty-state">
+            <i class="ti ti-table-off"></i>
+            <p>{{ 'CcOpeningBalances.SearchToAdd' | translate }}</p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

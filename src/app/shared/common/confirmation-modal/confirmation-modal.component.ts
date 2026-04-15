@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { NgbModalModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -8,7 +8,8 @@ import { NgbModalModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstra
   standalone: true,
   imports: [CommonModule, TranslateModule, NgbModalModule],
   templateUrl: './confirmation-modal.component.html',
-  styleUrls: ['./confirmation-modal.component.scss']
+  styleUrls: ['./confirmation-modal.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class ConfirmationModalComponent implements OnInit {
   @Input() title: string = 'Confirm Action';
@@ -24,20 +25,20 @@ export class ConfirmationModalComponent implements OnInit {
   @Output() cancel = new EventEmitter<void>();
 
   @ViewChild('confirmationContent') confirmationContent!: TemplateRef<any>;
-  
+
   private modalRef: NgbModalRef | null = null;
 
   constructor(private modalService: NgbModal) {}
 
-  ngOnInit(): void {
-    // No initialization needed in ngOnInit
-  }
+  ngOnInit(): void {}
 
   show(): void {
-    this.modalRef = this.modalService.open(this.confirmationContent, { 
+    this.modalRef = this.modalService.open(this.confirmationContent, {
       backdrop: 'static',
       keyboard: false,
-      centered: true
+      centered: true,
+      size: 'sm',
+      windowClass: 'delete-confirm-dialog',
     });
   }
 
@@ -46,6 +47,7 @@ export class ConfirmationModalComponent implements OnInit {
   }
 
   onConfirm(): void {
+    this.hide();
     this.confirm.emit();
   }
 
