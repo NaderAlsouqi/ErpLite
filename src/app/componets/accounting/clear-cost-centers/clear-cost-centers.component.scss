@@ -342,3 +342,92 @@
     }
   }
 }
+
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .mat-mdc-table         { background: transparent !important; }
+  .mat-mdc-header-row    { background-color: var(--default-background) !important; }
+  .mat-mdc-header-cell   { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-cell          { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-row:hover     { background-color: var(--list-hover-focus-bg) !important; }
+  .mat-mdc-no-data-row td { color: var(--text-muted) !important; }
+  .mat-mdc-paginator     { background: transparent !important; color: var(--default-text-color) !important; }
+
+  .form-modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .form-modal-title   { color: var(--default-text-color) !important; }
+  .form-modal-subtitle { color: var(--text-muted) !important; }
+  .form-modal-close   { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
+  .form-modal-close:hover { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
+  .form-modal-body    { background: var(--custom-white) !important; }
+  .form-modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .form-field-label   { color: var(--default-text-color) !important; }
+  .form-field-label i { color: var(--text-muted) !important; }
+  .form-field-input   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .form-field-input::placeholder { color: var(--text-muted) !important; }
+  .form-field-input option { background: rgb(var(--body-bg-rgb)); color: var(--default-text-color); }
+  .form-btn-cancel    { color: var(--text-muted) !important; background: var(--custom-white) !important; border-color: var(--default-border) !important; }
+  .form-btn-cancel:hover { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
+}
+
+// ── Dark mode – clear-cost-centers specific ───────────────────────────────────
+[data-theme-mode="dark"] {
+  // Search bar
+  .form-label    { color: var(--default-text-color) !important; }
+  .form-control  { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .form-control::placeholder { color: var(--text-muted) !important; }
+  .input-group-text { background-color: var(--default-background) !important; border-color: var(--input-border) !important; color: var(--text-muted) !important; }
+
+  // Dirty banner
+  .dirty-banner { background: rgba(245,158,11,0.1) !important; border-color: rgba(245,158,11,0.25) !important; color: #fbbf24 !important; }
+
+  // Tree table
+  .cc-tree-table                { background: transparent !important; }
+  .cc-tree-table thead tr        { background: var(--default-background) !important; }
+  .cc-tree-table th              { color: var(--text-muted) !important; border-bottom-color: var(--default-border) !important; }
+  .cc-tree-table td              { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .cc-tree-table tr:hover td     { background-color: var(--list-hover-focus-bg) !important; }
+
+  // Tree node elements
+  .cc-no           { color: var(--default-text-color) !important; }
+  .btn-tree-toggle { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
+  .btn-tree-toggle:hover { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
+  .btn-tree-toggle.expanded { background: rgba(var(--primary-rgb),0.15) !important; color: var(--primary-color) !important; }
+  .tree-leaf-dot::after { background: rgba(255,255,255,0.2) !important; }
+
+  // Inline editing rows
+  .row-editing    { background: rgba(245,158,11,0.1) !important; }
+  .row-editing td { color: var(--default-text-color) !important; }
+  .row-editing:hover td { background: rgba(245,158,11,0.18) !important; }
+
+  .row-new        { background: rgba(99,102,241,0.1) !important; }
+  .row-new td     { color: var(--default-text-color) !important; }
+  .row-new:hover td { background: rgba(99,102,241,0.17) !important; }
+
+  // Inline inputs
+  .inline-input { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .inline-input::placeholder { color: var(--text-muted) !important; }
+
+  // Inline ng-select
+  .inline-select .ng-select-container { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+  .inline-select .ng-value             { color: var(--default-text-color) !important; }
+  .inline-select .ng-placeholder       { color: var(--text-muted) !important; }
+  .inline-select .ng-input > input     { color: var(--default-text-color) !important; }
+
+  // Clear modal
+  .modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .modal-title   { color: var(--default-text-color) !important; }
+  .modal-body    { background: var(--custom-white) !important; }
+  .modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+
+  .ccc-from-info { background: var(--default-background) !important; border-color: var(--default-border) !important; color: var(--default-text-color) !important; }
+  .ccc-warning   { background: rgba(245,158,11,0.1) !important; border-color: rgba(245,158,11,0.25) !important; color: #fbbf24 !important; }
+
+  .ccc-select-list {
+    background: var(--form-control-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--default-text-color) !important;
+
+    option { background: rgb(var(--body-bg-rgb)); color: var(--default-text-color); }
+  }
+}

@@ -80,7 +80,12 @@ export const admin: Routes = [
       { path: 'bank-reconciliation', loadComponent: uc },
 
       // سندات
-      { path: 'vouchers/journal',        loadComponent: uc },
+      {
+        path: 'vouchers/journal',
+        loadComponent: () => import('./journal-vouchers/journal-vouchers.component').then(m => m.JournalVouchersComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin', 'Manager', 'Accountant'] }
+      },
       { path: 'vouchers/receipt',        loadComponent: uc },
       { path: 'vouchers/check-payment',  loadComponent: uc },
       { path: 'vouchers/cash-payment',   loadComponent: uc },

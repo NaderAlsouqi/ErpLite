@@ -323,3 +323,81 @@
   background: #fafafa;
   border-radius: 0 0 0.5rem 0.5rem;
 }
+
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .mat-mdc-table         { background: transparent !important; }
+  .mat-mdc-header-row    { background-color: var(--default-background) !important; }
+  .mat-mdc-header-cell   { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-cell          { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-row:hover     { background-color: var(--list-hover-focus-bg) !important; }
+  .mat-mdc-no-data-row td { color: var(--text-muted) !important; }
+  .mat-mdc-paginator     { background: transparent !important; color: var(--default-text-color) !important; }
+
+  .form-modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .form-modal-title   { color: var(--default-text-color) !important; }
+  .form-modal-subtitle { color: var(--text-muted) !important; }
+  .form-modal-close   { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
+  .form-modal-close:hover { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
+  .form-modal-body    { background: var(--custom-white) !important; }
+  .form-modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .form-field-label   { color: var(--default-text-color) !important; }
+  .form-field-label i { color: var(--text-muted) !important; }
+  .form-field-input   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .form-field-input::placeholder { color: var(--text-muted) !important; }
+  .form-field-input option { background: rgb(var(--body-bg-rgb)); color: var(--default-text-color); }
+  .form-btn-cancel    { color: var(--text-muted) !important; background: var(--custom-white) !important; border-color: var(--default-border) !important; }
+  .form-btn-cancel:hover { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
+}
+
+// ── Dark mode – opening-balances specific ─────────────────────────────────────
+[data-theme-mode="dark"] {
+  // Info bar
+  .ob-info-bar    { background: var(--default-background) !important; border-color: var(--default-border) !important; }
+  .ob-info-label  { color: var(--text-muted) !important; }
+  .ob-info-value  { color: var(--default-text-color) !important; background: rgba(255,255,255,0.1) !important; }
+  .ob-info-sep    { background: var(--default-border) !important; }
+
+  // Warning banner
+  .ob-coa-warning { background: rgba(245,158,11,0.1) !important; border-color: rgba(245,158,11,0.25) !important; color: #fbbf24 !important; }
+
+  // Table
+  .ob-table                { background: transparent !important; }
+  .ob-table thead tr        { background: var(--default-background) !important; }
+  .ob-table th              { color: var(--text-muted) !important; border-bottom-color: var(--default-border) !important; }
+  .ob-table th.col-debit    { color: #f87171 !important; }
+  .ob-table th.col-credit   { color: #34d399 !important; }
+  .ob-table td              { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+
+  // Row variants
+  .ob-row                   { background: transparent !important; }
+  .ob-row:hover             { background: var(--list-hover-focus-bg) !important; }
+  .ob-row.ob-row-debit      { background: rgba(239,68,68,0.08) !important; }
+  .ob-row.ob-row-debit:hover { background: rgba(239,68,68,0.15) !important; }
+  .ob-row.ob-row-credit     { background: rgba(16,185,129,0.07) !important; }
+  .ob-row.ob-row-credit:hover { background: rgba(16,185,129,0.13) !important; }
+  .ob-row.ob-row-dirty      { background: rgba(245,158,11,0.1) !important; }
+  .ob-row.ob-row-dirty:hover { background: rgba(245,158,11,0.18) !important; }
+
+  // Inputs & selects
+  .ob-input { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .ob-input::placeholder { color: var(--text-muted) !important; }
+
+  .ob-select .ng-select-container { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+  .ob-select .ng-value             { color: var(--default-text-color) !important; }
+  .ob-select .ng-placeholder       { color: var(--text-muted) !important; }
+  .ob-select .ng-input > input     { color: var(--default-text-color) !important; }
+
+  // Value helpers
+  .account-no-text  { color: var(--default-text-color) !important; }
+  .text-muted-light { color: var(--text-muted) !important; }
+
+  // Footer
+  .ob-totals-row           { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .ob-totals-row td        { color: var(--default-text-color) !important; }
+  .ob-diff-row             { border-top-color: var(--default-border) !important; }
+  .ob-diff-row.balanced    { background: rgba(16,185,129,0.07) !important; }
+  .ob-diff-row.unbalanced  { background: rgba(239,68,68,0.07) !important; }
+  .ob-footer               { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+}

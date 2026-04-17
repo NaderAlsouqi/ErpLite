@@ -218,3 +218,54 @@
 .la-opt-ename {
   font-size: 0.78rem;
 }
+
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .mat-mdc-table         { background: transparent !important; }
+  .mat-mdc-header-row    { background-color: var(--default-background) !important; }
+  .mat-mdc-header-cell   { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-cell          { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-row:hover     { background-color: var(--list-hover-focus-bg) !important; }
+  .mat-mdc-no-data-row td { color: var(--text-muted) !important; }
+  .mat-mdc-paginator     { background: transparent !important; color: var(--default-text-color) !important; }
+
+  .form-modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .form-modal-title   { color: var(--default-text-color) !important; }
+  .form-modal-subtitle { color: var(--text-muted) !important; }
+  .form-modal-close   { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
+  .form-modal-close:hover { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
+  .form-modal-body    { background: var(--custom-white) !important; }
+  .form-modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .form-field-label   { color: var(--default-text-color) !important; }
+  .form-field-label i { color: var(--text-muted) !important; }
+  .form-field-input   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .form-field-input::placeholder { color: var(--text-muted) !important; }
+  .form-field-input option { background: rgb(var(--body-bg-rgb)); color: var(--default-text-color); }
+  .form-btn-cancel    { color: var(--text-muted) !important; background: var(--custom-white) !important; border-color: var(--default-border) !important; }
+  .form-btn-cancel:hover { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
+}
+
+// ── Dark mode – link-accounts specific ───────────────────────────────────────
+[data-theme-mode="dark"] {
+  // Table
+  .la-table                { background: transparent !important; }
+  .la-table thead tr        { background: var(--default-background) !important; }
+  .la-table th              { color: var(--text-muted) !important; border-bottom-color: var(--default-border) !important; }
+  .la-table td              { border-bottom-color: var(--default-border) !important; }
+  .la-row                   { background: transparent !important; }
+  .la-row:hover             { background: var(--list-hover-focus-bg) !important; }
+
+  // Labels
+  .la-label    { color: var(--default-text-color) !important; }
+  .la-required { color: var(--default-text-color) !important; }
+  .la-acc-name { color: var(--text-muted) !important; }
+  .la-opt-name, .la-opt-ename { color: var(--text-muted) !important; }
+
+  // ng-select
+  .la-select .ng-select-container              { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+  .la-select .ng-value                         { color: var(--default-text-color) !important; }
+  .la-select .ng-placeholder                   { color: var(--text-muted) !important; }
+  .la-select .ng-input > input                 { color: var(--default-text-color) !important; }
+  .la-select.la-select-required .ng-select-container { border-color: rgba(239,68,68,0.5) !important; background: rgba(239,68,68,0.06) !important; }
+}

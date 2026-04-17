@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -8,6 +8,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { forkJoin } from 'rxjs';
 import { SharedModule } from '../../../shared/common/sharedmodule';
+import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { AccfDto, AccfService } from '../../../shared/services/accf.service';
 import { CostCenterDto, CostCenterService } from '../../../shared/services/cost-center.service';
 import { CenterBalService } from '../../../shared/services/center-bal.service';
@@ -35,12 +36,17 @@ export interface CcBalRow {
     SharedModule,
     NgbModule,
     NgSelectModule,
+    ConfirmationModalComponent,
   ],
   templateUrl: './cc-opening-balances.component.html',
   styleUrl:    './cc-opening-balances.component.scss',
   encapsulation: ViewEncapsulation.None,
 })
 export class CcOpeningBalancesComponent implements OnInit {
+
+  @ViewChild('deleteConfirmModal') deleteConfirmModal!: ConfirmationModalComponent;
+
+  private pendingDeleteRow: CcBalRow | null = null;
 
   costCenters:  CostCenterDto[] = [];
   leafAccounts: AccfDto[]       = [];
@@ -160,9 +166,34 @@ export class CcOpeningBalancesComponent implements OnInit {
     setTimeout(() => { this.selectedAccountAdd = null; });
   }
 
-  removeRow(row: CcBalRow): void {
-    this.rows = this.rows.filter(r => r.accNo !== row.accNo);
-    this.refreshAvailableAccounts();
+  confirmDelete(row: CcBalRow): void {
+    this.pendingDeleteRow = row;
+    this.deleteConfirmModal.show();
+  }
+
+  onConfirmDelete(): void {
+    if (!this.pendingDeleteRow || !this.selectedCcntrNo) return;
+
+    const remaining = this.rows.filter(r => r.accNo !== this.pendingDeleteRow!.accNo);
+    const entries   = remaining
+      .filter(r => r.bb !== 0)
+      .map(r => ({ accNo: r.accNo, bb: r.bb }));
+
+    this.saving = true;
+    this.centerBalService.saveBatch({ ccNo: this.selectedCcntrNo, entries }).subscribe({
+      next: () => {
+        this.rows = remaining;
+        this.refreshAvailableAccounts();
+        this.pendingDeleteRow = null;
+        this.saving = false;
+        this.toastr.success(this.translate.instant('General.DeletedSuccessfully'));
+      },
+      error: (err) => {
+        this.toastr.error(err?.error?.message ?? this.translate.instant('General.Error'));
+        this.pendingDeleteRow = null;
+        this.saving = false;
+      },
+    });
   }
 
   // ── Computed ────────────────────────────────────────────────────────────────

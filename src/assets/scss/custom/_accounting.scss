@@ -1,0 +1,333 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Accounting pages – dark mode overrides
+// Component styles use ViewEncapsulation.None and are injected after this
+// file, so background/color overrides use !important to win the cascade.
+// ─────────────────────────────────────────────────────────────────────────────
+
+[data-theme-mode="dark"] {
+
+  // ── Print button ─────────────────────────────────────────────────────────
+  .btn-print {
+    color: var(--default-text-color) !important;
+    background: var(--default-background) !important;
+    border-color: var(--default-border) !important;
+
+    i { color: var(--text-muted) !important; }
+
+    &:hover {
+      background: var(--list-hover-focus-bg) !important;
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      color: var(--default-text-color) !important;
+
+      i { color: var(--default-text-color) !important; }
+    }
+  }
+
+  // ── Material table ───────────────────────────────────────────────────────
+  .mat-mdc-table {
+    background: transparent !important;
+  }
+
+  .mat-mdc-header-row {
+    background-color: var(--default-background) !important;
+  }
+
+  .mat-mdc-header-cell {
+    color: var(--default-text-color) !important;
+    border-bottom-color: var(--default-border) !important;
+  }
+
+  .mat-mdc-cell {
+    color: var(--default-text-color) !important;
+    border-bottom-color: var(--default-border) !important;
+  }
+
+  .mat-mdc-row:hover {
+    background-color: var(--list-hover-focus-bg) !important;
+  }
+
+  .mat-mdc-no-data-row td {
+    color: var(--text-muted) !important;
+  }
+
+  .mat-mdc-paginator {
+    color: var(--default-text-color) !important;
+    background: transparent !important;
+
+    .mat-mdc-select-value,
+    .mat-mdc-paginator-range-label {
+      color: var(--default-text-color) !important;
+    }
+
+    .mat-mdc-icon-button {
+      color: var(--default-text-color) !important;
+
+      &[disabled] { color: var(--text-muted) !important; }
+    }
+  }
+
+  // ── Form modal ───────────────────────────────────────────────────────────
+  .form-modal-header {
+    background: var(--custom-white) !important;
+    border-bottom-color: var(--default-border) !important;
+  }
+
+  .form-modal-title {
+    color: var(--default-text-color) !important;
+  }
+
+  .form-modal-subtitle {
+    color: var(--text-muted) !important;
+  }
+
+  .form-modal-close {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--text-muted) !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: var(--default-text-color) !important;
+    }
+  }
+
+  .form-modal-body {
+    background: var(--custom-white) !important;
+  }
+
+  .form-modal-footer {
+    background: var(--default-background) !important;
+    border-top-color: var(--default-border) !important;
+  }
+
+  // ── Form fields ──────────────────────────────────────────────────────────
+  .form-field-label {
+    color: var(--default-text-color) !important;
+
+    i { color: var(--text-muted) !important; }
+  }
+
+  .form-field-input {
+    background-color: var(--form-control-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--default-text-color) !important;
+
+    &::placeholder { color: var(--text-muted) !important; }
+
+    &:focus {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15) !important;
+    }
+
+    &[readonly] {
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      color: var(--text-muted) !important;
+    }
+  }
+
+  select.form-field-input option {
+    background: rgb(var(--body-bg-rgb));
+    color: var(--default-text-color);
+  }
+
+  .form-btn-cancel {
+    color: var(--text-muted) !important;
+    background: var(--custom-white) !important;
+    border-color: var(--default-border) !important;
+
+    &:hover {
+      background: var(--list-hover-focus-bg) !important;
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      color: var(--default-text-color) !important;
+    }
+  }
+
+  // ── Chart-of-accounts tree table ─────────────────────────────────────────
+  .accounts-table {
+    background: transparent !important;
+
+    thead tr {
+      background: var(--default-background) !important;
+    }
+
+    th {
+      color: var(--text-muted) !important;
+      border-bottom-color: var(--default-border) !important;
+    }
+
+    td {
+      color: var(--default-text-color) !important;
+      border-bottom-color: var(--default-border) !important;
+    }
+
+    // Default row (no special class)
+    .account-row {
+      background: transparent !important;
+
+      &:hover {
+        background: var(--list-hover-focus-bg) !important;
+      }
+
+      &.row-leaf {
+        background: rgba(245, 158, 11, 0.1) !important;
+
+        td, .account-no-text, span { color: #fbbf24 !important; }
+
+        &:hover { background: rgba(245, 158, 11, 0.18) !important; }
+      }
+
+      &.row-with-balance {
+        background: rgba(239, 68, 68, 0.1) !important;
+
+        td, .account-no-text, span { color: #f87171 !important; }
+
+        &:hover { background: rgba(239, 68, 68, 0.18) !important; }
+      }
+
+      &.row-parent {
+        background: rgba(16, 185, 129, 0.08) !important;
+
+        td, .account-no-text, span { color: #34d399 !important; }
+
+        &:hover { background: rgba(16, 185, 129, 0.15) !important; }
+      }
+
+      &.row-stopped {
+        opacity: 0.5 !important;
+        background: transparent !important;
+      }
+    }
+  }
+
+  .account-no-text {
+    color: var(--default-text-color) !important;
+  }
+
+  .text-muted-light {
+    color: var(--text-muted) !important;
+  }
+
+  .btn-tree-toggle {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--text-muted) !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: var(--default-text-color) !important;
+    }
+
+    &.expanded {
+      background: rgba(var(--primary-rgb), 0.15) !important;
+      color: var(--primary-color) !important;
+    }
+  }
+
+  .tree-leaf-dot::after {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .totals-row {
+    background: var(--default-background) !important;
+    border-top-color: var(--default-border) !important;
+
+    td { color: var(--default-text-color) !important; }
+  }
+
+  .balance-status-row {
+    border-top-color: var(--default-border) !important;
+
+    &.balanced   { background: rgba(16, 185, 129, 0.08) !important; }
+    &.unbalanced { background: rgba(239, 68, 68, 0.08) !important;  }
+  }
+
+  .tree-footer {
+    background: var(--default-background) !important;
+    border-top-color: var(--default-border) !important;
+  }
+
+  .dirty-banner {
+    background: rgba(245, 158, 11, 0.1) !important;
+    border-color: rgba(245, 158, 11, 0.25) !important;
+    color: #fbbf24 !important;
+  }
+
+  // ── Inline editing rows ──────────────────────────────────────────────────
+  .row-editing {
+    background: rgba(245, 158, 11, 0.12) !important;
+
+    td { color: var(--default-text-color) !important; }
+
+    &:hover { background: rgba(245, 158, 11, 0.2) !important; }
+
+    input.form-control,
+    select.form-control {
+      background: var(--form-control-bg) !important;
+      border-color: rgba(245, 158, 11, 0.5) !important;
+      color: var(--default-text-color) !important;
+    }
+  }
+
+  .row-new {
+    background: rgba(99, 102, 241, 0.1) !important;
+
+    td { color: var(--default-text-color) !important; }
+
+    &:hover { background: rgba(99, 102, 241, 0.17) !important; }
+
+    input.form-control,
+    select.form-control {
+      background: var(--form-control-bg) !important;
+      border-color: rgba(99, 102, 241, 0.4) !important;
+      color: var(--default-text-color) !important;
+    }
+  }
+
+  // ── ng-select inline ─────────────────────────────────────────────────────
+  .inline-select {
+    .ng-select-container {
+      background: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+    }
+
+    .ng-value         { color: var(--default-text-color) !important; }
+    .ng-placeholder   { color: var(--text-muted) !important; }
+    .ng-input > input { color: var(--default-text-color) !important; }
+  }
+
+  .ng-dropdown-panel {
+    background: rgb(var(--body-bg-rgb)) !important;
+    border-color: var(--default-border) !important;
+
+    .ng-option {
+      background: transparent !important;
+      color: var(--default-text-color) !important;
+
+      &.ng-option-marked {
+        background: var(--list-hover-focus-bg) !important;
+        color: var(--default-text-color) !important;
+      }
+
+      &.ng-option-selected {
+        background: rgba(var(--primary-rgb), 0.15) !important;
+        color: var(--primary-color) !important;
+      }
+
+      &.ng-option-disabled {
+        color: var(--text-muted) !important;
+      }
+    }
+
+    .ng-dropdown-header,
+    .ng-dropdown-footer {
+      background: var(--default-background) !important;
+      border-color: var(--default-border) !important;
+      color: var(--text-muted) !important;
+    }
+  }
+
+  // ── Opening balances / other inline table pages ───────────────────────────
+  .ob-coa-warning {
+    background: rgba(245, 158, 11, 0.1) !important;
+    border-color: rgba(245, 158, 11, 0.25) !important;
+    color: #fbbf24 !important;
+  }
+}

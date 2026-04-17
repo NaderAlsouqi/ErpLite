@@ -169,3 +169,92 @@
   .acc-no   { font-family: monospace; font-weight: 600; color: #374151; }
   .acc-name { font-size: 0.85em; }
 }
+
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .mat-mdc-table         { background: transparent !important; }
+  .mat-mdc-header-row    { background-color: var(--default-background) !important; }
+  .mat-mdc-header-cell   { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-cell          { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-row:hover     { background-color: var(--list-hover-focus-bg) !important; }
+  .mat-mdc-no-data-row td { color: var(--text-muted) !important; }
+  .mat-mdc-paginator     { background: transparent !important; color: var(--default-text-color) !important; }
+
+  .form-modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .form-modal-title   { color: var(--default-text-color) !important; }
+  .form-modal-subtitle { color: var(--text-muted) !important; }
+  .form-modal-close   { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
+  .form-modal-close:hover { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
+  .form-modal-body    { background: var(--custom-white) !important; }
+  .form-modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .form-field-label   { color: var(--default-text-color) !important; }
+  .form-field-label i { color: var(--text-muted) !important; }
+  .form-field-input   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .form-field-input::placeholder { color: var(--text-muted) !important; }
+  .form-field-input option { background: rgb(var(--body-bg-rgb)); color: var(--default-text-color); }
+  .form-btn-cancel    { color: var(--text-muted) !important; background: var(--custom-white) !important; border-color: var(--default-border) !important; }
+  .form-btn-cancel:hover { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
+}
+
+// ── Dark mode – cc-opening-balances specific ──────────────────────────────────
+[data-theme-mode="dark"] {
+  // Info bar
+  .ccob-info-bar   { background: var(--default-background) !important; border-color: var(--default-border) !important; }
+  .ccob-info-label { color: var(--text-muted) !important; }
+  .ccob-info-value { color: var(--default-text-color) !important; }
+  .ccob-info-sep   { background: var(--default-border) !important; }
+
+  // Empty state
+  .ccob-empty-state { color: var(--text-muted) !important; }
+
+  // Table
+  .ccob-table                { background: transparent !important; }
+  .ccob-table thead tr        { background: var(--default-background) !important; }
+  .ccob-table th              { color: var(--text-muted) !important; border-bottom-color: var(--default-border) !important; }
+  .ccob-table td              { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+
+  // Row states
+  .ccob-row:hover td          { background: var(--list-hover-focus-bg) !important; }
+  .ccob-row-debit td          { background: rgba(59,130,246,0.07) !important; }
+  .ccob-row-credit td         { background: rgba(239,68,68,0.07) !important; }
+  .ccob-row-dirty             { background: rgba(245,158,11,0.1) !important; }
+  .ccob-row-dirty td          { color: var(--default-text-color) !important; }
+
+  // Inputs
+  .ccob-input {
+    background: var(--form-control-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--default-text-color) !important;
+
+    &::placeholder { color: var(--text-muted) !important; }
+  }
+
+  // Account number
+  .account-no-text { color: var(--default-text-color) !important; }
+
+  // Account search
+  .ccob-account-search .acc-no   { color: var(--default-text-color) !important; }
+  .ccob-account-search .acc-name { color: var(--text-muted) !important; }
+
+  // ng-select (cost center + account search)
+  .ccob-select .ng-select-container,
+  .ccob-account-search .ng-select-container {
+    background: var(--form-control-bg) !important;
+    border-color: var(--input-border) !important;
+  }
+  .ccob-select .ng-value,
+  .ccob-account-search .ng-value             { color: var(--default-text-color) !important; }
+  .ccob-select .ng-placeholder,
+  .ccob-account-search .ng-placeholder       { color: var(--text-muted) !important; }
+  .ccob-select .ng-input > input,
+  .ccob-account-search .ng-input > input     { color: var(--default-text-color) !important; }
+
+  // Footer
+  .ccob-totals-row td   { background: var(--default-background) !important; border-top-color: var(--default-border) !important; border-bottom-color: var(--default-border) !important; color: var(--default-text-color) !important; }
+  .ccob-diff-row.balanced   { background: rgba(16,185,129,0.07) !important; }
+  .ccob-diff-row.unbalanced { background: rgba(239,68,68,0.07) !important; }
+
+  .balance-badge.balanced   { background: rgba(16,185,129,0.15) !important; color: #34d399 !important; }
+  .balance-badge.unbalanced { background: rgba(239,68,68,0.12) !important; color: #f87171 !important; }
+}

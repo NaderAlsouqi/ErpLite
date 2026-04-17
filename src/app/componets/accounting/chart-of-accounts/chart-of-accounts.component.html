@@ -179,7 +179,7 @@
                       <ng-container *ngIf="editingRows[item.node!.data.no] as draft; else belongDisplay">
                         <ng-select [items]="allData" bindValue="no" bindLabel="name" [searchFn]="accountSearchFn"
                           [searchable]="true" [clearable]="true" [(ngModel)]="draft.belong"
-                          [placeholder]="'ChartOfAccounts.EnterBelong' | translate" class="inline-select">
+                          [placeholder]="'ChartOfAccounts.EnterBelong' | translate" class="inline-select" appendTo="body">
                           <ng-template ng-label-tmp let-item="item">{{ item.no }}</ng-template>
                           <ng-template ng-option-tmp let-item="item">{{ item.no }} — {{ item.name }}</ng-template>
                         </ng-select>
@@ -242,7 +242,7 @@
                       <ng-container *ngIf="editingRows[item.node!.data.no] as draft; else ccntrDisplay">
                         <ng-select [items]="costCenters" bindValue="CcntrNo" bindLabel="CcAname"
                           [searchable]="true" [clearable]="true" [(ngModel)]="draft.CcntrNo"
-                          [placeholder]="'ChartOfAccounts.CcntrNo' | translate" class="inline-select">
+                          [placeholder]="'ChartOfAccounts.CcntrNo' | translate" class="inline-select" appendTo="body">
                         </ng-select>
                       </ng-container>
                       <ng-template #ccntrDisplay>
@@ -306,7 +306,7 @@
                       <ng-select [items]="allData" bindValue="no" bindLabel="name" [searchFn]="accountSearchFn"
                         [searchable]="true" [clearable]="true" [(ngModel)]="item.row!.belong"
                         (change)="onNewRowBelongChange(item.row!)"
-                        [placeholder]="'ChartOfAccounts.EnterBelong' | translate" class="inline-select">
+                        [placeholder]="'ChartOfAccounts.EnterBelong' | translate" class="inline-select" appendTo="body">
                         <ng-template ng-label-tmp let-item="item">{{ item.no }}</ng-template>
                         <ng-template ng-option-tmp let-item="item">{{ item.no }} — {{ item.name }}</ng-template>
                       </ng-select>
@@ -336,7 +336,7 @@
                     <td class="col-ccntr text-center">
                       <ng-select [items]="costCenters" bindValue="CcntrNo" bindLabel="CcAname"
                         [searchable]="true" [clearable]="true" [(ngModel)]="item.row!.CcntrNo"
-                        [placeholder]="'ChartOfAccounts.CcntrNo' | translate" class="inline-select">
+                        [placeholder]="'ChartOfAccounts.CcntrNo' | translate" class="inline-select" appendTo="body">
                       </ng-select>
                     </td>
 

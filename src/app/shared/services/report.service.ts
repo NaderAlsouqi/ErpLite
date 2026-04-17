@@ -464,14 +464,14 @@ export class ReportService {
           <meta charset="UTF-8">
           <title>${title}</title>
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: ${direction}; padding: 30px; margin: 0; color: #334155; display: flex; flex-direction: column; min-height: 95vh; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: ${direction}; padding: 30px; margin: 0; color: #334155; }
             .print-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; }
             .header-left { display: flex; align-items: center; }
             .print-header img { height: 50px; width: auto; object-fit: contain; }
             .print-header .company-name { margin: 0 15px; font-size: 18px; font-weight: 700; color: #1e293b; }
             .print-header h2 { margin: 0; font-size: 20px; color: #1e293b; font-weight: 700; }
-            table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; flex-grow: 1; }
-            th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: ${textAlign}; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+            th, td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: ${textAlign}; }
             th { background-color: #f1f5f9; font-weight: 600; color: #334155; text-transform: uppercase; font-size: 10px; letter-spacing: 0.025em; }
             tr:nth-child(even) { background-color: #f8fafc; }
             .print-footer { margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; font-size: 11px; color: #64748b; }

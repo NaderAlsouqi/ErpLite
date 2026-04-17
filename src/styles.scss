@@ -972,6 +972,44 @@ td.mdc-data-table__cell {
   .ng-select .ng-value         { color: rgba(255, 255, 255, 0.87) !important; }
 
   label, .form-label { color: rgba(255, 255, 255, 0.72) !important; }
+
+  // ng-select dropdown panel
+  .ng-dropdown-panel {
+    background-color: rgb(var(--body-bg-rgb)) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .ng-dropdown-panel .ng-dropdown-panel-items {
+    background-color: rgb(var(--body-bg-rgb)) !important;
+  }
+
+  .ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
+    background-color: rgb(var(--body-bg-rgb)) !important;
+    color: rgba(255, 255, 255, 0.80) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+
+    &:last-child { border-bottom: none !important; }
+  }
+
+  .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked {
+    background-color: rgba(255, 255, 255, 0.07) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+  }
+
+  .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected {
+    background-color: rgba(var(--primary-rgb), 0.2) !important;
+    color: var(--primary-color) !important;
+  }
+
+  .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected.ng-option-marked {
+    background-color: rgba(var(--primary-rgb), 0.28) !important;
+    color: var(--primary-color) !important;
+  }
+
+  .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-disabled {
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
 }
 
 // ── Dropdowns ──────────────────────────────────────────────────────────────────

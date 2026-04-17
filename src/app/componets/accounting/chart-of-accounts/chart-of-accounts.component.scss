@@ -41,12 +41,10 @@
 // ── Table wrapper ─────────────────────────────────────────────────────────────
 .accounts-table-wrapper {
   width: 100%;
-  overflow: visible;
 }
 
 .table-responsive {
   overflow-x: auto;
-  overflow-y: visible;
   width: 100%;
   -webkit-overflow-scrolling: touch;
 }
@@ -915,4 +913,76 @@
   font-size: 0.875rem;
   padding: 0.5rem 1.25rem;
   border-radius: 8px;
+}
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .accounts-table          { background: transparent !important; }
+  .accounts-table thead tr { background: var(--default-background) !important; }
+  .accounts-table th       { color: var(--text-muted) !important; border-bottom-color: var(--default-border) !important; }
+  .accounts-table td       { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+
+  .account-row             { background: transparent !important; }
+  .account-row:hover       { background: var(--list-hover-focus-bg) !important; }
+
+  .account-row.row-leaf                     { background: rgba(245,158,11,0.1) !important; }
+  .account-row.row-leaf td,
+  .account-row.row-leaf .account-no-text,
+  .account-row.row-leaf span                { color: #fbbf24 !important; }
+  .account-row.row-leaf:hover               { background: rgba(245,158,11,0.18) !important; }
+
+  .account-row.row-with-balance             { background: rgba(239,68,68,0.1) !important; }
+  .account-row.row-with-balance td,
+  .account-row.row-with-balance .account-no-text,
+  .account-row.row-with-balance span        { color: #f87171 !important; }
+  .account-row.row-with-balance:hover       { background: rgba(239,68,68,0.18) !important; }
+
+  .account-row.row-parent                   { background: rgba(16,185,129,0.08) !important; }
+  .account-row.row-parent td,
+  .account-row.row-parent .account-no-text,
+  .account-row.row-parent span              { color: #34d399 !important; }
+  .account-row.row-parent:hover             { background: rgba(16,185,129,0.15) !important; }
+
+  .account-row.row-stopped                  { opacity: 0.5 !important; background: transparent !important; }
+
+  .account-row.row-editing                  { background: rgba(245,158,11,0.12) !important; }
+  .account-row.row-editing td               { color: var(--default-text-color) !important; }
+  .account-row.row-editing:hover            { background: rgba(245,158,11,0.2) !important; }
+  .account-row.row-editing input.form-control,
+  .account-row.row-editing select.form-control { background: var(--form-control-bg) !important; border-color: rgba(245,158,11,0.5) !important; color: var(--default-text-color) !important; }
+
+  .account-row.row-new                      { background: rgba(99,102,241,0.1) !important; }
+  .account-row.row-new td                   { color: var(--default-text-color) !important; }
+  .account-row.row-new:hover                { background: rgba(99,102,241,0.17) !important; }
+  .account-row.row-new input.form-control,
+  .account-row.row-new select.form-control  { background: var(--form-control-bg) !important; border-color: rgba(99,102,241,0.4) !important; color: var(--default-text-color) !important; }
+
+  .btn-tree-toggle         { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
+  .btn-tree-toggle:hover   { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
+  .btn-tree-toggle.expanded { background: rgba(var(--primary-rgb),0.15) !important; color: var(--primary-color) !important; }
+  .tree-leaf-dot::after    { background: rgba(255,255,255,0.2) !important; }
+  .account-no-text         { color: var(--default-text-color) !important; }
+  .text-muted-light        { color: var(--text-muted) !important; }
+
+  .totals-row              { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .totals-row td           { color: var(--default-text-color) !important; }
+  .balance-status-row      { border-top-color: var(--default-border) !important; }
+  .balance-status-row.balanced   { background: rgba(16,185,129,0.08) !important; }
+  .balance-status-row.unbalanced { background: rgba(239,68,68,0.08) !important; }
+  .tree-footer             { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .dirty-banner            { background: rgba(245,158,11,0.1) !important; border-color: rgba(245,158,11,0.25) !important; color: #fbbf24 !important; }
+
+  .inline-select .ng-select-container { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+  .inline-select .ng-value            { color: var(--default-text-color) !important; }
+  .inline-select .ng-placeholder      { color: var(--text-muted) !important; }
+
+  .form-modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .form-modal-title   { color: var(--default-text-color) !important; }
+  .form-modal-subtitle { color: var(--text-muted) !important; }
+  .form-modal-close   { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
+  .form-modal-body    { background: var(--custom-white) !important; }
+  .form-modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .form-field-label   { color: var(--default-text-color) !important; }
+  .form-field-label i { color: var(--text-muted) !important; }
+  .form-field-input   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .form-btn-cancel    { color: var(--text-muted) !important; background: var(--custom-white) !important; border-color: var(--default-border) !important; }
 }

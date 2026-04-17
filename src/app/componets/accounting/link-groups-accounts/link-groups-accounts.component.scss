@@ -272,3 +272,62 @@
 .lga-opt-ename {
   font-size: 0.78rem;
 }
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .mat-mdc-table         { background: transparent !important; }
+  .mat-mdc-header-row    { background-color: var(--default-background) !important; }
+  .mat-mdc-header-cell   { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-cell          { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-row:hover     { background-color: var(--list-hover-focus-bg) !important; }
+  .mat-mdc-no-data-row td { color: var(--text-muted) !important; }
+  .mat-mdc-paginator     { background: transparent !important; color: var(--default-text-color) !important; }
+
+  .form-modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .form-modal-title   { color: var(--default-text-color) !important; }
+  .form-modal-subtitle { color: var(--text-muted) !important; }
+  .form-modal-close   { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
+  .form-modal-close:hover { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
+  .form-modal-body    { background: var(--custom-white) !important; }
+  .form-modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .form-field-label   { color: var(--default-text-color) !important; }
+  .form-field-label i { color: var(--text-muted) !important; }
+  .form-field-input   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .form-field-input::placeholder { color: var(--text-muted) !important; }
+  .form-field-input option { background: rgb(var(--body-bg-rgb)); color: var(--default-text-color); }
+  .form-btn-cancel    { color: var(--text-muted) !important; background: var(--custom-white) !important; border-color: var(--default-border) !important; }
+  .form-btn-cancel:hover { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
+}
+
+// ── Dark mode – link-groups-accounts specific ─────────────────────────────────
+[data-theme-mode="dark"] {
+  // Add form
+  .lga-add-form   { background: var(--default-background) !important; border-color: var(--default-border) !important; }
+  .lga-label      { color: var(--text-muted) !important; }
+  .lga-add-icon   { color: var(--text-muted) !important; }
+  .lga-count-badge { color: var(--default-text-color) !important; background: rgba(255,255,255,0.1) !important; }
+
+  // Table
+  .lga-table                { background: transparent !important; }
+  .lga-table thead tr        { background: var(--default-background) !important; }
+  .lga-table th              { color: var(--text-muted) !important; border-bottom-color: var(--default-border) !important; }
+  .lga-table td              { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .lga-row                   { background: transparent !important; }
+  .lga-row:hover             { background: var(--list-hover-focus-bg) !important; }
+  .lga-mono                  { color: var(--default-text-color) !important; }
+
+  // ng-select
+  .lga-select .ng-select-container { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+  .lga-select .ng-value             { color: var(--default-text-color) !important; }
+  .lga-select .ng-placeholder       { color: var(--text-muted) !important; }
+  .lga-select .ng-input > input     { color: var(--default-text-color) !important; }
+
+  // Dropdown panel
+  ::ng-deep .ng-dropdown-panel,
+  ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items { background: rgb(var(--body-bg-rgb)) !important; border-color: var(--default-border) !important; }
+  ::ng-deep .ng-dropdown-panel .ng-option               { background: transparent !important; color: var(--default-text-color) !important; }
+  ::ng-deep .ng-dropdown-panel .ng-option.ng-option-marked   { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
+  ::ng-deep .ng-dropdown-panel .ng-option.ng-option-disabled { color: var(--text-muted) !important; }
+
+  .lga-opt-name, .lga-opt-ename { color: var(--text-muted) !important; }
+}

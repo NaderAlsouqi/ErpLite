@@ -527,6 +527,7 @@ export class ChartOfAccountsComponent implements OnInit {
     if (parentData) {
       this.generateAccountNoForDraft(row, parentData.no);
     } else {
+      this.generateRootAccountNo(row);
       this.generateAccorderForDraft(row, null);
       this.autoGenerateName(row, null);
     }
@@ -571,6 +572,7 @@ export class ChartOfAccountsComponent implements OnInit {
       // autoGenerateName is called inside generateAccountNoForDraft
     } else {
       row.level = null;
+      this.generateRootAccountNo(row);
       this.generateAccorderForDraft(row, null);
       this.autoGenerateName(row, null);
     }
@@ -592,6 +594,18 @@ export class ChartOfAccountsComponent implements OnInit {
     } else {
       row.bb = 0;
     }
+  }
+
+  private generateRootAccountNo(draft: InlineRow): void {
+    let maxNo = 0;
+    for (const acc of this.allData) {
+      if ((!acc.belong || acc.belong <= 0) && acc.no > maxNo) maxNo = acc.no;
+    }
+    for (const nr of this.newRows) {
+      if (nr === draft) continue;
+      if ((!nr.belong || nr.belong <= 0) && nr.no > maxNo) maxNo = nr.no;
+    }
+    draft.no = maxNo + 1;
   }
 
   private generateAccountNoForDraft(draft: InlineRow, parentNo: number): void {

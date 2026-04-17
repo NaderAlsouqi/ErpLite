@@ -163,3 +163,80 @@
     @else           { background: #f1f5f9; color: #475569; }
   }
 }
+
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .mat-mdc-table         { background: transparent !important; }
+  .mat-mdc-header-row    { background-color: var(--default-background) !important; }
+  .mat-mdc-header-cell   { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-cell          { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
+  .mat-mdc-row:hover     { background-color: var(--list-hover-focus-bg) !important; }
+  .mat-mdc-no-data-row td { color: var(--text-muted) !important; }
+  .mat-mdc-paginator     { background: transparent !important; color: var(--default-text-color) !important; }
+
+  .form-modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .form-modal-title   { color: var(--default-text-color) !important; }
+  .form-modal-subtitle { color: var(--text-muted) !important; }
+  .form-modal-close   { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
+  .form-modal-close:hover { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
+  .form-modal-body    { background: var(--custom-white) !important; }
+  .form-modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+  .form-field-label   { color: var(--default-text-color) !important; }
+  .form-field-label i { color: var(--text-muted) !important; }
+  .form-field-input   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+  .form-field-input::placeholder { color: var(--text-muted) !important; }
+  .form-field-input option { background: rgb(var(--body-bg-rgb)); color: var(--default-text-color); }
+  .form-btn-cancel    { color: var(--text-muted) !important; background: var(--custom-white) !important; border-color: var(--default-border) !important; }
+  .form-btn-cancel:hover { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
+}
+
+// ── Dark mode – edit-account-name specific ────────────────────────────────────
+[data-theme-mode="dark"] {
+  // Dirty row
+  .mat-mdc-row.row-dirty            { background-color: rgba(245,158,11,0.1) !important; }
+  .mat-mdc-row.row-dirty:hover      { background-color: rgba(245,158,11,0.18) !important; }
+
+  // Inline inputs
+  .inline-input {
+    background: var(--form-control-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--default-text-color) !important;
+
+    &::placeholder { color: var(--text-muted) !important; }
+
+    &:hover {
+      border-color: rgba(255,255,255,0.25) !important;
+      background: var(--form-control-bg) !important;
+    }
+
+    &:focus {
+      background: var(--form-control-bg) !important;
+      border-color: var(--primary-color) !important;
+    }
+  }
+
+  // Dirty cell input
+  .cell-dirty .inline-input {
+    border-color: rgba(245,158,11,0.6) !important;
+    background: rgba(245,158,11,0.07) !important;
+  }
+
+  // Account number
+  .account-no { color: var(--default-text-color) !important; }
+
+  // Search bar
+  .form-control {
+    background-color: var(--form-control-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--default-text-color) !important;
+
+    &::placeholder { color: var(--text-muted) !important; }
+  }
+
+  .input-group-text {
+    background-color: var(--default-background) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-muted) !important;
+  }
+}

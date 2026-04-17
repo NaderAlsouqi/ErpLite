@@ -1,0 +1,503 @@
+<app-page-header [title]="'JournalVoucher.Title' | translate" [title1]="'JournalVoucher.Accounting' | translate"
+  [activeTitle]="'JournalVoucher.JournalVouchers' | translate">
+</app-page-header>
+
+<!-- ─── Tabs ──────────────────────────────────────────────── -->
+<div class="row mb-3">
+  <div class="col-12 d-flex gap-2">
+    <button class="btn btn-sm" [class.btn-primary]="activeTab==='form'" [class.btn-outline-primary]="activeTab!=='form'"
+      (click)="switchToForm()">
+      <i class="ti ti-file-plus me-1"></i>{{ 'JournalVoucher.VoucherEntry' | translate }}
+    </button>
+    <button class="btn btn-sm" [class.btn-primary]="activeTab==='list'" [class.btn-outline-primary]="activeTab!=='list'"
+      (click)="switchToList()">
+      <i class="ti ti-list me-1"></i>{{ 'JournalVoucher.VouchersList' | translate }}
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 1 — VOUCHER FORM
+     ══════════════════════════════════════════════════════════ -->
+<div *ngIf="activeTab === 'form'">
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card custom-card">
+
+        <!-- Card Header -->
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="card-title mb-0">
+            {{ 'JournalVoucher.DailyJournalVoucher' | translate }}
+            <span class="badge ms-2" [class.bg-success]="isPosted" [class.bg-warning]="!isPosted && transNum > 0"
+              [class.bg-secondary]="transNum === 0">
+              {{ isPosted
+              ? ('JournalVoucher.Posted' | translate)
+              : transNum > 0
+              ? ('JournalVoucher.NotPosted' | translate)
+              : ('JournalVoucher.New' | translate) }}
+            </span>
+          </div>
+
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-outline-primary" (click)="printVoucher()" [disabled]="transNum === 0">
+              <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+            </button>
+            <div class="vr mx-1"></div>
+            <button class="btn btn-sm btn-outline-secondary" (click)="goFirst()"
+              title="{{ 'JournalVoucher.First' | translate }}">
+              <i class="ti ti-player-skip-back"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="goPrev()"
+              title="{{ 'JournalVoucher.Previous' | translate }}">
+              <i class="ti ti-chevron-right"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="goNext()"
+              title="{{ 'JournalVoucher.Next' | translate }}">
+              <i class="ti ti-chevron-left"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="goLast()"
+              title="{{ 'JournalVoucher.Last' | translate }}">
+              <i class="ti ti-player-skip-forward"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <div *ngIf="loading" class="d-flex justify-content-center my-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+
+          <div *ngIf="!loading">
+
+            <!-- ── Header Fields ── -->
+            <div class="row g-3 mb-4">
+
+              <!-- Financial Year -->
+              <div class="col-md-2 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'JournalVoucher.Year' | translate }}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-calendar-stats"></i></span>
+                  <input type="number" class="form-control" [(ngModel)]="myYear" name="myYear" min="2000" max="2100"
+                    (ngModelChange)="onYearChange()">
+                </div>
+              </div>
+
+              <!-- Date -->
+              <div class="col-md-2 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'JournalVoucher.Date' | translate }}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-calendar"></i></span>
+                  <input class="form-control" type="text" [(ngModel)]="date" name="voucherDate" mwlFlatpickr
+                    [altInput]="true" [convertModelValue]="true" [altFormat]="'d/m/Y'" dateFormat="Y-m-d"
+                    [options]="dateOptions" [disabled]="isPosted">
+                </div>
+              </div>
+
+              <!-- Sequence Type (نوع التسلسل) -->
+              <div class="col-md-2 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'JournalVoucher.VType' | translate }}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-list-numbers"></i></span>
+                  <input type="number" class="form-control text-center" [(ngModel)]="vType" name="vType" min="1"
+                    (ngModelChange)="onVTypeChange()">
+                </div>
+              </div>
+
+              <!-- Doc Number -->
+              <div class="col-md-2 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'JournalVoucher.DocNum' | translate }}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-hash"></i></span>
+                  <input type="number" class="form-control text-center fw-bold" [(ngModel)]="docNum" name="docNum"
+                    (ngModelChange)="onDocNumChange()" min="1">
+                </div>
+              </div>
+
+              <!-- Currency -->
+              <div class="col-md-2 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'JournalVoucher.Currency' | translate }}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-coin"></i></span>
+                  <ng-select [items]="currencies" bindLabel="cur" bindValue="cur_no" [(ngModel)]="curNo"
+                    (change)="onCurrencySelected($event)" [searchable]="true" [clearable]="false" appendTo="body"
+                    [disabled]="isPosted" class="form-control p-0 flex-grow-1">
+                    <ng-template ng-label-tmp let-item="item">
+                      {{ item.cur }}
+                    </ng-template>
+                    <ng-template ng-option-tmp let-item="item">
+                      {{ item.cur }} – {{ item.ename }}
+                    </ng-template>
+                  </ng-select>
+                </div>
+              </div>
+
+              <!-- Exchange Rate -->
+              <div class="col-md-2 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'JournalVoucher.Rate' | translate }}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-arrows-exchange"></i></span>
+                  <input type="number" class="form-control" [(ngModel)]="rate" name="rate" step="0.000001"
+                    min="0.000001" [disabled]="isPosted" readonly>
+                </div>
+              </div>
+
+              <!-- Branch -->
+              <div class="col-md-2 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'JournalVoucher.Branch' | translate }}</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-building"></i></span>
+                  <input type="number" class="form-control" [(ngModel)]="brNo" name="brNo" min="0" [disabled]="isPosted"
+                    readonly>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ── Balance indicator ── -->
+            <div class="alert mb-3 py-2" [class.alert-success]="isBalanced && totalDebit > 0"
+              [class.alert-danger]="!isBalanced" [class.alert-secondary]="totalDebit === 0">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>
+                  <i class="ti me-1" [class.ti-check]="isBalanced && totalDebit > 0"
+                    [class.ti-alert-triangle]="!isBalanced" [class.ti-info-circle]="totalDebit === 0"></i>
+                  {{ isBalanced && totalDebit > 0
+                  ? ('JournalVoucher.Balanced' | translate)
+                  : !isBalanced
+                  ? ('JournalVoucher.NotBalanced' | translate)
+                  : ('JournalVoucher.EnterLines' | translate) }}
+                </span>
+                <span class="fw-semibold">
+                  {{ 'JournalVoucher.Difference' | translate }}:
+                  {{ (totalDebit - totalCredit) | number:'1.3-3' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- ── Lines Table ── -->
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover align-middle mb-2">
+                <thead class="table-primary text-center">
+                  <tr>
+                    <th style="width:40px">#</th>
+                    <th style="min-width:200px">{{ 'JournalVoucher.Account' | translate }}</th>
+                    <th style="min-width:130px">{{ 'JournalVoucher.Debit' | translate }}</th>
+                    <th style="min-width:130px">{{ 'JournalVoucher.Credit' | translate }}</th>
+                    <th style="min-width:200px">{{ 'JournalVoucher.Description' | translate }}</th>
+                    <th style="min-width:100px">{{ 'JournalVoucher.CostCenter' | translate }}</th>
+                    <th style="width:50px"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let line of lines; let i = index">
+                    <td class="text-center text-muted small">{{ i + 1 }}</td>
+
+                    <!-- Account -->
+                    <td>
+                      <ng-select [items]="accounts" bindLabel="name" bindValue="no" [(ngModel)]="line.acc"
+                        (change)="onAccountSelected(i, $event)" [searchFn]="accountSearchFn" [searchable]="true"
+                        [clearable]="true" appendTo="body" [disabled]="isPosted" class="form-control p-0">
+                        <ng-template ng-label-tmp let-item="item">
+                          {{ item.no }} – {{ item.name }}
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                          {{ item.no }} – {{ item.name }}
+                        </ng-template>
+                      </ng-select>
+                    </td>
+
+                    <!-- Debit -->
+                    <td>
+                      <input type="number" class="form-control text-end" [(ngModel)]="line.debit"
+                        (ngModelChange)="onDebitChange(i)" min="0" step="0.001" [disabled]="isPosted">
+                    </td>
+
+                    <!-- Credit -->
+                    <td>
+                      <input type="number" class="form-control text-end" [(ngModel)]="line.credit"
+                        (ngModelChange)="onCreditChange(i)" min="0" step="0.001" [disabled]="isPosted">
+                    </td>
+
+                    <!-- Description -->
+                    <td>
+                      <input type="text" class="form-control" [(ngModel)]="line.des" [disabled]="isPosted">
+                    </td>
+
+                    <!-- Cost Center -->
+                    <td>
+                      <ng-select [items]="costCenters" bindLabel="CcAname" bindValue="CcntrNo"
+                        [(ngModel)]="line.ccntrNo" [searchable]="true" [clearable]="true" appendTo="body"
+                        [disabled]="isPosted" class="form-control p-0 shadow-none border-0 box-shadow-none">
+                        <ng-template ng-label-tmp let-item="item">
+                          {{ item.CcntrNo }} – {{ item.CcAname }}
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                          {{ item.CcntrNo }} – {{ item.CcAname }}
+                        </ng-template>
+                      </ng-select>
+                    </td>
+
+                    <!-- Remove -->
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-outline-danger p-1" (click)="removeLine(i)"
+                        [disabled]="lines.length <= 1 || isPosted"
+                        title="{{ 'JournalVoucher.RemoveLine' | translate }}">
+                        <i class="ti ti-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+
+                <!-- Totals footer -->
+                <tfoot class="table-light fw-bold">
+                  <tr>
+                    <td colspan="2" class="text-center">{{ 'JournalVoucher.Total' | translate }}</td>
+                    <td class="text-end text-success">{{ totalDebit | number:'1.3-3' }}</td>
+                    <td class="text-end text-danger">{{ totalCredit | number:'1.3-3' }}</td>
+                    <td colspan="3"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- ── Add Line Button ── -->
+            <button class="btn btn-sm btn-outline-primary mb-4" (click)="addLine()" [disabled]="isPosted">
+              <i class="ti ti-plus me-1"></i>{{ 'JournalVoucher.AddLine' | translate }}
+            </button>
+
+            <!-- ── Action Buttons ── -->
+            <div class="d-flex flex-wrap gap-2 border-top pt-3">
+              <button class="btn btn-success" (click)="save()" [disabled]="loading || isPosted">
+                <i class="ti ti-device-floppy me-1"></i>{{ 'JournalVoucher.Save' | translate }}
+              </button>
+              <button class="btn btn-outline-primary" (click)="initNewVoucher()" [disabled]="loading">
+                <i class="ti ti-file-plus me-1"></i>{{ 'JournalVoucher.New' | translate }}
+              </button>
+              <button class="btn btn-outline-danger ms-auto" (click)="confirmDelete()"
+                [disabled]="loading || transNum === 0 || isPosted">
+                <i class="ti ti-trash me-1"></i>{{ 'JournalVoucher.Delete' | translate }}
+              </button>
+            </div>
+
+            <!-- ── Attachments ── -->
+            <div class="mt-4 border-top pt-3">
+              <h6 class="fw-semibold mb-3">
+                <i class="ti ti-paperclip me-1"></i>{{ 'JournalVoucher.Attachments' | translate }}
+              </h6>
+
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <div *ngFor="let att of attachments"
+                  class="attachment-item d-flex align-items-center border rounded p-2 bg-light">
+                  <i class="ti ti-file-description me-2 fs-5 text-primary"></i>
+                  <div class="me-3">
+                    <div class="fw-medium small text-truncate" style="max-width: 150px;" [title]="att.FileName">{{
+                      att.FileName }}</div>
+                    <div class="text-muted smaller">{{ att.FileSize | number }} bytes</div>
+                  </div>
+                  <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-light p-1" (click)="viewAttachment(att)"
+                      title="{{ 'General.View' | translate }}">
+                      <i class="ti ti-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light p-1" (click)="downloadAttachment(att)"
+                      title="{{ 'General.Download' | translate }}">
+                      <i class="ti ti-download"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light p-1 text-danger" (click)="deleteAttachment(att)"
+                      [disabled]="isPosted" title="{{ 'General.Delete' | translate }}">
+                      <i class="ti ti-x"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div *ngIf="attachments.length === 0" class="text-muted small py-2">
+                  {{ 'JournalVoucher.NoAttachments' | translate }}
+                </div>
+              </div>
+
+              <div *ngIf="!isPosted">
+                <label class="btn btn-sm btn-outline-primary mb-0">
+                  <i class="ti ti-upload me-1"></i>{{ 'JournalVoucher.UploadFile' | translate }}
+                  <input type="file" class="d-none" (change)="onFileSelected($event)">
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 2 — VOUCHERS LIST
+     ══════════════════════════════════════════════════════════ -->
+<div *ngIf="activeTab === 'list'">
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card custom-card">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="card-title mb-0">{{ 'JournalVoucher.VouchersList' | translate }}</div>
+
+          <!-- Filters -->
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <label class="mb-0 fw-semibold">{{ 'JournalVoucher.Year' | translate }}:</label>
+            <input type="number" class="form-control form-control-sm" style="width:100px" [(ngModel)]="myYear"
+              (ngModelChange)="onYearChange()">
+            <label class="mb-0 fw-semibold">{{ 'JournalVoucher.VType' | translate }}:</label>
+            <input type="number" class="form-control form-control-sm" style="width:80px" [(ngModel)]="vType"
+              (ngModelChange)="loadList()" min="1">
+            <button class="btn btn-sm btn-primary" (click)="loadList()">
+              <i class="ti ti-search me-1"></i>{{ 'General.Search' | translate }}
+            </button>
+            <button class="btn btn-sm btn-outline-primary" (click)="printList()">
+              <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div *ngIf="loading" class="d-flex justify-content-center my-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+
+          <div *ngIf="!loading">
+            <div class="table-responsive">
+              <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)"
+                class="table table-hover align-middle w-100">
+
+                <!-- Doc Num -->
+                <ng-container matColumnDef="DocNum">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    {{ 'JournalVoucher.DocNum' | translate }}
+                  </th>
+                  <td mat-cell *matCellDef="let row" class="fw-bold">{{ row.DocNum }}</td>
+                </ng-container>
+
+                <!-- Date -->
+                <ng-container matColumnDef="Date">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    {{ 'JournalVoucher.Date' | translate }}
+                  </th>
+                  <td mat-cell *matCellDef="let row">{{ row.Date | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+
+                <!-- Total Debit -->
+                <ng-container matColumnDef="TotalDebit">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-end">
+                    {{ 'JournalVoucher.Debit' | translate }}
+                  </th>
+                  <td mat-cell *matCellDef="let row" class="text-end text-success fw-semibold">
+                    {{ row.TotalDebit | number:'1.3-3' }}
+                  </td>
+                </ng-container>
+
+                <!-- Total Credit -->
+                <ng-container matColumnDef="TotalCredit">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-end">
+                    {{ 'JournalVoucher.Credit' | translate }}
+                  </th>
+                  <td mat-cell *matCellDef="let row" class="text-end text-danger fw-semibold">
+                    {{ row.TotalCredit | number:'1.3-3' }}
+                  </td>
+                </ng-container>
+
+                <!-- User -->
+                <ng-container matColumnDef="UserName">
+                  <th mat-header-cell *matHeaderCellDef>{{ 'JournalVoucher.User' | translate }}</th>
+                  <td mat-cell *matCellDef="let row">{{ row.UserName }}</td>
+                </ng-container>
+
+                <!-- Post Status -->
+                <ng-container matColumnDef="Post">
+                  <th mat-header-cell *matHeaderCellDef class="text-center">{{ 'JournalVoucher.Status' | translate }}
+                  </th>
+                  <td mat-cell *matCellDef="let row" class="text-center">
+                    <span class="badge" [class.bg-success]="row.Post" [class.bg-warning]="!row.Post">
+                      {{ row.Post
+                      ? ('JournalVoucher.Posted' | translate)
+                      : ('JournalVoucher.NotPosted' | translate) }}
+                    </span>
+                  </td>
+                </ng-container>
+
+                <!-- Actions -->
+                <ng-container matColumnDef="Actions">
+                  <th mat-header-cell *matHeaderCellDef class="text-center">{{ 'General.Actions' | translate }}</th>
+                  <td mat-cell *matCellDef="let row" class="text-center">
+                    <button class="btn btn-sm btn-outline-primary" (click)="openVoucherFromList(row)"
+                      title="{{ 'General.Open' | translate }}">
+                      <i class="ti ti-eye"></i>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="cursor-pointer"
+                  (click)="openVoucherFromList(row)"></tr>
+              </table>
+            </div>
+
+            <!-- No data -->
+            <div *ngIf="dataSource.data.length === 0" class="text-center text-muted py-4">
+              <i class="ti ti-folder-open fs-2 d-block mb-2"></i>
+              {{ 'JournalVoucher.NoVouchersFound' | translate }}
+            </div>
+
+            <!-- Paginator -->
+            <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
+              [pageIndex]="pageIndex" (page)="onPageChange($event)" showFirstLastButtons>
+            </mat-paginator>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Delete Confirmation Modal ──────────────────────────── -->
+<ng-template #deleteConfirmModal>
+  <div class="modal-header border-0 pb-0">
+    <h5 class="modal-title text-danger">
+      <i class="ti ti-alert-triangle me-2"></i>{{ 'JournalVoucher.ConfirmDelete' | translate }}
+    </h5>
+  </div>
+  <div class="modal-body text-center py-3">
+    <p class="mb-1">{{ 'JournalVoucher.DeleteWarning' | translate }}</p>
+    <p class="fw-bold">{{ 'JournalVoucher.DocNum' | translate }}: {{ docNum }}</p>
+  </div>
+  <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+    <button class="btn btn-danger" (click)="executeDelete()">
+      <i class="ti ti-trash me-1"></i>{{ 'JournalVoucher.Delete' | translate }}
+    </button>
+    <button class="btn btn-outline-secondary" (click)="modalRef?.close()">
+      {{ 'General.Cancel' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<!-- ─── Attachment Delete Confirmation Modal ────────────────── -->
+<ng-template #attDeleteConfirmModal>
+  <div class="modal-header border-0 pb-0">
+    <h5 class="modal-title text-danger">
+      <i class="ti ti-alert-triangle me-2"></i>{{ 'General.Confirmation' | translate }}
+    </h5>
+  </div>
+  <div class="modal-body text-center py-3">
+    <p class="mb-1">{{ 'General.ConfirmDelete' | translate }}</p>
+    <p class="fw-bold">{{ pendingDeleteAttachment?.FileName }}</p>
+  </div>
+  <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+    <button class="btn btn-danger" (click)="executeDeleteAttachment()">
+      <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+    </button>
+    <button class="btn btn-outline-secondary" (click)="modalRef?.close()">
+      {{ 'General.Cancel' | translate }}
+    </button>
+  </div>
+</ng-template>
