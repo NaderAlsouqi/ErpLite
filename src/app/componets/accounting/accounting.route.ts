@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { RoleGuard } from '../../shared/guards/role.guard';
+import { PermissionGuard } from '../../shared/guards/permission.guard';
 
 const uc = () => import('../shared/under-construction/under-construction.component').then(m => m.UnderConstructionComponent);
 
@@ -72,6 +73,12 @@ export const admin: Routes = [
         loadComponent: () => import('./cc-opening-balances/cc-opening-balances.component').then(m => m.CcOpeningBalancesComponent),
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'Manager', 'Accountant'] }
+      },
+      {
+        path: 'admin/permissions',
+        loadComponent: () => import('./permissions/permissions.component').then(m => m.PermissionsComponent),
+        canActivate: [PermissionGuard],
+        data: { permissions: ['Admin.ManagePermissions'] }
       },
       { path: 'accounts-receivable',  loadComponent: uc },
       { path: 'accounts-payable',     loadComponent: uc },

@@ -664,6 +664,25 @@ export class NavService implements OnDestroy {
       path: '/reseller/quotation',
       roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
     },
+
+    { headTitle: 'Nav.Settings.Title' },
+    {
+      title: 'Settings',
+      translationKey: 'Nav.Settings.Title',
+      icon: 'bi-gear',
+      type: 'sub',
+      active: false,
+      children: [
+        {
+          title: 'Permissions',
+          translationKey: 'Nav.Settings.Permissions',
+          type: 'link',
+          path: '/accounting/admin/permissions',
+          active: false,
+          roles: ['Admin', 'Manager', 'Administrator'],
+        },
+      ],
+    },
   ];
 
   // Menu items to display (will be updated with translations)

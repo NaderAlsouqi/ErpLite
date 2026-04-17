@@ -741,6 +741,10 @@
         "Sales": "المبيعات"
     },
     "Nav": {
+        "Settings": {
+            "Title": "الإعدادات",
+            "Permissions": "الصلاحيات"
+        },
         "Sales": {
             "Title": "نظام ادارة المبيعات",
             "Invoices": "الفواتير",
@@ -778,6 +782,7 @@
             "Title": "نظام ادارة المشتريات"
         },
         "Accounting": {
+            "Admin": "الإدارة",
             "Title": "نظام ادارة المحاسبة",
             "ReceiptVouchers": "سندات القبض",
             "VirtualReceiptVouchers": "سندات القبض الافتراضية",
@@ -1582,5 +1587,19 @@
         "CCntrNo": "مركز الكلفة",
         "DocStatement": "بيان السند",
         "VType": "نوع التسلسل"
+    },
+    "Permissions": {
+        "Title": "الصلاحيات",
+        "Users": "المستخدمون",
+        "Matrix": "مصفوفة الصلاحيات",
+        "SelectUserHint": "اختر مستخدمًا لتعديل صلاحياته",
+        "SearchUser": "بحث عن مستخدم...",
+        "SearchPermission": "بحث عن صلاحية...",
+        "SelectAll": "تحديد الكل",
+        "ClearAll": "إلغاء الكل",
+        "Save": "حفظ",
+        "SavedMessage": "تم حفظ الصلاحيات بنجاح",
+        "NoUsers": "لا يوجد مستخدمون",
+        "NoResults": "لا توجد صلاحيات مطابقة"
     }
 }

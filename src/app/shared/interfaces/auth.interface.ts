@@ -18,10 +18,11 @@ export interface User {
   DeliveryID: number;
   CustomerAccounts: CustomerAccount[];
   Roles: string[];
+  Permissions: string[];
 }
 
 export interface LoginResponse {
-  ID: number;  
+  ID: number;
   TaxType: number;
   SystemType: number;
   IsReseller: boolean;
@@ -30,5 +31,6 @@ export interface LoginResponse {
   DeliveryID: number;
   CustomerAccounts: CustomerAccount[];
   Roles: string[];
+  Permissions: string[];
   Token: string;
 }

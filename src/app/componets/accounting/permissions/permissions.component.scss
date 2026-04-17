@@ -1,0 +1,56 @@
+.user-list {
+  max-height: 65vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .user-item {
+    display: block;
+    width: 100%;
+    text-align: start;
+    border: 1px solid var(--default-border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--primary01);
+      border-color: var(--primary-color);
+    }
+
+    &.active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: #fff;
+
+      small,
+      .text-muted { color: rgba(255, 255, 255, 0.85) !important; }
+    }
+  }
+}
+
+.module-group {
+  border: 1px solid var(--default-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: var(--custom-white);
+
+  .module-header {
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--default-border);
+  }
+}
+
+.perm-item {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+
+  small { font-size: 11px; }
+}

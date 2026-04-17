@@ -98,7 +98,8 @@ export class AuthService {
               CustomerAccounts: response.CustomerAccounts,
               SystemType: response.SystemType,
               DatabaseName: response.DatabaseName,
-              Roles: response.Roles || [] // Store roles from response
+              Roles: response.Roles || [], // Store roles from response
+              Permissions: response.Permissions || [] // Permission keys
             };
             
             localStorage.setItem('user', JSON.stringify(user));
@@ -129,6 +130,37 @@ export class AuthService {
   // Get current user roles
   getUserRoles(): string[] {
     return this.currentUserValue?.Roles || [];
+  }
+
+  // --- Permission helpers ---
+  getUserPermissions(): string[] {
+    return this.currentUserValue?.Permissions || [];
+  }
+
+  hasPermission(key: string): boolean {
+    if (!key) return true;
+    const perms = this.getUserPermissions();
+    return perms.includes(key);
+  }
+
+  hasAnyPermission(keys: string[]): boolean {
+    if (!keys || keys.length === 0) return true;
+    const perms = this.getUserPermissions();
+    return keys.some(k => perms.includes(k));
+  }
+
+  hasAllPermissions(keys: string[]): boolean {
+    if (!keys || keys.length === 0) return true;
+    const perms = this.getUserPermissions();
+    return keys.every(k => perms.includes(k));
+  }
+
+  refreshPermissions(permissions: string[]): void {
+    const user = this.currentUserValue;
+    if (!user) return;
+    user.Permissions = permissions || [];
+    localStorage.setItem('user', JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 
   // Get homepage based on user role

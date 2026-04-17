@@ -1,0 +1,111 @@
+<app-page-header
+  [title]="'Permissions.Title' | translate"
+  [title1]="'Nav.Accounting.Admin' | translate"
+  [activeTitle]="'Permissions.Title' | translate">
+</app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+      <div class="card-header">
+        <div class="card-title">
+          {{ 'Permissions.Title' | translate }}
+        </div>
+        <div class="card-options" *ngIf="selectedUserId != null">
+          <button type="button" class="btn btn-outline-secondary me-2" (click)="selectAll()">
+            <i class="ti ti-check me-1"></i>
+            {{ 'Permissions.SelectAll' | translate }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary me-2" (click)="clearAll()">
+            <i class="ti ti-square me-1"></i>
+            {{ 'Permissions.ClearAll' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving">
+            <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+            {{ 'Permissions.Save' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- Filters row -->
+        <div class="row mb-3">
+          <div class="col-md-5">
+            <label class="form-label">{{ 'Permissions.Users' | translate }}</label>
+            <select class="form-select"
+                    [ngModel]="selectedUserId"
+                    (ngModelChange)="onSelectUser($event)">
+              <option [ngValue]="null" disabled>
+                {{ 'Permissions.SelectUserHint' | translate }}
+              </option>
+              <option *ngFor="let u of users" [ngValue]="u.User_ID">
+                {{ u.Login_Name }} — {{ u.FullName }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-5" *ngIf="selectedUserId != null">
+            <label class="form-label">{{ 'General.Search' | translate }}</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-search"></i></span>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="searchPermission"
+                [placeholder]="'Permissions.SearchPermission' | translate" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="!loading && selectedUserId == null" class="text-center text-muted p-5">
+          <i class="ti ti-user-shield fs-1 d-block mb-2"></i>
+          {{ 'Permissions.SelectUserHint' | translate }}
+        </div>
+
+        <!-- Matrix -->
+        <div *ngIf="!loading && selectedUserId != null">
+          <div *ngFor="let g of visibleGroups()" class="module-group mb-3">
+            <div class="module-header">
+              <label class="form-check d-flex align-items-center m-0">
+                <input type="checkbox" class="form-check-input me-2"
+                       [checked]="g.allChecked"
+                       [indeterminate]="g.indeterminate"
+                       (change)="onToggleGroup(g)" />
+                <span class="fw-semibold">{{ g.module }}</span>
+                <span class="badge bg-primary-transparent ms-2">{{ g.items.length }}</span>
+              </label>
+            </div>
+            <div class="row mt-2">
+              <div class="col-lg-3 col-md-4 col-sm-6 mb-2" *ngFor="let item of g.items">
+                <label class="form-check perm-item">
+                  <input type="checkbox" class="form-check-input"
+                         [(ngModel)]="item.IsGranted"
+                         (change)="onItemToggle(g)" />
+                  <span class="ms-2">
+                    <span class="d-block">{{ item.DisplayName }}</span>
+                    <small class="text-muted">{{ item.PermissionKey }}</small>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="visibleGroups().length === 0" class="text-center text-muted p-4">
+            <i class="ti ti-search-off fs-3 d-block mb-2"></i>
+            {{ 'Permissions.NoResults' | translate }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -749,6 +749,10 @@
     "Select": "-- Select --"
   },
   "Nav": {
+    "Settings": {
+      "Title": "Settings",
+      "Permissions": "Permissions"
+    },
     "Sales": {
       "Title": "Sales Management System",
       "Invoices": "Invoices",
@@ -786,6 +790,7 @@
       "Title": "Purchases Management System"
     },
     "Accounting": {
+      "Admin": "Administration",
       "Title": "Accounting Management System",
       "ReceiptVouchers": "Receipt Vouchers",
       "VirtualReceiptVouchers": "Virtual Receipt Vouchers",
@@ -1567,5 +1572,19 @@
     "CCntrNo": "Cost Center No.",
     "DocStatement": "Doc. Statement",
     "VType": "Voucher Type"
+  },
+  "Permissions": {
+    "Title": "Permissions",
+    "Users": "Users",
+    "Matrix": "Permissions Matrix",
+    "SelectUserHint": "Select a user to edit their permissions",
+    "SearchUser": "Search user...",
+    "SearchPermission": "Search permission...",
+    "SelectAll": "Select All",
+    "ClearAll": "Clear All",
+    "Save": "Save",
+    "SavedMessage": "Permissions saved successfully",
+    "NoUsers": "No users found",
+    "NoResults": "No matching permissions"
   }
 }
