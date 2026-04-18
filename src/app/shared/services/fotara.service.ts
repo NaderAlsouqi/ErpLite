@@ -128,8 +128,8 @@ export interface FotaraInvoicePayload {
  * Field names match C# ReturnInvoiceRequest mixed casing
  */
 export interface FotaraRefundInvoicePayload {
-  inv_number: number;
-  serial_number: number;
+  inv_number: number | string;
+  serial_number: number | string;
   inv_date: string;
   type_code: string;
   note: string;
@@ -137,6 +137,7 @@ export interface FotaraRefundInvoicePayload {
   original_serial_number: string;
   original_total_amount: string;
   the_tax_number: string;
+  the_global_tax_number: string;
   the_company_name: string;
   zip_code: string;
   city_code: string;
@@ -150,7 +151,7 @@ export interface FotaraRefundInvoicePayload {
   TaxInclusiveAmount: number;
   AllowanceTotalAmount: number;
   PrepaidAmount: number;
-  PayableAmount: number;
+  PayableAmount: number | string;
   item_taxs: string;
   items: string;
   Test?: boolean;
@@ -402,7 +403,13 @@ export class FotaraService {
     const cleanPayload = this.createCleanRefundPayload(refundInvoiceData);
 
     if (this.taxType == 2) {
-      cleanPayload.PayableAmount = parseFloat(refundInvoiceData.PayableAmount as any) || 0;
+      // returnIncome expects inv_number, serial_number, PayableAmount as strings
+      cleanPayload.inv_number = cleanPayload.inv_number.toString();
+      cleanPayload.serial_number = cleanPayload.serial_number.toString();
+      cleanPayload.PayableAmount = (parseFloat(refundInvoiceData.PayableAmount as any) || 0).toString();
+    } else {
+      // returnInvoice expects PayableAmount as a number (decimal)
+      cleanPayload.PayableAmount = parseFloat(cleanPayload.PayableAmount as any) || 0;
     }
 
     console.log('=== Fotara Refund Payload ===');
@@ -523,12 +530,13 @@ export class FotaraService {
       inv_number: parseInt(refundInvoiceData.inv_number as any, 10),
       serial_number: parseInt(refundInvoiceData.serial_number as any, 10),
       inv_date: refundInvoiceData.inv_date || '',
-      type_code: (refundInvoiceData.type_code === '381' || !refundInvoiceData.type_code) ? '012' : refundInvoiceData.type_code,
+      type_code: (refundInvoiceData.type_code || '021').padStart(3, '0'),
       note: refundInvoiceData.note || '',
       original_inv_number: refundInvoiceData.original_inv_number?.toString() || '',
       original_serial_number: refundInvoiceData.original_serial_number || '',
       original_total_amount: finalOriginalTotal.toString(),
       the_tax_number: refundInvoiceData.the_tax_number || '',
+      the_global_tax_number: refundInvoiceData.the_global_tax_number || '',
       the_company_name: refundInvoiceData.the_company_name || '',
       zip_code: refundInvoiceData.zip_code || '',
       city_code: refundInvoiceData.city_code || '',
@@ -641,7 +649,6 @@ export class FotaraService {
    * Handle HTTP errors and show user-friendly messages
    */
   private handleError(operation: string) {
-    debugger;
     return (error: any): Observable<never> => {
       console.error(`${operation} failed:`, error);
 
@@ -651,8 +658,18 @@ export class FotaraService {
         errorMessage = this.translate.instant('General.ConnectionError');
       } else if (error.status === 404) {
         errorMessage = this.translate.instant('General.NotFound');
-      } else if (error.error && error.error.message) {
-        errorMessage = error.error.message;
+      } else if (error.error) {
+        if (typeof error.error === 'string' && error.error.trim()) {
+          errorMessage = error.error;
+        } else if (error.error.message) {
+          errorMessage = error.error.message;
+        } else if (error.error.detail) {
+          errorMessage = error.error.detail;
+        } else if (error.error.title) {
+          errorMessage = error.error.title;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       this.toastr.error(
