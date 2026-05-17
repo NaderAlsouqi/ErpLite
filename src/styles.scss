@@ -1079,6 +1079,21 @@ td.mdc-data-table__cell {
   }
 }
 
+// ── Angular Material Datepicker — center popup on screen ─────────────────────
+// .cdk-overlay-container is position:fixed 100vw×100vh.
+// Setting all four edges to 0 + margin:auto centers the pane without transform,
+// avoiding the compositing-layer transparency side-effect.
+.mat-datepicker-popup {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  margin: auto !important;
+  width: fit-content !important;
+  height: fit-content !important;
+}
+
 // ── Toastr — Success Toast ──────────────────────────────────────────────────────
 #toast-container > .toast-success {
   background-color: #fff !important;

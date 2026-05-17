@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -154,7 +154,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
       this.loadCustomers(this.deliveryId);
     } else {
       this.toastr.error(
-        this.translate.instant('VirtualRefundsPage.UserInfoNotFound'),
+        this.translate.instant('ServiceRefundsPage.UserInfoNotFound'),
         this.translate.instant('General.Error')
       );
       this.loading = false;
@@ -235,13 +235,13 @@ export class ServiceInvoiceRefundComponent implements OnInit {
 
         // Success toast when data is loaded
         this.toastr.success(
-          this.translate.instant('VirtualRefundsPage.LoadSuccess', { count: formattedData.length }),
+          this.translate.instant('ServiceRefundsPage.LoadSuccess', { count: formattedData.length }),
           this.translate.instant('General.Success')
         );
       },
       error: (error) => {
         this.toastr.error(
-          this.translate.instant('VirtualRefundsPage.LoadError'),
+          this.translate.instant('ServiceRefundsPage.LoadError'),
           this.translate.instant('General.Error')
         );
         this.loading = false;
@@ -316,7 +316,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
       } catch (error) {
         // Show a toast for sorting error
         this.toastr.error(
-          this.translate.instant('VirtualRefundsPage.SortError'),
+          this.translate.instant('ServiceRefundsPage.SortError'),
           this.translate.instant('General.Error')
         );
       }
@@ -373,7 +373,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
     // Notify when no records match the search
     if (filteredData.length === 0) {
       this.toastr.info(
-        this.translate.instant('VirtualRefundsPage.NoMatchingResults'),
+        this.translate.instant('ServiceRefundsPage.NoMatchingResults'),
         this.translate.instant('General.Info')
       );
     }
@@ -410,7 +410,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
 
     // Show toast about filter results
     this.toastr.info(
-      this.translate.instant('VirtualRefundsPage.FilterApplied', {
+      this.translate.instant('ServiceRefundsPage.FilterApplied', {
         count: filteredData.length,
         status: this.translate.instant(
           status === 'all'
@@ -438,7 +438,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
       });
     } catch (error) {
       this.toastr.error(
-        this.translate.instant('VirtualRefundsPage.NavigationError'),
+        this.translate.instant('ServiceRefundsPage.NavigationError'),
         this.translate.instant('General.Error')
       );
     }
@@ -476,7 +476,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
         window.open(url, '_blank');
 
         this.toastr.success(
-          this.translate.instant('VirtualRefundsPage.PDFGeneratedSuccess'),
+          this.translate.instant('ServiceRefundsPage.PDFGeneratedSuccess'),
           this.translate.instant('General.Success')
         );
 
@@ -485,7 +485,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
       error: (error) => {
         console.error('Error generating PDF:', error);
         this.toastr.error(
-          this.translate.instant('VirtualRefundsPage.PDFGenerationError'),
+          this.translate.instant('ServiceRefundsPage.PDFGenerationError'),
           this.translate.instant('General.Error')
         );
         this.printingDocuments.delete(refund.DocumentNumber);
@@ -519,7 +519,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
     this.invoiceService.deleteRefund(documentNumber, billNumber, financialYear).subscribe({
       next: (response) => {
         this.toastr.success(
-          response.message || this.translate.instant('VirtualRefundsPage.DeleteSuccess'),
+          response.message || this.translate.instant('ServiceRefundsPage.DeleteSuccess'),
           this.translate.instant('General.Success')
         );
 
@@ -528,7 +528,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
           this.loadRefunds(this.deliveryId);
         } else {
           this.toastr.error(
-            this.translate.instant('VirtualRefundsPage.UserInfoNotFound'),
+            this.translate.instant('ServiceRefundsPage.UserInfoNotFound'),
             this.translate.instant('General.Error')
           );
         }
@@ -540,7 +540,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
       },
       error: (error) => {
         this.toastr.error(
-          error.error?.message || this.translate.instant('VirtualRefundsPage.DeleteError'),
+          error.error?.message || this.translate.instant('ServiceRefundsPage.DeleteError'),
           this.translate.instant('General.Error')
         );
         this.deleting = false;

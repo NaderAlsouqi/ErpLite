@@ -326,6 +326,9 @@ export class FotaraService {
     // Create a clean payload with Items encoded as string
     const cleanPayload = this.createCleanPayload(invoiceData);
 
+    console.log('=== Fotara Invoice Payload (Original) ===');
+    console.table(cleanPayload);
+
     if (this.taxType == 2) {
       let numberValue: number = parseInt(invoiceData.serial_number);
       let stringValue: string = numberValue.toString();
@@ -540,7 +543,7 @@ export class FotaraService {
       the_company_name: refundInvoiceData.the_company_name || '',
       zip_code: refundInvoiceData.zip_code || '',
       city_code: refundInvoiceData.city_code || '',
-      CustomerName: refundInvoiceData.customer_name || '',
+      CustomerName: (refundInvoiceData.customer_name || '').trim(),
       customer_phone: refundInvoiceData.customer_phone || '',
       income_source_sequence: refundInvoiceData.income_source_sequence || '',
       return_reason: refundInvoiceData.return_reason || 'مرتجع',

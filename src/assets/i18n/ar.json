@@ -401,7 +401,26 @@
         "Action": "إجراء",
         "ViewRefund": "عرض الإرجاع",
         "Title": "المرتجعات",
-        "Sales": "المبيعات"
+        "Sales": "المبيعات",
+        "RefundsList": "قائمة المرتجعات",
+        "AddRefund": "إضافة مرتجع",
+        "Search": "بحث",
+        "FilterByStatus": "تصفية حسب الحالة",
+        "PrintRefund": "طباعة المرتجع",
+        "DeleteRefund": "حذف المرتجع",
+        "ConfirmDelete": "تأكيد الحذف",
+        "DeleteConfirmationMessage": "هل أنت متأكد من حذف هذا المرتجع؟ لا يمكن التراجع عن هذا الإجراء.",
+        "UserInfoNotFound": "لم يتم العثور على معلومات المستخدم",
+        "LoadSuccess": "تم تحميل {{count}} مرتجع بنجاح",
+        "LoadError": "فشل تحميل المرتجعات",
+        "SortError": "حدث خطأ أثناء ترتيب البيانات",
+        "NoMatchingResults": "لا توجد نتائج مطابقة",
+        "FilterApplied": "تم عرض {{count}} مرتجع ({{status}})",
+        "NavigationError": "حدث خطأ أثناء الانتقال",
+        "PDFGeneratedSuccess": "تم إنشاء ملف PDF بنجاح",
+        "PDFGenerationError": "فشل إنشاء ملف PDF",
+        "DeleteSuccess": "تم حذف المرتجع بنجاح",
+        "DeleteError": "فشل حذف المرتجع"
     },
     "Nav": {
         "Sales": {

@@ -152,7 +152,7 @@ export class InvoiceRefundComponent implements OnInit {
       this.loadCustomers(this.deliveryId);
     } else {
       this.toastr.error(
-        this.translate.instant('VirtualRefundsPage.UserInfoNotFound'),
+        this.translate.instant('RefundsPage.UserInfoNotFound'),
         this.translate.instant('General.Error')
       );
       this.loading = false;
@@ -231,13 +231,13 @@ export class InvoiceRefundComponent implements OnInit {
         
         // Success toast when data is loaded
         this.toastr.success(
-          this.translate.instant('VirtualRefundsPage.LoadSuccess', { count: formattedData.length }),
+          this.translate.instant('RefundsPage.LoadSuccess', { count: formattedData.length }),
           this.translate.instant('General.Success')
         );
       },
       error: (error) => {
         this.toastr.error(
-          this.translate.instant('VirtualRefundsPage.LoadError'),
+          this.translate.instant('RefundsPage.LoadError'),
           this.translate.instant('General.Error')
         );
         this.loading = false;
@@ -312,7 +312,7 @@ export class InvoiceRefundComponent implements OnInit {
       } catch (error) {
         // Show a toast for sorting error
         this.toastr.error(
-          this.translate.instant('VirtualRefundsPage.SortError'),
+          this.translate.instant('RefundsPage.SortError'),
           this.translate.instant('General.Error')
         );
       }
@@ -369,7 +369,7 @@ export class InvoiceRefundComponent implements OnInit {
     // Notify when no records match the search
     if (filteredData.length === 0) {
       this.toastr.info(
-        this.translate.instant('VirtualRefundsPage.NoMatchingResults'),
+        this.translate.instant('RefundsPage.NoMatchingResults'),
         this.translate.instant('General.Info')
       );
     }
@@ -406,7 +406,7 @@ export class InvoiceRefundComponent implements OnInit {
     
     // Show toast about filter results
     this.toastr.info(
-      this.translate.instant('VirtualRefundsPage.FilterApplied', { 
+      this.translate.instant('RefundsPage.FilterApplied', { 
         count: filteredData.length,
         status: this.translate.instant(
           status === 'all' 
@@ -434,7 +434,7 @@ export class InvoiceRefundComponent implements OnInit {
       });
     } catch (error) {
       this.toastr.error(
-        this.translate.instant('VirtualRefundsPage.NavigationError'),
+        this.translate.instant('RefundsPage.NavigationError'),
         this.translate.instant('General.Error')
       );
     }
@@ -472,7 +472,7 @@ export class InvoiceRefundComponent implements OnInit {
         window.open(url, '_blank');
         
         this.toastr.success(
-          this.translate.instant('VirtualRefundsPage.PDFGeneratedSuccess'),
+          this.translate.instant('RefundsPage.PDFGeneratedSuccess'),
           this.translate.instant('General.Success')
         );
         
@@ -481,7 +481,7 @@ export class InvoiceRefundComponent implements OnInit {
       error: (error) => {
         console.error('Error generating PDF:', error);
         this.toastr.error(
-          this.translate.instant('VirtualRefundsPage.PDFGenerationError'),
+          this.translate.instant('RefundsPage.PDFGenerationError'),
           this.translate.instant('General.Error')
         );
         this.printingDocuments.delete(refund.DocumentNumber);
@@ -515,7 +515,7 @@ export class InvoiceRefundComponent implements OnInit {
     this.invoiceService.deleteRefund(documentNumber, billNumber, financialYear).subscribe({
       next: (response) => {
         this.toastr.success(
-          response.message || this.translate.instant('VirtualRefundsPage.DeleteSuccess'),
+          response.message || this.translate.instant('RefundsPage.DeleteSuccess'),
           this.translate.instant('General.Success')
         );
         
@@ -524,7 +524,7 @@ export class InvoiceRefundComponent implements OnInit {
           this.loadRefunds(this.deliveryId);
         } else {
           this.toastr.error(
-            this.translate.instant('VirtualRefundsPage.UserInfoNotFound'),
+            this.translate.instant('RefundsPage.UserInfoNotFound'),
             this.translate.instant('General.Error')
           );
         }
@@ -536,7 +536,7 @@ export class InvoiceRefundComponent implements OnInit {
       },
       error: (error) => {
         this.toastr.error(
-          error.error?.message || this.translate.instant('VirtualRefundsPage.DeleteError'),
+          error.error?.message || this.translate.instant('RefundsPage.DeleteError'),
           this.translate.instant('General.Error')
         );
         this.deleting = false;
