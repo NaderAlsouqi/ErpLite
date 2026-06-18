@@ -9,6 +9,8 @@ import { SharedModule } from "../../../../shared/common/sharedmodule";
 import { FotaraService, TransferRefundInvoiceData, FotaraApiResponse } from "../../../../shared/services/fotara.service";
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../../shared/services/auth.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 // Material Table imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
@@ -41,7 +43,8 @@ interface RefundData {
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    HasPermissionDirective
   ],
   templateUrl: './service-transfer-refunds.component.html',
   styleUrl: './service-transfer-refunds.component.scss'
@@ -79,7 +82,8 @@ export class ServiceTransferRefundsComponent implements OnInit {
     private authService: AuthService,
     private translate: TranslateService,
     private toastr: ToastrService,
-    private router: Router
+    private router: Router,
+    private cs: CompanySettingsService
   ) {
     this.dataSource.filterPredicate = (data: any, filter: string) => {
       return data.DocumentNumber.toLowerCase().includes(filter) ||
@@ -140,7 +144,7 @@ export class ServiceTransferRefundsComponent implements OnInit {
             InvoiceNumber: refund.invoiceNumber ?? refund.InvoiceNumber ?? '',
             CustomerName: refund.customerName ?? refund.CustomerName ?? '',
             FinancialYear: Math.floor(Number(refund.financialYear ?? refund.FinancialYear)).toString(),
-            InvoiceAmount: parseFloat(refund.invoiceAmount ?? refund.InvoiceAmount ?? 0).toFixed(3),
+            InvoiceAmount: parseFloat(refund.invoiceAmount ?? refund.InvoiceAmount ?? 0).toFixed(this.cs.billDecimals),
             IsTransferred: !!(refund.rIsTransfered ?? refund.RIsTransfered),
             RIsTransfered: !!(refund.rIsTransfered ?? refund.RIsTransfered),
             RQRCode: refund.rQRCode ?? refund.RQRCode ?? null,

@@ -1,142 +1,51 @@
-:host {
-  display: block;
-}
+.ean-container {
+  padding: 1rem;
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.card-title {
-  margin-bottom: 0;
-}
-
-.card-options {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-// ── Table ─────────────────────────────────────────────────────────────────────
-
-.table-responsive {
-  overflow-x: auto;
-  min-height: 300px;
-}
-
-.edit-name-table {
-  width: 100%;
-}
-
-::ng-deep {
-  .mat-mdc-table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  .mat-mdc-header-row {
-    background-color: #f8f9fa;
-  }
-
-  .mat-mdc-header-cell {
-    color: #495057;
-    font-weight: 600;
-    font-size: 0.8125rem;
-    padding: 0.625rem 0.75rem;
-    border-bottom: 2px solid #dee2e6;
-  }
-
-  .mat-mdc-cell {
-    padding: 0.375rem 0.625rem;
-    font-size: 0.875rem;
-    color: #495057;
-    border-bottom: 1px solid #f1f3f5;
-    vertical-align: middle;
-  }
-
-  .mat-mdc-row {
-    transition: background-color 0.15s;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.025);
-    }
-
-    &.row-dirty {
-      background-color: rgba(251, 191, 36, 0.08);
-
-      &:hover {
-        background-color: rgba(251, 191, 36, 0.14);
+  .form-section {
+    .form-group {
+      margin-bottom: 1rem;
+      label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        display: block;
+        i { margin-inline-end: 0.25rem; }
       }
     }
   }
 
-  .mat-mdc-paginator {
-    background: transparent;
-    font-size: 0.8125rem;
-  }
-}
-
-// ── Column Widths ─────────────────────────────────────────────────────────────
-
-.col-no {
-  width: 110px;
-  min-width: 90px;
-}
-
-.col-name {
-  min-width: 200px;
-}
-
-.col-sm-field {
-  width: 90px;
-  min-width: 70px;
-}
-
-// ── Inline Input ─────────────────────────────────────────────────────────────
-
-.inline-input {
-  width: 100%;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.875rem;
-  color: #374151;
-  background: #f8fafc;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
-  outline: none;
-
-  &:hover {
-    border-color: #94a3b8;
-    background: #fff;
+  .table-section {
+    .table-responsive { max-height: 520px; overflow-y: auto; overflow-x: auto; }
+    .selected-row { background-color: rgba(var(--primary-rgb), 0.1); }
+    .row-dirty    { background-color: rgba(245, 158, 11, 0.08); }
+    tr { cursor: pointer; }
   }
 
-  &:focus {
-    border-color: var(--primary-color, #6366f1);
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 99, 102, 241), 0.1);
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    .btn { flex: 1; display: flex; align-items: center; justify-content: center; }
   }
-}
 
-.cell-dirty .inline-input {
-  border-color: #f59e0b;
-  background: #fffbeb;
-
-  &:focus {
-    border-color: #d97706;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+  .no-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted, #94a3b8);
+    text-align: center;
+    i   { font-size: 3rem; margin-bottom: 0.75rem; display: block; }
+    p   { margin: 0; font-size: 0.9rem; }
   }
 }
 
 // ── Account No ────────────────────────────────────────────────────────────────
 
-.account-no {
-  font-family: monospace;
+.account-no-cell {
+  font-family: 'Courier New', monospace;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #374151;
 }
 
 // ── Level Badge ───────────────────────────────────────────────────────────────
@@ -154,89 +63,55 @@
 
 @for $i from 1 through 7 {
   .level-#{$i} {
-    @if $i == 1 { background: #dbeafe; color: #1d4ed8; }
+    @if      $i == 1 { background: #dbeafe; color: #1d4ed8; }
     @else if $i == 2 { background: #dcfce7; color: #15803d; }
     @else if $i == 3 { background: #fef9c3; color: #a16207; }
     @else if $i == 4 { background: #fce7f3; color: #be185d; }
     @else if $i == 5 { background: #ede9fe; color: #7c3aed; }
     @else if $i == 6 { background: #ffedd5; color: #c2410c; }
-    @else           { background: #f1f5f9; color: #475569; }
+    @else            { background: #f1f5f9; color: #475569; }
   }
 }
 
+// ── Paginator ─────────────────────────────────────────────────────────────────
+
+::ng-deep .mat-mdc-paginator {
+  background: transparent !important;
+  color: var(--default-text-color, #495057) !important;
+}
 
 // ── Dark mode ─────────────────────────────────────────────────────────────────
-[data-theme-mode="dark"] {
-  .mat-mdc-table         { background: transparent !important; }
-  .mat-mdc-header-row    { background-color: var(--default-background) !important; }
-  .mat-mdc-header-cell   { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
-  .mat-mdc-cell          { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
-  .mat-mdc-row:hover     { background-color: var(--list-hover-focus-bg) !important; }
-  .mat-mdc-no-data-row td { color: var(--text-muted) !important; }
-  .mat-mdc-paginator     { background: transparent !important; color: var(--default-text-color) !important; }
 
-  .form-modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
-  .form-modal-title   { color: var(--default-text-color) !important; }
-  .form-modal-subtitle { color: var(--text-muted) !important; }
-  .form-modal-close   { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
-  .form-modal-close:hover { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
-  .form-modal-body    { background: var(--custom-white) !important; }
-  .form-modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
-  .form-field-label   { color: var(--default-text-color) !important; }
-  .form-field-label i { color: var(--text-muted) !important; }
-  .form-field-input   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
-  .form-field-input::placeholder { color: var(--text-muted) !important; }
-  .form-field-input option { background: rgb(var(--body-bg-rgb)); color: var(--default-text-color); }
-  .form-btn-cancel    { color: var(--text-muted) !important; background: var(--custom-white) !important; border-color: var(--default-border) !important; }
-  .form-btn-cancel:hover { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
-}
-
-// ── Dark mode – edit-account-name specific ────────────────────────────────────
-[data-theme-mode="dark"] {
-  // Dirty row
-  .mat-mdc-row.row-dirty            { background-color: rgba(245,158,11,0.1) !important; }
-  .mat-mdc-row.row-dirty:hover      { background-color: rgba(245,158,11,0.18) !important; }
-
-  // Inline inputs
-  .inline-input {
-    background: var(--form-control-bg) !important;
-    border-color: var(--input-border) !important;
-    color: var(--default-text-color) !important;
-
-    &::placeholder { color: var(--text-muted) !important; }
-
-    &:hover {
-      border-color: rgba(255,255,255,0.25) !important;
-      background: var(--form-control-bg) !important;
+::ng-deep [data-theme-mode="dark"] {
+  .ean-container {
+    label { color: var(--default-text-color) !important; }
+    .form-control {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+      &::placeholder { color: var(--text-muted) !important; }
+      &[readonly] { opacity: 0.7; }
     }
-
-    &:focus {
-      background: var(--form-control-bg) !important;
-      border-color: var(--primary-color) !important;
+    .input-group-text {
+      background-color: var(--default-background) !important;
+      border-color: var(--input-border) !important;
+      color: var(--text-muted) !important;
     }
-  }
-
-  // Dirty cell input
-  .cell-dirty .inline-input {
-    border-color: rgba(245,158,11,0.6) !important;
-    background: rgba(245,158,11,0.07) !important;
-  }
-
-  // Account number
-  .account-no { color: var(--default-text-color) !important; }
-
-  // Search bar
-  .form-control {
-    background-color: var(--form-control-bg) !important;
-    border-color: var(--input-border) !important;
-    color: var(--default-text-color) !important;
-
-    &::placeholder { color: var(--text-muted) !important; }
-  }
-
-  .input-group-text {
-    background-color: var(--default-background) !important;
-    border-color: var(--input-border) !important;
-    color: var(--text-muted) !important;
+    .table                        { background: transparent !important; }
+    .table thead tr               { background: var(--default-background) !important; }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-bottom-color: var(--default-border) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td                     { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th                     { border-color: var(--default-border) !important; }
+    .table tbody tr               { background: transparent !important; }
+    .table tbody tr:hover         { background: var(--list-hover-focus-bg) !important; }
+    .selected-row                 { background: rgba(var(--primary-rgb), 0.12) !important; }
+    .row-dirty                    { background: rgba(245, 158, 11, 0.1) !important; }
+    .text-muted                   { color: var(--text-muted) !important; }
+    .no-selection                 { color: var(--text-muted) !important; }
   }
 }

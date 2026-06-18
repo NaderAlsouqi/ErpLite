@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { VirtualInvoiceService } from '../../../shared/services/virtual-invoice.service';
 import { InvoiceService } from '../../../shared/services/invoice.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from "../../../shared/common/sharedmodule";
 import { AuthService } from '../../../shared/services/auth.service';
@@ -13,6 +14,7 @@ import { AuthService } from '../../../shared/services/auth.service';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 
 interface VirtualInvoiceData {
@@ -37,6 +39,7 @@ interface VirtualInvoiceData {
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
+    HasPermissionDirective,
   ],
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss'
@@ -68,6 +71,7 @@ export class QuotationComponent {
   constructor(
     private virtualInvoiceService: VirtualInvoiceService,
     private reportService: ReportService,
+    private cs: CompanySettingsService,
     private InvoiceService: InvoiceService,
     private translate: TranslateService,
     private authService: AuthService,
@@ -139,7 +143,7 @@ export class QuotationComponent {
           TransactionNumber: invoice.TransactionNumber,
           CustomerName: invoice.CustomerName,
           FinancialYear: Math.floor(Number(invoice.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(this.cs.billDecimals),
         }));
 
                 // Store all data
@@ -177,7 +181,7 @@ export class QuotationComponent {
           TransactionNumber: invoice.TransactionNumber,
           CustomerName: invoice.CustomerName,
           FinancialYear: Math.floor(Number(invoice.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(this.cs.billDecimals),
         }));
 
                 // Store all data

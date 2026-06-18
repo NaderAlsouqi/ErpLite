@@ -29,6 +29,7 @@ import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } f
 
 import { ResellerNotesService, NoteDto, GetNotesDto, InsertNoteDto, NotesResponse } from '../../../shared/services/reseller.notes.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 
 
@@ -63,8 +64,8 @@ export const MY_DATE_FORMATS = {
     MatInputModule,
     NgbTooltipModule,
     NgbPopoverModule,
-    MatNativeDateModule
-    
+    MatNativeDateModule,
+    HasPermissionDirective
   ],
   providers: [
     NgbModalConfig, 

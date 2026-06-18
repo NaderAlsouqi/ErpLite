@@ -16,9 +16,11 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { ReportService } from '../../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
 
 // NgSelect import
 import { NgSelectModule } from '@ng-select/ng-select';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 // Customer interface
 export interface Customer {
@@ -67,7 +69,8 @@ export const MY_DATE_FORMATS = {
     MatCheckboxModule,
     ConfirmationModalComponent,
     MatNativeDateModule,
-    NgSelectModule
+    NgSelectModule,
+    HasPermissionDirective
   ],
     providers: [
       DatePipe,
@@ -135,6 +138,7 @@ private readonly DATE_FORMAT = 'dd/MM/yyyy';
     private toastr: ToastrService,
     private router: Router,
     private reportService: ReportService,
+    private cs: CompanySettingsService,
     private dateAdapter: DateAdapter<Date>
   ) {
 
@@ -233,7 +237,7 @@ private readonly DATE_FORMAT = 'dd/MM/yyyy';
           TransactionNumber: invoice.TransactionNumber,
           CustomerName: invoice.CustomerName,
           FinancialYear: Math.floor(Number(invoice.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(this.cs.billDecimals),
           IsTransferred: invoice.IsTransferred
         }));
         

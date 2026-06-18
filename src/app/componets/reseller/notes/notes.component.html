@@ -8,15 +8,17 @@
           {{ 'NotesPage.searchNotes' | translate }}
         </div>
         <div class="card-options">
-          <button class="btn btn-outline-primary mr-1"  
+          <button class="btn btn-outline-primary mr-1"
+             *hasPermission="'Notes.Create'"
              (click)="openNoteModal(NotesModal)">
             <i class="ti ti-plus me-1"></i>
             {{ 'NotesPage.addNote' | translate }}
           </button>
           <div style="margin-right: 10px;"></div>
-           <button 
-            class="btn btn-outline-primary"         
-            (click)="PrintNotesReport()"   
+           <button
+            class="btn btn-outline-primary"
+            *hasPermission="'Notes.Print'"
+            (click)="PrintNotesReport()"
             [disabled]="this.NotesData.length === 0">
             <i class="ti ti-printer me-1"></i>
             {{ 'General.Print' | translate }}
@@ -78,7 +80,7 @@
         
         <!-- Results table -->
         <div *ngIf="!loading && NotesData.length > 0" class="table-responsive">
-          <table mat-table [dataSource]="NotesData" matSort (matSortChange)="onSortChange($event)" class="table table-bordered">
+          <table mat-table [dataSource]="NotesData" matSort (matSortChange)="onSortChange($event)" class="table table-bordered table-hover mb-0">
             <!-- Date Column with adjusted format -->
             <ng-container matColumnDef="Name">
               <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'NotesPage.Name' | translate }} </th>
@@ -113,7 +115,7 @@
             <ng-container matColumnDef="actions">              
               <th mat-header-cell *matHeaderCellDef class="text-center"> {{ 'NotesPage.Action' | translate }} </th>
               <td mat-cell *matCellDef="let row" class="text-center">
-                <button class="btn btn-sm btn-info" (click)="printNote(row.NoteId)" title="{{ 'NotesPage.PrintNote' | translate }}">
+                <button class="btn btn-sm btn-info" *hasPermission="'Notes.Print'" (click)="printNote(row.NoteId)" title="{{ 'NotesPage.PrintNote' | translate }}">
                   <i class="ti ti-printer"></i>
                 </button>
               </td>
@@ -211,9 +213,10 @@
     <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">
       <i class="ti ti-x me-1"></i>{{ 'General.Cancel' | translate }}
     </button>
-    <button 
-      type="button" 
-      class="btn btn-primary" 
+    <button
+      type="button"
+      class="btn btn-primary"
+      *hasPermission="'Notes.Create'"
       (click)="addNote()"
       [disabled]="!newNote.Name || !newNote.Subject || !newNote.Note || !newNote.Phone|| !newNote.Email">
       <i class="ti ti-plus me-1"></i>{{ 'General.Add' | translate }}

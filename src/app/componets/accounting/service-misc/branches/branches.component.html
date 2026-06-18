@@ -1,0 +1,139 @@
+<app-page-header
+  [title]="'ServiceMisc.Branches' | translate"
+  [title1]="'Nav.ServiceMisc.Title' | translate"
+  [activeTitle]="'Nav.ServiceMisc.Branches' | translate">
+</app-page-header>
+
+<div class="row branches-container">
+  <!-- Form Section -->
+  <div class="col-xl-4 col-lg-5 col-md-12">
+    <div class="card custom-card">
+      <div class="card-header border-bottom-0">
+        <div class="card-title">
+          <i class="ti ti-building me-2 text-primary"></i>
+          {{ 'Branch.Definition' | translate }}
+        </div>
+      </div>
+      <div class="card-body form-section pt-0">
+
+        <!-- Branch No -->
+        <div class="form-group">
+          <label>
+            <i class="ti ti-hash"></i>
+            {{ 'Branch.BranchNo' | translate }}
+            <span class="required">*</span>
+          </label>
+          <input type="number" class="form-control" [(ngModel)]="currentBranch.BranchNo"
+            [placeholder]="'Branch.EnterBranchNo' | translate"
+            (change)="onBranchNoChange()">
+        </div>
+
+        <!-- Arabic Name -->
+        <div class="form-group">
+          <label>
+            <i class="ti ti-language"></i>
+            {{ 'Branch.ArabicName' | translate }}
+            <span class="required">*</span>
+          </label>
+          <input type="text" class="form-control" [(ngModel)]="currentBranch.BranchArName"
+            [placeholder]="'Branch.EnterArabicName' | translate">
+        </div>
+
+        <!-- English Name -->
+        <div class="form-group">
+          <label>
+            <i class="ti ti-language"></i>
+            {{ 'Branch.EnglishName' | translate }}
+            <span class="required">*</span>
+          </label>
+          <input type="text" class="form-control" [(ngModel)]="currentBranch.BranchEnName"
+            [placeholder]="'Branch.EnterEnglishName' | translate">
+        </div>
+
+        <!-- Actions -->
+        <div class="action-buttons">
+          <button *hasPermission="'Branches.Create'" class="btn btn-primary" (click)="save()" [disabled]="saving">
+            <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!saving" class="ti ti-device-floppy me-2"></i>
+            {{ 'General.Save' | translate }}
+          </button>
+          <button class="btn btn-outline-secondary" (click)="reset()">
+            <i class="ti ti-refresh me-2"></i>
+            {{ 'General.Cancel' | translate }}
+          </button>
+          <button *hasPermission="'Branches.Delete'" class="btn btn-danger-light" (click)="delete()" [disabled]="!currentBranch.BranchNo">
+            <i class="ti ti-trash me-2"></i>
+            {{ 'General.Delete' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="col-xl-8 col-lg-7 col-md-12">
+    <div class="card custom-card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-title">
+          {{ 'Branch.List' | translate }}
+        </div>
+        <button *hasPermission="'Branches.Print'" class="btn btn-outline-primary" (click)="print()">
+          <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+        </button>
+      </div>
+      <div class="card-body table-section">
+        <!-- Filter -->
+        <div class="row g-2 mb-3">
+          <div class="col-md-11">
+            <input type="text" class="form-control" [(ngModel)]="filterName"
+              (input)="applyFilters()"
+              [placeholder]="'General.Search' | translate">
+          </div>
+          <div class="col-md-1">
+            <button class="btn btn-primary w-100" (click)="clearFilters()" title="{{ 'General.Reset' | translate }}">
+              <i class="ti ti-refresh"></i>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary"></div>
+        </div>
+
+        <div *ngIf="!loading" class="table-responsive">
+          <table class="table table-hover table-bordered text-nowrap mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th>{{ 'Branch.BranchNo' | translate }}</th>
+                <th>{{ 'Branch.ArabicName' | translate }}</th>
+                <th>{{ 'Branch.EnglishName' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of filteredBranches"
+                  (click)="onSelectBranch(item)"
+                  [class.selected-row]="currentBranch.BranchNo === item.BranchNo">
+                <td>{{ item.BranchNo }}</td>
+                <td>{{ item.BranchArName }}</td>
+                <td>{{ item.BranchEnName }}</td>
+              </tr>
+              <tr *ngIf="filteredBranches.length === 0">
+                <td colspan="3" class="text-center p-4 text-muted">{{ 'General.NoRecordsFound' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'Branch.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="confirmDelete()">
+</app-confirmation-modal>

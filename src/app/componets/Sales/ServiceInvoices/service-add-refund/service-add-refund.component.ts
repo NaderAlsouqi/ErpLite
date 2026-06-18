@@ -1,11 +1,15 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 import { ServiceInvoiceService as InvoiceService } from '../../../../shared/services/service-invoice.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
+import { ServBillService, SaveServBillRequest } from '../../../../shared/services/serv-bill.service';
+import { AuthService } from '../../../../shared/services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from "../../../../shared/common/sharedmodule";
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-service-service-add-refund',
@@ -16,12 +20,18 @@ import { SharedModule } from "../../../../shared/common/sharedmodule";
     ReactiveFormsModule,
     TranslateModule,
     RouterModule,
-    SharedModule
+    SharedModule,
+    HasPermissionDirective
   ],
   templateUrl: './service-add-refund.component.html',
   styleUrl: './service-add-refund.component.scss'
 })
 export class ServiceAddRefundComponent {
+  /** When embedded inside another page (refunds tabs), hide this component's page header. */
+  @Input() embedded = false;
+  /** Emitted after a refund is saved, so an embedding page can refresh its list. */
+  @Output() saved = new EventEmitter<void>();
+
   // Form and data properties
   refundForm: FormGroup;
   invoiceNumber: string = '';
@@ -33,8 +43,11 @@ export class ServiceAddRefundComponent {
   constructor(
     private fb: FormBuilder,
     private invoiceService: InvoiceService,
+    private sbService: ServBillService,
+    private authService: AuthService,
     private toastr: ToastrService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cs: CompanySettingsService
   ) {
     this.refundForm = this.fb.group({
       invoiceNumber: ['', Validators.required],
@@ -212,7 +225,7 @@ export class ServiceAddRefundComponent {
             ItemNumber: String(item.ItemNumber),
             ItemTaxRate: item.ItemTaxRate,
             ItemTotalTax: +(unitTax * returnQty).toFixed(6),
-            ItemTotalWithTax: +(unitTotalWithTax * returnQty).toFixed(3),
+            ItemTotalWithTax: +(unitTotalWithTax * returnQty).toFixed(this.cs.billDecimals),
             Quantity: returnQty,
             ItemDiscount: item.ItemDiscount || 0,
             Price: item.ItemPrice,
@@ -249,21 +262,74 @@ export class ServiceAddRefundComponent {
       };
 
       this.invoiceService.insertSalesInvoicePayback(paybackPayload).subscribe({
-        next: (response) => {
-          // Success message with refund amount
-          const totalRefundAmount = this.calculateTotalRefund().toFixed(3);
-          this.toastr.success(
-            this.translate.instant('PaybackPage.PaybackSuccessWithAmount', {
-              amount: totalRefundAmount,
-              invoice: this.invoiceNumber
-            }),
-            this.translate.instant('General.Success')
-          );
-          this.resetForm();
-          this.submitting = false;
+        next: () => {
+          // Build SaveServBillRequest for GL posting in billf1_serv
+          const total    = selectedItems.reduce((s: number, i: any) => s + i.Quantity * i.Price, 0);
+          const taxAmt   = this.calculateItemsTotalTax(selectedItems);
+          const dTotal   = total + taxAmt;
+          const userName = this.authService.currentUserValue?.DeliveryName ?? '';
+
+          const refundReq: SaveServBillRequest = {
+            BillNo:      0,
+            VType:       48,
+            DocType:     45,
+            MyYear:      new Date().getFullYear(),
+            Date:        new Date().toISOString().substring(0, 10),
+            CusNo:       parseInt(this.invoiceDetails.InvoiceHeader.CustomerAccountNumber) || 0,
+            CusName:     this.invoiceDetails.InvoiceHeader.CustomerName ?? '',
+            CurNo:       1,
+            Rate:        1,
+            Dis:         0,
+            TaxNo:       this.invoiceDetails.InvoiceHeader.TaxNo || 0,
+            TaxTypeNo:   String(this.invoiceDetails.InvoiceHeader.Cluse || ''),
+            TaxPerc:     selectedItems[0]?.ItemTaxRate ?? 0,
+            TaxAmt:      taxAmt,
+            Total:       total,
+            DTotal:      dTotal,
+            BrNo:        1,
+            CusAcc:      parseInt(this.invoiceDetails.InvoiceHeader.CustomerAccountNumber) || 0,
+            TaxAcc:      0,
+            UserName:    userName,
+            CashPay:     0,
+            CashAcc:     0,
+            InvType:     0,
+            SalNo:       parseInt(this.invoiceDetails.InvoiceHeader.DeliveryManNumber || '0') || 0,
+            Des:         'مرتجع فاتورة رقم ' + this.invoiceNumber,
+            CcntrNo:     '',
+            PoNumber:    '',
+            ContactP:    '',
+            DelvTerm:    '',
+            BankName:    '',
+            BankAcc:     '',
+            AccountName: '',
+            IbanNumber:  '',
+            SwiftNo:     '',
+            Lines: selectedItems.map((i: any) => ({
+              Des:   String(i.ItemNumber),
+              Qty:   i.Quantity,
+              Price: i.Price,
+              AccNo: parseInt(i.AccountNumber) || 0,
+            })),
+          };
+
+          this.sbService.saveRefund(refundReq).subscribe({
+            next: () => {
+              const totalRefundAmount = this.calculateTotalRefund().toFixed(this.cs.billDecimals);
+              this.toastr.success(
+                this.translate.instant('PaybackPage.PaybackSuccessWithAmount', {
+                  amount: totalRefundAmount,
+                  invoice: this.invoiceNumber
+                }),
+                this.translate.instant('General.Success')
+              );
+              this.resetForm();
+              this.saved.emit();
+              this.submitting = false;
+            },
+            error: () => { this.submitting = false; },
+          });
         },
         error: (err) => {
-          // Replace console.error with detailed toastr
           this.toastr.error(
             this.translate.instant('PaybackPage.PaybackError') +
             (err.error?.message ? ': ' + err.error.message : ''),

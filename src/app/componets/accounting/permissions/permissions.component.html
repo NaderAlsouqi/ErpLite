@@ -5,7 +5,7 @@
 </app-page-header>
 
 <!-- Start::row-1 -->
-<div class="row">
+<div class="row permissions-container">
   <div class="col-xl-12">
     <div class="card custom-card">
       <div class="card-header">
@@ -34,28 +34,53 @@
         <div class="row mb-3">
           <div class="col-md-5">
             <label class="form-label">{{ 'Permissions.Users' | translate }}</label>
-            <select class="form-select"
-                    [ngModel]="selectedUserId"
-                    (ngModelChange)="onSelectUser($event)">
-              <option [ngValue]="null" disabled>
-                {{ 'Permissions.SelectUserHint' | translate }}
-              </option>
-              <option *ngFor="let u of users" [ngValue]="u.User_ID">
-                {{ u.Login_Name }} — {{ u.FullName }}
-              </option>
-            </select>
+            <ng-select
+              [items]="users"
+              bindValue="User_ID"
+              [searchFn]="userSearchFn"
+              [ngModel]="selectedUserId"
+              (ngModelChange)="onSelectUser($event)"
+              [placeholder]="'Permissions.SelectUserHint' | translate"
+              [clearable]="false"
+              class="def-select">
+              <ng-template ng-label-tmp let-item="item">
+                <span class="fw-bold me-1">{{ item.Login_Name }}</span>
+                <span class="text-muted">— {{ item.FullName }}</span>
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                <span class="fw-bold me-1">{{ item.Login_Name }}</span>
+                <span>— {{ item.FullName }}</span>
+              </ng-template>
+            </ng-select>
           </div>
 
-          <div class="col-md-5" *ngIf="selectedUserId != null">
-            <label class="form-label">{{ 'General.Search' | translate }}</label>
+          <div class="col-md-4" *ngIf="selectedUserId != null">
+            <label class="form-label">{{ 'Nav.Settings.Permissions' | translate }} {{ 'General.Search' | translate }}</label>
             <div class="input-group">
               <span class="input-group-text"><i class="ti ti-search"></i></span>
               <input
                 type="text"
                 class="form-control"
-                [(ngModel)]="searchPermission"
+                [ngModel]="searchPermission"
+                (ngModelChange)="searchPermission = $event; updateFilteredGroups()"
                 [placeholder]="'Permissions.SearchPermission' | translate" />
             </div>
+          </div>
+
+          <div class="col-md-3" *ngIf="selectedUserId != null">
+            <label class="form-label">{{ 'General.View' | translate }}</label>
+            <ng-select
+              [items]="availableSystems"
+              bindValue="key"
+              [searchable]="false"
+              [ngModel]="selectedSystem"
+              (ngModelChange)="selectedSystem = $event; updateFilteredGroups()"
+              [placeholder]="'General.All' | translate"
+              [clearable]="true"
+              class="def-select">
+              <ng-template ng-label-tmp let-item="item">{{ getSystemLabel(item) }}</ng-template>
+              <ng-template ng-option-tmp let-item="item">{{ getSystemLabel(item) }}</ng-template>
+            </ng-select>
           </div>
         </div>
 
@@ -72,38 +97,53 @@
           {{ 'Permissions.SelectUserHint' | translate }}
         </div>
 
-        <!-- Matrix -->
+        <!-- Permissions Table -->
         <div *ngIf="!loading && selectedUserId != null">
-          <div *ngFor="let g of visibleGroups()" class="module-group mb-3">
-            <div class="module-header">
-              <label class="form-check d-flex align-items-center m-0">
-                <input type="checkbox" class="form-check-input me-2"
-                       [checked]="g.allChecked"
-                       [indeterminate]="g.indeterminate"
-                       (change)="onToggleGroup(g)" />
-                <span class="fw-semibold">{{ g.module }}</span>
-                <span class="badge bg-primary-transparent ms-2">{{ g.items.length }}</span>
-              </label>
-            </div>
-            <div class="row mt-2">
-              <div class="col-lg-3 col-md-4 col-sm-6 mb-2" *ngFor="let item of g.items">
-                <label class="form-check perm-item">
-                  <input type="checkbox" class="form-check-input"
-                         [(ngModel)]="item.IsGranted"
-                         (change)="onItemToggle(g)" />
-                  <span class="ms-2">
-                    <span class="d-block">{{ item.DisplayName }}</span>
-                    <small class="text-muted">{{ item.PermissionKey }}</small>
-                  </span>
-                </label>
-              </div>
-            </div>
-          </div>
 
-          <div *ngIf="visibleGroups().length === 0" class="text-center text-muted p-4">
+          <div *ngIf="filteredGroups.length === 0" class="text-center text-muted p-4">
             <i class="ti ti-search-off fs-3 d-block mb-2"></i>
             {{ 'Permissions.NoResults' | translate }}
           </div>
+
+          <div *ngIf="filteredGroups.length > 0" class="table-responsive">
+            <table class="table table-bordered table-hover perm-table mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th class="perm-module-col">{{ 'Permissions.Page' | translate }}</th>
+                  <th *ngFor="let col of tableColumns" class="perm-action-col text-center">
+                    <div class="d-flex flex-column align-items-center gap-1">
+                      <input type="checkbox" class="form-check-input"
+                             [checked]="isColumnAllChecked(col)"
+                             [indeterminate]="isColumnIndeterminate(col)"
+                             (change)="onToggleColumn(col)" />
+                      <span class="perm-action-label">{{ getActionName(col) }}</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let g of filteredGroups">
+                  <td class="perm-module-col">
+                    <label class="form-check d-flex align-items-center gap-2 m-0">
+                      <input type="checkbox" class="form-check-input flex-shrink-0"
+                             [checked]="g.allChecked"
+                             [indeterminate]="g.indeterminate"
+                             (change)="onToggleGroup(g)" />
+                      <span class="fw-semibold">{{ getModuleName(g.module) }}</span>
+                    </label>
+                  </td>
+                  <td *ngFor="let col of tableColumns" class="text-center perm-cell">
+                    <ng-container *ngIf="getItemForAction(g, col) as item">
+                      <input type="checkbox" class="form-check-input"
+                             [(ngModel)]="item.IsGranted"
+                             (change)="onItemToggle(g)" />
+                    </ng-container>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </div>
     </div>

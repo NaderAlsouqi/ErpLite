@@ -4,8 +4,10 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 import { VirtualInvoiceService } from '../../../../shared/services/virtual-invoice.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from "../../../../shared/common/sharedmodule";
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-virtual-add-refund',
@@ -16,7 +18,8 @@ import { SharedModule } from "../../../../shared/common/sharedmodule";
     ReactiveFormsModule,
     TranslateModule,
     RouterModule,
-    SharedModule
+    SharedModule,
+    HasPermissionDirective
   ],
   templateUrl: './virtual-add-refund.component.html',
   styleUrl: './virtual-add-refund.component.scss'
@@ -34,7 +37,8 @@ export class VirtualAddRefundComponent {
     private fb: FormBuilder,
     private virtualInvoiceService: VirtualInvoiceService,
     private toastr: ToastrService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cs: CompanySettingsService
   ) {
     this.refundForm = this.fb.group({
       invoiceNumber: ['', Validators.required],
@@ -187,7 +191,7 @@ export class VirtualAddRefundComponent {
           ItemNumber: String(item.ItemNumber),
           ItemTaxRate: item.ItemTaxRate,
           ItemTotalTax: +(unitTax * returnQty).toFixed(6),
-          ItemTotalWithTax: +(unitTotalWithTax * returnQty).toFixed(3),
+          ItemTotalWithTax: +(unitTotalWithTax * returnQty).toFixed(this.cs.billDecimals),
           Quantity: returnQty,
           ItemDiscount: item.ItemDiscount || 0,
           Price: item.ItemPrice,
@@ -224,7 +228,7 @@ export class VirtualAddRefundComponent {
 
       this.virtualInvoiceService.insertSalesInvoicePayback(paybackPayload).subscribe({
         next: (response) => {
-          const totalRefundAmount = this.calculateTotalRefund().toFixed(3);
+          const totalRefundAmount = this.calculateTotalRefund().toFixed(this.cs.billDecimals);
           this.toastr.success(
             this.translate.instant('VirtualPaybackPage.PaybackSuccessWithAmount', {
               amount: totalRefundAmount,

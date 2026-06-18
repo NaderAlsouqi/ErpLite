@@ -19,6 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FotaraService } from "../../../shared/services/fotara.service";
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-add-invoice',
@@ -38,7 +39,8 @@ import { FotaraService } from "../../../shared/services/fotara.service";
     MatIconModule,
     MatSelectModule,
     MatCheckboxModule,
-    SharedModule
+    SharedModule,
+    HasPermissionDirective
   ],
   providers: [DatePipe],
   templateUrl: './add-invoice.component.html',

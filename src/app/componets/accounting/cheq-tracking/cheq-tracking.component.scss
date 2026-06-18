@@ -1,0 +1,58 @@
+:host {
+  display: block;
+}
+
+// ── Table ─────────────────────────────────────────────────────
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.ct-table {
+  min-width: 820px;
+  font-size: 0.875rem;
+
+  th { white-space: nowrap; }
+  td { padding: 0.4rem 0.5rem; vertical-align: middle; }
+}
+
+// ── Year off ──────────────────────────────────────────────────
+
+.year-off input,
+.year-off.form-control {
+  border-color: #f59e0b !important;
+  background-color: #fffbeb !important;
+}
+
+// ── Navigation buttons ────────────────────────────────────────
+
+.nav-tabs .nav-link {
+  font-size: 0.875rem;
+}
+
+// ── Dark mode ─────────────────────────────────────────────────
+
+[data-theme-mode="dark"] {
+  .ct-container {
+    .form-label     { color: var(--default-text-color) !important; }
+    .form-control   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+    .form-control::placeholder { color: var(--text-muted) !important; }
+
+    .table                        { background: transparent !important; }
+    .table thead.table-primary th,
+    .table thead tr.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th { border-color: var(--default-border) !important; }
+    .table tbody tr:hover { background: var(--list-hover-focus-bg) !important; }
+    .text-muted { color: var(--text-muted) !important; }
+  }
+
+  .modal-header { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .modal-title  { color: var(--default-text-color) !important; }
+  .modal-body   { background: var(--custom-white) !important; }
+  .modal-footer { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+}

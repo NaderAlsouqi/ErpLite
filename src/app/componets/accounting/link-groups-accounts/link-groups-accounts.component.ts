@@ -12,6 +12,7 @@ import { AccountGroupDto, AccountGroupsService } from '../../../shared/services/
 import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/services/chart-of-accounts.service';
 import { ReportService } from '../../../shared/services/report.service';
 import { forkJoin } from 'rxjs';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-link-groups-accounts',
@@ -24,6 +25,7 @@ import { forkJoin } from 'rxjs';
     SharedModule,
     NgSelectModule,
     ConfirmationModalComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './link-groups-accounts.component.html',
   styleUrl: './link-groups-accounts.component.scss',

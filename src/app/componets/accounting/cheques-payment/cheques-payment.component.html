@@ -1,0 +1,498 @@
+<app-page-header
+  [title]="'CheckPayment.Title' | translate"
+  [title1]="'Nav.Accounting.Cheques' | translate"
+  [activeTitle]="'CheckPayment.Title' | translate">
+</app-page-header>
+
+<!-- ─── Tabs ──────────────────────────────────────────────── -->
+<div class="row mb-3">
+  <div class="col-12 d-flex gap-2">
+    <button class="btn btn-sm"
+      [class.btn-primary]="activeTab==='form'"
+      [class.btn-outline-primary]="activeTab!=='form'"
+      (click)="switchToForm()">
+      <i class="ti ti-file-plus me-1"></i>{{ 'CheckPayment.VoucherEntry' | translate }}
+    </button>
+    <button class="btn btn-sm"
+      [class.btn-primary]="activeTab==='list'"
+      [class.btn-outline-primary]="activeTab!=='list'"
+      (click)="switchToList()">
+      <i class="ti ti-list me-1"></i>{{ 'CheckPayment.VouchersList' | translate }}
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 1 — VOUCHER FORM
+     ══════════════════════════════════════════════════════════ -->
+<div *ngIf="activeTab === 'form'">
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card custom-card cp-container">
+
+        <!-- Card Header -->
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="card-title mb-0">
+            {{ 'CheckPayment.DailyTitle' | translate }}
+            <span class="badge ms-2"
+              [class.bg-success]="isPosted"
+              [class.bg-warning]="!isPosted && transNum > 0"
+              [class.bg-secondary]="transNum === 0">
+              {{ isPosted
+                  ? ('CheckPayment.Posted' | translate)
+                  : transNum > 0
+                  ? ('CheckPayment.NotPosted' | translate)
+                  : ('CheckPayment.New' | translate) }}
+            </span>
+          </div>
+
+          <div class="d-flex gap-1 flex-wrap">
+            <button *hasPermission="'Cheques.Print'" class="btn btn-sm btn-outline-primary"
+              (click)="openPrintModal()" [disabled]="transNum === 0">
+              <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+            </button>
+            <div class="vr mx-1"></div>
+            <button class="btn btn-sm btn-outline-secondary" (click)="goFirst()"
+              title="{{ 'CheckPayment.First' | translate }}">
+              <i class="ti ti-player-skip-back"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="goPrev()"
+              title="{{ 'CheckPayment.Previous' | translate }}">
+              <i class="ti ti-chevron-right"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="goNext()"
+              title="{{ 'CheckPayment.Next' | translate }}">
+              <i class="ti ti-chevron-left"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="goLast()"
+              title="{{ 'CheckPayment.Last' | translate }}">
+              <i class="ti ti-player-skip-forward"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <div *ngIf="loading" class="d-flex justify-content-center my-4">
+            <div class="spinner-border text-primary" role="status"></div>
+          </div>
+
+          <div *ngIf="!loading">
+
+            <!-- ── Header Fields ── -->
+            <div class="row g-3 mb-3">
+
+              <div class="col-md-1 col-sm-4 year-field" [class.year-off]="myYear !== currentYear">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.Year' | translate }}</label>
+                <input type="number" class="form-control form-control-sm" [(ngModel)]="myYear"
+                  min="1900" [max]="currentYear" (change)="onYearChange()" />
+              </div>
+
+              <div class="col-md-1 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.DocNum' | translate }}</label>
+                <ng-select
+                  [items]="docNums"
+                  [(ngModel)]="docNum"
+                  (change)="onDocNumSelected($event)"
+                  [searchable]="true"
+                  [clearable]="false"
+                  [addTag]="true"
+                  appendTo="body"
+                  class="ng-select-sm">
+                </ng-select>
+              </div>
+
+              <div class="col-md-2 col-sm-5">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.VType' | translate }}</label>
+                <ng-select
+                  [items]="voucherSerials"
+                  bindValue="VSerialNo"
+                  [(ngModel)]="vType"
+                  (change)="onVTypeChange()"
+                  [searchable]="true"
+                  [clearable]="false"
+                  appendTo="body"
+                  class="ng-select-sm">
+                  <ng-template ng-label-tmp let-item="item">{{ item.VSerialNo }} — {{ item.SName }}</ng-template>
+                  <ng-template ng-option-tmp let-item="item">{{ item.VSerialNo }} — {{ item.SName }}</ng-template>
+                </ng-select>
+              </div>
+
+              <div class="col-md-1 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.SubVoucher' | translate }}</label>
+                <input type="number" class="form-control form-control-sm" [(ngModel)]="secPay" min="0" [disabled]="isPosted" />
+              </div>
+
+              <div class="col-md-2 col-sm-6">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.Date' | translate }}</label>
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="date"
+                  mwlFlatpickr [altInput]="true" [convertModelValue]="true" [altFormat]="'d/m/Y'" dateFormat="Y-m-d" [options]="dateOptions"
+                  (flatpickrChange)="onDateChange($event)" />
+              </div>
+
+              <div class="col-md-2 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.Currency' | translate }}</label>
+                <ng-select
+                  [items]="currencies"
+                  bindValue="cur_no"
+                  [searchable]="true"
+                  [(ngModel)]="curNo"
+                  (change)="onCurrencySelected($event)"
+                  class="ng-select-sm">
+                  <ng-template ng-label-tmp let-item="item">{{ item.cur_no }} — {{ item.cur }}</ng-template>
+                  <ng-template ng-option-tmp let-item="item">{{ item.cur_no }} — {{ item.cur }}</ng-template>
+                </ng-select>
+              </div>
+
+              <div class="col-md-1 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.Rate' | translate }}</label>
+                <input type="number" step="0.00001" class="form-control form-control-sm" [(ngModel)]="rate" min="0.00001" />
+              </div>
+
+              <div class="col-md-2 col-sm-4">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.Stamp' | translate }}</label>
+                <ng-select
+                  [items]="stamps"
+                  bindValue="SigNo"
+                  [searchable]="true"
+                  [(ngModel)]="sigNo"
+                  class="ng-select-sm">
+                  <ng-template ng-label-tmp let-item="item">{{ item.Desc }}</ng-template>
+                  <ng-template ng-option-tmp let-item="item">{{ item.SigNo }} — {{ item.Desc }}</ng-template>
+                </ng-select>
+              </div>
+
+              <div class="col-md-4 col-sm-8">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.PayFor' | translate }}</label>
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="payFor"
+                  [placeholder]="'CheckPayment.PayForPlaceholder' | translate" />
+              </div>
+
+              <div class="col-md-6 col-sm-10">
+                <label class="form-label fw-semibold">{{ 'CheckPayment.Reason' | translate }}</label>
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="reason"
+                  [placeholder]="'CheckPayment.ReasonPlaceholder' | translate" />
+              </div>
+
+              <div class="col-md-2 col-sm-2 d-flex align-items-end pb-1">
+                <div class="form-check mb-0">
+                  <input class="form-check-input" type="checkbox" id="chkDuplicate" [(ngModel)]="duplicateOnSave" />
+                  <label class="form-check-label fw-semibold" for="chkDuplicate">{{ 'CheckPayment.Duplicate' | translate }}</label>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ── Debit Grid ── -->
+            <div class="section-header debit-header">
+              <i class="ti ti-trending-up me-1"></i>{{ 'CheckPayment.DebitAccounts' | translate }}
+            </div>
+            <div class="table-responsive mb-1">
+              <table class="table table-bordered table-hover table-sm lines-table mb-0">
+                <thead class="table-primary">
+                  <tr>
+                    <th style="width:160px">{{ 'CheckPayment.Acc' | translate }}</th>
+                    <th>{{ 'CheckPayment.AccName' | translate }}</th>
+                    <th style="width:120px">{{ 'CheckPayment.Amount' | translate }}</th>
+                    <th>{{ 'CheckPayment.Statement' | translate }}</th>
+                    <th style="width:110px">{{ 'CheckPayment.CostCenter' | translate }}</th>
+                    <th style="width:50px"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let line of debitLines; let i = index">
+                    <td>
+                      <ng-select [items]="leafAccounts" bindValue="no" [searchFn]="accountSearchFn"
+                        [searchable]="true" [clearable]="true" [(ngModel)]="line.acc"
+                        (change)="onDebitAccountSelected(i, $event)" appendTo="body" class="ng-select-sm ng-select-inline">
+                        <ng-template ng-label-tmp let-item="item">{{ item.no }}</ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                          <span class="opt-no">{{ item.no }}</span><span class="opt-name">{{ item.name }}</span>
+                        </ng-template>
+                      </ng-select>
+                    </td>
+                    <td><input type="text" class="form-control form-control-sm" [(ngModel)]="line.accName" readonly /></td>
+                    <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="line.amt" min="0" /></td>
+                    <td><input type="text" class="form-control form-control-sm" [(ngModel)]="line.des" /></td>
+                    <td>
+                      <ng-select [items]="costCenters" bindValue="CcntrNo" bindLabel="CcAname"
+                        [searchable]="true" [clearable]="true" [(ngModel)]="line.ccntrNo"
+                        appendTo="body" class="ng-select-sm ng-select-inline">
+                      </ng-select>
+                    </td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-outline-danger p-1" (click)="removeDebitLine(i)" [disabled]="debitLines.length === 1">
+                        <i class="ti ti-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" class="text-end fw-semibold">{{ 'CheckPayment.Total' | translate }}</td>
+                    <td class="text-end fw-bold text-primary">{{ totalDebit | number: numFmt }}</td>
+                    <td colspan="3">
+                      <button class="btn btn-sm btn-outline-primary" (click)="addDebitLine()">
+                        <i class="ti ti-plus me-1"></i>{{ 'CheckPayment.AddLine' | translate }}
+                      </button>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- ── Credit Grid ── -->
+            <div class="section-header credit-header mt-3">
+              <i class="ti ti-trending-down me-1"></i>{{ 'CheckPayment.CreditAccounts' | translate }}
+            </div>
+            <div class="table-responsive mb-3">
+              <table class="table table-bordered table-hover table-sm lines-table mb-0">
+                <thead class="table-primary">
+                  <tr>
+                    <th style="width:140px">{{ 'CheckPayment.Acc' | translate }}</th>
+                    <th>{{ 'CheckPayment.AccName' | translate }}</th>
+                    <th style="width:110px">{{ 'CheckPayment.Amount' | translate }}</th>
+                    <th style="width:120px">{{ 'CheckPayment.CheqNum' | translate }} <span class="text-danger">*</span></th>
+                    <th style="width:130px">{{ 'CheckPayment.CheqDate' | translate }}</th>
+                    <th>{{ 'CheckPayment.Statement' | translate }}</th>
+                    <th style="width:110px">{{ 'CheckPayment.CostCenter' | translate }}</th>
+                    <th style="width:50px"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let line of creditLines; let i = index">
+                    <td>
+                      <ng-select [items]="leafAccounts" bindValue="no" [searchFn]="accountSearchFn"
+                        [searchable]="true" [clearable]="true" [(ngModel)]="line.acc"
+                        (change)="onCreditAccountSelected(i, $event)" appendTo="body" class="ng-select-sm ng-select-inline">
+                        <ng-template ng-label-tmp let-item="item">{{ item.no }}</ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                          <span class="opt-no">{{ item.no }}</span><span class="opt-name">{{ item.name }}</span>
+                        </ng-template>
+                      </ng-select>
+                    </td>
+                    <td><input type="text" class="form-control form-control-sm" [(ngModel)]="line.accName" readonly /></td>
+                    <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="line.amt" min="0" /></td>
+                    <td>
+                      <input type="number" class="form-control form-control-sm text-end"
+                        [(ngModel)]="line.cheqNum" min="1" step="1" required
+                        [class.is-invalid]="saveAttempted && (!line.cheqNum || line.cheqNum < 1)" />
+                      <div class="invalid-feedback" style="font-size:0.75rem">
+                        {{ 'CheckPayment.CheqNumRequired' | translate }}
+                      </div>
+                    </td>
+                    <td>
+                      <input type="text" class="form-control form-control-sm" [(ngModel)]="line.cheqDate"
+                        mwlFlatpickr [altInput]="true" [convertModelValue]="true" [altFormat]="'d/m/Y'" dateFormat="Y-m-d" [options]="dateOptions" />
+                    </td>
+                    <td><input type="text" class="form-control form-control-sm" [(ngModel)]="line.des" /></td>
+                    <td>
+                      <ng-select [items]="costCenters" bindValue="CcntrNo" bindLabel="CcAname"
+                        [searchable]="true" [clearable]="true" [(ngModel)]="line.ccntrNo"
+                        appendTo="body" class="ng-select-sm ng-select-inline">
+                      </ng-select>
+                    </td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-outline-danger p-1" (click)="removeCreditLine(i)" [disabled]="creditLines.length === 1">
+                        <i class="ti ti-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" class="text-end fw-semibold">{{ 'CheckPayment.Total' | translate }}</td>
+                    <td class="text-end fw-bold text-danger">{{ totalCredit | number: numFmt }}</td>
+                    <td colspan="4">
+                      <button class="btn btn-sm btn-outline-primary" (click)="addCreditLine()">
+                        <i class="ti ti-plus me-1"></i>{{ 'CheckPayment.AddLine' | translate }}
+                      </button>
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- ── Balance ── -->
+            <div class="balance-bar mb-3" [class.balanced]="isBalanced" [class.unbalanced]="!isBalanced">
+              <i class="ti me-1" [class.ti-check]="isBalanced" [class.ti-alert-triangle]="!isBalanced"></i>
+              {{ isBalanced ? ('CheckPayment.Balanced' | translate) : ('CheckPayment.NotBalancedMsg' | translate) }}
+              <span class="ms-2 fw-bold">
+                {{ 'CheckPayment.Debit' | translate }}: {{ totalDebit | number: numFmt }}
+                &nbsp;|&nbsp;
+                {{ 'CheckPayment.Credit' | translate }}: {{ totalCredit | number: numFmt }}
+              </span>
+            </div>
+
+            <!-- ── Actions ── -->
+            <div class="d-flex gap-2 flex-wrap">
+              <button *hasPermission="'Cheques.Create'" class="btn btn-primary" (click)="save()" [disabled]="saving || isPosted">
+                <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+                {{ 'General.Save' | translate }}
+              </button>
+              <button class="btn btn-secondary" (click)="initNewVoucher()">
+                <i class="ti ti-plus me-1"></i>{{ 'General.New' | translate }}
+              </button>
+              <button *hasPermission="'Cheques.Delete'" class="btn btn-danger" (click)="confirmDelete()" [disabled]="transNum === 0 || isPosted">
+                <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+              </button>
+            </div>
+
+          </div><!-- /!loading -->
+        </div><!-- /card-body -->
+      </div><!-- /card -->
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 2 — VOUCHERS LIST
+     ══════════════════════════════════════════════════════════ -->
+<div *ngIf="activeTab === 'list'">
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card custom-card">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="card-title mb-0">{{ 'CheckPayment.VouchersList' | translate }}</div>
+
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <label class="mb-0 fw-semibold year-field" [class.year-off]="myYear !== currentYear">{{ 'CheckPayment.Year' | translate }}:</label>
+            <input type="number" class="form-control form-control-sm year-field" [class.year-off]="myYear !== currentYear" style="width:100px"
+              [(ngModel)]="myYear" min="1900" [max]="currentYear" (ngModelChange)="onYearChange()">
+            <ng-select
+              [items]="voucherSerials"
+              bindValue="VSerialNo"
+              [(ngModel)]="vType"
+              (change)="loadList()"
+              [searchable]="false"
+              [clearable]="false"
+              appendTo="body"
+              style="min-width:140px"
+              class="ng-select-sm">
+              <ng-template ng-label-tmp let-item="item">{{ item.VSerialNo }} — {{ item.SName }}</ng-template>
+              <ng-template ng-option-tmp let-item="item">{{ item.VSerialNo }} — {{ item.SName }}</ng-template>
+            </ng-select>
+            <button class="btn btn-sm btn-primary" (click)="loadList()">
+              <i class="ti ti-search me-1"></i>{{ 'General.Search' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div *ngIf="loading" class="d-flex justify-content-center my-4">
+            <div class="spinner-border text-primary" role="status"></div>
+          </div>
+
+          <div *ngIf="!loading">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover table-sm lines-table mb-0">
+                <thead class="table-primary">
+                  <tr>
+                    <th>{{ 'CheckPayment.DocNum' | translate }}</th>
+                    <th>{{ 'CheckPayment.Date' | translate }}</th>
+                    <th>{{ 'CheckPayment.PayFor' | translate }}</th>
+                    <th class="text-end">{{ 'CheckPayment.Debit' | translate }}</th>
+                    <th class="text-end">{{ 'CheckPayment.Credit' | translate }}</th>
+                    <th class="text-center">{{ 'CheckPayment.Status' | translate }}</th>
+                    <th class="text-center" style="width:60px">{{ 'General.Actions' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of dataSource.data" class="cursor-pointer" (click)="openVoucherFromList(row)">
+                    <td class="fw-bold">{{ row.DocNum }}</td>
+                    <td>{{ row.Date | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ row.PayFor }}</td>
+                    <td class="text-end text-primary fw-semibold">{{ row.TotalDebit | number:numFmt }}</td>
+                    <td class="text-end text-danger fw-semibold">{{ row.TotalCredit | number:numFmt }}</td>
+                    <td class="text-center">
+                      <span class="badge" [class.bg-success]="row.Post" [class.bg-warning]="!row.Post">
+                        {{ (row.Post ? 'CheckPayment.Posted' : 'CheckPayment.NotPosted') | translate }}
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-outline-primary p-1" (click)="openVoucherFromList(row); $event.stopPropagation()">
+                        <i class="ti ti-eye"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary ms-1"
+                        [routerLink]="['/accounting/vouchers/journal']"
+                        [queryParams]="{ docNum: row.DocNum, year: row.MyYear, vType: row.VType, docType: 3 }"
+                        (click)="$event.stopPropagation()">
+                        <i class="ti ti-file-text me-1"></i>{{ 'General.ViewDocument' | translate }}
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div *ngIf="dataSource.data.length === 0" class="text-center text-muted py-4">
+              <i class="ti ti-folder-open fs-2 d-block mb-2"></i>
+              {{ 'General.NoRecordsFound' | translate }}
+            </div>
+
+            <mat-paginator
+              [length]="totalItems"
+              [pageSize]="pageSize"
+              [pageSizeOptions]="pageSizeOptions"
+              [pageIndex]="pageIndex"
+              (page)="onPageChange($event)"
+              showFirstLastButtons>
+            </mat-paginator>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Print Options Modal ── -->
+<ng-template #printModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title fw-bold">{{ 'CheckPayment.PrintOptions' | translate }}</h5>
+  </div>
+  <div class="modal-body">
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="radio" name="pf" id="pf1" value="normal" [(ngModel)]="selectedPrintForm">
+      <label class="form-check-label" for="pf1">نموذج عادي</label>
+    </div>
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="radio" name="pf" id="pf2" value="cheque" [(ngModel)]="selectedPrintForm">
+      <label class="form-check-label" for="pf2">نموذج شيكات</label>
+    </div>
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="radio" name="pf" id="pf3" value="cheque-portrait" [(ngModel)]="selectedPrintForm">
+      <label class="form-check-label" for="pf3">نموذج شيكات قياسي طولي</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="pf" id="pf4" value="cheque-standard" [(ngModel)]="selectedPrintForm">
+      <label class="form-check-label" for="pf4">نموذج شيكات قياسي</label>
+    </div>
+  </div>
+  <div class="modal-footer gap-2">
+    <button class="btn btn-primary" (click)="executePrint(); modal.close()">
+      <i class="ti ti-printer me-1"></i>طباعة
+    </button>
+    <button class="btn btn-secondary" (click)="modal.dismiss()">{{ 'General.Cancel' | translate }}</button>
+  </div>
+</ng-template>
+
+<!-- ── Delete Confirm Modal ── -->
+<ng-template #deleteConfirmModal let-modal>
+  <div class="modal-header border-0 pb-0">
+    <h5 class="modal-title text-danger">
+      <i class="ti ti-alert-triangle me-2"></i>{{ 'CheckPayment.DeleteConfirm' | translate }}
+    </h5>
+  </div>
+  <div class="modal-body text-center py-3">
+    <p class="mb-1">{{ 'General.ActionCannotBeUndone' | translate }}</p>
+    <p class="fw-bold">{{ 'CheckPayment.DocNum' | translate }}: {{ docNum }}</p>
+  </div>
+  <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+    <button class="btn btn-danger" (click)="executeDelete()">
+      <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+    </button>
+    <button class="btn btn-outline-secondary" (click)="modal.dismiss()">{{ 'General.Cancel' | translate }}</button>
+  </div>
+</ng-template>

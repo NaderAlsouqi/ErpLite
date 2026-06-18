@@ -4,42 +4,96 @@
   [activeTitle]="'Nav.Accounting.EditAccountName' | translate">
 </app-page-header>
 
-<!-- Start::row-1 -->
-<div class="row">
-  <div class="col-xl-12">
-    <div class="card custom-card">
+<div class="ean-container">
+  <div class="row">
 
-      <div class="card-header">
-        <div class="card-title">
-          {{ 'EditAccountName.Title' | translate }}
+    <!-- ── Form Panel ─────────────────────────────────────────── -->
+    <div class="col-xl-4">
+      <div class="card custom-card">
+        <div class="card-header">
+          <div class="card-title">{{ 'EditAccountName.AccountDetails' | translate }}</div>
         </div>
-        <div class="card-options">
-          <button class="btn btn-outline-primary me-1" (click)="printTable()">
-            <i class="ti ti-printer me-1"></i>
-            {{ 'General.Print' | translate }}
-          </button>
-          <ng-container *ngIf="dirtyCount > 0">
-            <button class="btn btn-outline-danger me-1" (click)="discardAll()" [disabled]="saving">
-              <i class="ti ti-x me-1"></i>
-              {{ 'General.Discard' | translate }}
-            </button>
-            <button class="btn btn-danger me-2" (click)="saveAll()" [disabled]="saving">
-              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
-              <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
-              {{ 'EditAccountName.SaveAll' | translate }}
-              <span class="badge bg-white text-danger ms-1">{{ dirtyCount }}</span>
-            </button>
+        <div class="card-body">
+
+          <ng-container *ngIf="selected; else noSelection">
+            <div class="form-section">
+
+              <div class="form-group">
+                <label><i class="ti ti-hash"></i> {{ 'EditAccountName.AccountNo' | translate }}</label>
+                <input type="text" class="form-control" [value]="selected.no" readonly />
+              </div>
+
+              <div class="form-group">
+                <label><i class="ti ti-layers-intersect"></i> {{ 'EditAccountName.Level' | translate }}</label>
+                <div>
+                  <span class="level-badge level-{{ selected.level }}">{{ selected.level ?? '—' }}</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label><i class="ti ti-language"></i> {{ 'EditAccountName.ArabicName' | translate }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="selected.name"
+                  dir="rtl"
+                  [placeholder]="'EditAccountName.EnterArabicName' | translate" />
+              </div>
+
+              <div class="form-group">
+                <label><i class="ti ti-language"></i> {{ 'EditAccountName.EnglishName' | translate }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="selected.Ename"
+                  dir="ltr"
+                  [placeholder]="'EditAccountName.EnterEnglishName' | translate" />
+              </div>
+
+            </div>
+
+            <div class="action-buttons">
+              <button
+                *hasPermission="'Accf.Edit'"
+                class="btn btn-primary"
+                (click)="saveSelected()"
+                [disabled]="saving || !isFormDirty">
+                <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+                {{ 'General.Save' | translate }}
+              </button>
+              <button class="btn btn-danger" (click)="discardSelected()" [disabled]="!isFormDirty">
+                <i class="ti ti-refresh me-1"></i>{{ 'General.Discard' | translate }}
+              </button>
+            </div>
           </ng-container>
+
+          <ng-template #noSelection>
+            <div class="no-selection">
+              <i class="ti ti-hand-click"></i>
+              <p>{{ 'EditAccountName.SelectAccount' | translate }}</p>
+            </div>
+          </ng-template>
+
         </div>
       </div>
+    </div>
 
-      <div class="card-body">
+    <!-- ── Table Panel ────────────────────────────────────────── -->
+    <div class="col-xl-8">
+      <div class="card custom-card">
+        <div class="card-header">
+          <div class="card-title">{{ 'EditAccountName.Title' | translate }}</div>
+          <div class="card-options">
+            <button *hasPermission="'Accf.Print'" class="btn btn-outline-primary" (click)="printTable()">
+              <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
 
-        <!-- Search -->
-        <div class="row mb-3">
-          <div class="col-md-5">
-            <div class="form-group">
-              <label class="form-label">{{ 'General.Search' | translate }}</label>
+          <div class="row mb-3">
+            <div class="col-md-8">
               <div class="input-group">
                 <span class="input-group-text"><i class="ti ti-search"></i></span>
                 <input
@@ -53,133 +107,74 @@
                 </button>
               </div>
             </div>
+            <div class="col-md-4 d-flex align-items-center justify-content-end">
+              <span class="text-muted small">
+                {{ 'EditAccountName.TotalAccounts' | translate: { total: totalItems } }}
+              </span>
+            </div>
           </div>
-          <div class="col-md-7 d-flex align-items-end justify-content-end">
-            <span class="text-muted small">
-              {{ 'EditAccountName.TotalAccounts' | translate: { total: totalItems } }}
-            </span>
+
+          <div *ngIf="loading" class="d-flex justify-content-center my-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+            </div>
           </div>
-        </div>
 
-        <!-- Loading -->
-        <div *ngIf="loading" class="d-flex justify-content-center my-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          <div *ngIf="!loading" class="table-section">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover mb-0">
+                <thead class="table-primary">
+                  <tr>
+                    <th>{{ 'EditAccountName.AccountNo' | translate }}</th>
+                    <th>{{ 'EditAccountName.ArabicName' | translate }}</th>
+                    <th>{{ 'EditAccountName.EnglishName' | translate }}</th>
+                    <th class="text-center">{{ 'EditAccountName.Level' | translate }}</th>
+                    <th class="text-center">{{ 'EditAccountName.Stopped' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="let row of pagedRows; trackBy: trackByNo"
+                    (click)="onSelectRow(row)"
+                    [class.selected-row]="selected?.no === row.no"
+                    [class.row-dirty]="isDirty(row)">
+                    <td class="account-no-cell">{{ row.no }}</td>
+                    <td>{{ row.name ?? '—' }}</td>
+                    <td>{{ row.Ename ?? '—' }}</td>
+                    <td class="text-center">
+                      <span class="level-badge level-{{ row.level }}">{{ row.level ?? '—' }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span *ngIf="row.Stopped" class="badge bg-danger-transparent text-danger">
+                        {{ 'General.Yes' | translate }}
+                      </span>
+                      <span *ngIf="!row.Stopped" class="badge bg-success-transparent text-success">
+                        {{ 'General.No' | translate }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="pagedRows.length === 0">
+                    <td colspan="5" class="text-center text-muted py-4">
+                      {{ 'General.NoRecordsFound' | translate }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <mat-paginator
+              [pageSizeOptions]="pageSizeOptions"
+              [pageSize]="pageSize"
+              [pageIndex]="pageIndex"
+              [length]="totalItems"
+              (page)="onPageChange($event)"
+              showFirstLastButtons>
+            </mat-paginator>
           </div>
+
         </div>
-
-        <!-- Table -->
-        <div *ngIf="!loading" class="table-responsive">
-          <table
-            mat-table
-            [dataSource]="dataSource"
-            matSort
-            (matSortChange)="onSortChange($event)"
-            class="table table-bordered edit-name-table">
-
-            <!-- Account No -->
-            <ng-container matColumnDef="no">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-no">
-                {{ 'EditAccountName.AccountNo' | translate }}
-              </th>
-              <td mat-cell *matCellDef="let row" class="col-no">
-                <span class="account-no">{{ row.no }}</span>
-              </td>
-            </ng-container>
-
-            <!-- Arabic Name -->
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-name">
-                {{ 'EditAccountName.ArabicName' | translate }}
-              </th>
-              <td mat-cell *matCellDef="let row" class="col-name" [class.cell-dirty]="row.name !== row._origName">
-                <input
-                  type="text"
-                  class="inline-input"
-                  [(ngModel)]="row.name"
-                  [placeholder]="'EditAccountName.EnterArabicName' | translate"
-                  dir="rtl" />
-              </td>
-            </ng-container>
-
-            <!-- English Name -->
-            <ng-container matColumnDef="Ename">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-name">
-                {{ 'EditAccountName.EnglishName' | translate }}
-              </th>
-              <td mat-cell *matCellDef="let row" class="col-name" [class.cell-dirty]="row.Ename !== row._origEname">
-                <input
-                  type="text"
-                  class="inline-input"
-                  [(ngModel)]="row.Ename"
-                  [placeholder]="'EditAccountName.EnterEnglishName' | translate"
-                  dir="ltr" />
-              </td>
-            </ng-container>
-
-            <!-- Level -->
-            <ng-container matColumnDef="level">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-sm-field text-center">
-                {{ 'EditAccountName.Level' | translate }}
-              </th>
-              <td mat-cell *matCellDef="let row" class="col-sm-field text-center">
-                <span class="level-badge level-{{ row.level }}">{{ row.level ?? '—' }}</span>
-              </td>
-            </ng-container>
-
-            <!-- Belong To -->
-            <ng-container matColumnDef="belong">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header class="col-sm-field text-center">
-                {{ 'EditAccountName.BelongTo' | translate }}
-              </th>
-              <td mat-cell *matCellDef="let row" class="col-sm-field text-center">
-                {{ row.belong ?? '—' }}
-              </td>
-            </ng-container>
-
-            <!-- Stopped -->
-            <ng-container matColumnDef="Stopped">
-              <th mat-header-cell *matHeaderCellDef class="col-sm-field text-center">
-                {{ 'EditAccountName.Stopped' | translate }}
-              </th>
-              <td mat-cell *matCellDef="let row" class="col-sm-field text-center">
-                <span *ngIf="row.Stopped" class="badge bg-danger-transparent text-danger">
-                  {{ 'General.Yes' | translate }}
-                </span>
-                <span *ngIf="!row.Stopped" class="badge bg-success-transparent text-success">
-                  {{ 'General.No' | translate }}
-                </span>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr
-              mat-row
-              *matRowDef="let row; columns: displayedColumns;"
-              [class.row-dirty]="isDirty(row)">
-            </tr>
-
-            <!-- No data row -->
-            <tr class="mat-row" *matNoDataRow>
-              <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
-                {{ 'General.NoRecordsFound' | translate }}
-              </td>
-            </tr>
-          </table>
-
-          <!-- Pagination -->
-          <mat-paginator
-            [pageSizeOptions]="pageSizeOptions"
-            [pageSize]="pageSize"
-            [pageIndex]="pageIndex"
-            [length]="totalItems"
-            (page)="onPageChange($event)"
-            showFirstLastButtons>
-          </mat-paginator>
-        </div>
-
       </div>
     </div>
+
   </div>
 </div>
-<!-- End::row-1 -->

@@ -1,0 +1,235 @@
+<app-page-header
+  [title]="'CostCenterTransactions.Title' | translate"
+  [title1]="'Nav.Accounting.GLReports' | translate"
+  [activeTitle]="'CostCenterTransactions.Title' | translate">
+</app-page-header>
+
+<div class="row cct-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-arrows-exchange me-2"></i>
+          {{ 'CostCenterTransactions.Title' | translate }}
+        </div>
+        <div class="d-flex gap-2">
+          <button *hasPermission="'CostCenterTransactions.Print'" class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched || groups.length === 0">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Filters ─────────────────────────────────────── -->
+        <!-- Cost-center range -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-3">
+            <label class="form-label">{{ 'CostCenterTransactions.CcFrom' | translate }}</label>
+            <ng-select
+              [items]="ccOptions" [(ngModel)]="ccFrom" [searchFn]="ccSearchFn"
+              [loading]="lookupLoading" [clearable]="false" (change)="onFilterChange()"
+              [placeholder]="'CostCenterTransactions.All' | translate" appendTo="body"
+              class="cct-select">
+              <ng-template ng-label-tmp let-item="item">
+                <ng-container *ngIf="isAllCc(item); else lblF">{{ 'CostCenterTransactions.All' | translate }}</ng-container>
+                <ng-template #lblF>{{ item.CcntrNo }} — {{ isAr ? item.CcAname : item.Ccename }}</ng-template>
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                <ng-container *ngIf="isAllCc(item); else optF">{{ 'CostCenterTransactions.All' | translate }}</ng-container>
+                <ng-template #optF>
+                  <span class="cct-mono">{{ item.CcntrNo }}</span>
+                  <span class="cct-opt-sep">—</span>
+                  <span>{{ isAr ? item.CcAname : item.Ccename }}</span>
+                </ng-template>
+              </ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'CostCenterTransactions.CcTo' | translate }}</label>
+            <ng-select
+              [items]="ccOptions" [(ngModel)]="ccTo" [searchFn]="ccSearchFn"
+              [loading]="lookupLoading" [clearable]="false" (change)="onFilterChange()"
+              [placeholder]="'CostCenterTransactions.All' | translate" appendTo="body"
+              class="cct-select">
+              <ng-template ng-label-tmp let-item="item">
+                <ng-container *ngIf="isAllCc(item); else lblT">{{ 'CostCenterTransactions.All' | translate }}</ng-container>
+                <ng-template #lblT>{{ item.CcntrNo }} — {{ isAr ? item.CcAname : item.Ccename }}</ng-template>
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                <ng-container *ngIf="isAllCc(item); else optT">{{ 'CostCenterTransactions.All' | translate }}</ng-container>
+                <ng-template #optT>
+                  <span class="cct-mono">{{ item.CcntrNo }}</span>
+                  <span class="cct-opt-sep">—</span>
+                  <span>{{ isAr ? item.CcAname : item.Ccename }}</span>
+                </ng-template>
+              </ng-template>
+            </ng-select>
+          </div>
+        </div>
+
+        <!-- Account filter (Option3) -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-12">
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="accMode" id="accAll" [value]="false" [(ngModel)]="accountRange" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="accAll">{{ 'CostCenterTransactions.AllAccounts' | translate }}</label>
+              <input type="radio" class="btn-check" name="accMode" id="accRange" [value]="true" [(ngModel)]="accountRange" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="accRange">{{ 'CostCenterTransactions.AccountRange' | translate }}</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'CostCenterTransactions.AccFrom' | translate }}</label>
+            <ng-select
+              [items]="accounts" [(ngModel)]="accFrom" [searchFn]="accountSearchFn" (change)="onFilterChange()"
+              [disabled]="!accountRange"
+              [clearable]="true" [placeholder]="'CostCenterTransactions.SelectAccount' | translate" appendTo="body"
+              class="cct-select">
+              <ng-template ng-label-tmp let-item="item">{{ item.no }} — {{ isAr ? item.name : item.Ename }}</ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                <span class="cct-mono">{{ item.no }}</span>
+                <span class="cct-opt-sep">—</span>
+                <span>{{ isAr ? item.name : item.Ename }}</span>
+              </ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'CostCenterTransactions.AccTo' | translate }}</label>
+            <ng-select
+              [items]="accounts" [(ngModel)]="accTo" [searchFn]="accountSearchFn" (change)="onFilterChange()"
+              [disabled]="!accountRange"
+              [clearable]="true" [placeholder]="'CostCenterTransactions.SelectAccount' | translate" appendTo="body"
+              class="cct-select">
+              <ng-template ng-label-tmp let-item="item">{{ item.no }} — {{ isAr ? item.name : item.Ename }}</ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                <span class="cct-mono">{{ item.no }}</span>
+                <span class="cct-opt-sep">—</span>
+                <span>{{ isAr ? item.name : item.Ename }}</span>
+              </ng-template>
+            </ng-select>
+          </div>
+        </div>
+
+        <!-- Date filter (Option2) -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-12">
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="dateMode" id="dateAll" [value]="false" [(ngModel)]="dateRange" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="dateAll">{{ 'CostCenterTransactions.AllPeriods' | translate }}</label>
+              <input type="radio" class="btn-check" name="dateMode" id="dateRange" [value]="true" [(ngModel)]="dateRange" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="dateRange">{{ 'CostCenterTransactions.DateRange' | translate }}</label>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'General.DateFrom' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="dateFrom" (change)="onFilterChange()" [disabled]="!dateRange" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'General.DateTo' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="dateTo" (change)="onFilterChange()" [disabled]="!dateRange" />
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched">
+          <div class="cct-print-area">
+            <div class="cct-report-title">
+              {{ 'CostCenterTransactions.Title' | translate }}<br>
+              <small>{{ dateRange ? (dateFrom + ' — ' + dateTo) : ('CostCenterTransactions.AllPeriods' | translate) }}</small>
+            </div>
+
+            <div *ngIf="groups.length === 0" class="alert alert-info text-center">
+              {{ 'General.NoData' | translate }}
+            </div>
+
+            <div *ngIf="groups.length > 0" class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 cct-table">
+                  <thead class="table-primary">
+                    <tr>
+                      <th class="text-center">{{ 'CostCenterTransactions.DocNo' | translate }}</th>
+                      <th>{{ 'CostCenterTransactions.DocType' | translate }}</th>
+                      <th class="text-center">{{ 'CostCenterTransactions.Date' | translate }}</th>
+                      <th class="text-center">{{ 'CostCenterTransactions.AccNo' | translate }}</th>
+                      <th>{{ 'CostCenterTransactions.AccName' | translate }}</th>
+                      <th class="text-end">{{ 'CostCenterTransactions.Debit' | translate }}</th>
+                      <th class="text-end">{{ 'CostCenterTransactions.Credit' | translate }}</th>
+                      <th>{{ 'CostCenterTransactions.Description' | translate }}</th>
+                      <th>{{ 'CostCenterTransactions.CostCenter' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <ng-container *ngFor="let g of groups">
+                      <tr class="cct-group-row">
+                        <td colspan="9">
+                          <a class="rec-link" [routerLink]="['/accounting/definitions/cost-centers']"
+                             [queryParams]="{ focus: g.ccntrNo }">
+                            <span class="cct-mono">{{ g.ccntrNo }}</span>
+                            — {{ isAr ? g.ccAname : (g.ccEname || g.ccAname) }}
+                          </a>
+                        </td>
+                      </tr>
+                      <tr *ngFor="let r of g.rows">
+                        <td class="text-center cct-mono">{{ r.DocNum }}</td>
+                        <td>{{ r.SerialName }}</td>
+                        <td class="text-center">{{ r.Date }}</td>
+                        <td class="text-center">
+                          <a class="rec-link cct-mono" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                        </td>
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ isAr ? r.AccName : (r.AccEName || r.AccName) }}</a>
+                        </td>
+                        <td class="text-end">{{ r.Debit | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ r.Credit | number:'1.3-3' }}</td>
+                        <td class="cct-des">{{ r.Des }}</td>
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/definitions/cost-centers']"
+                             [queryParams]="{ focus: r.CcntrNo }">{{ isAr ? r.CcAname : (r.CcEname || r.CcAname) }}</a>
+                        </td>
+                      </tr>
+                      <tr class="cct-subtotal-row">
+                        <td colspan="5">{{ 'CostCenterTransactions.GroupTotal' | translate }}</td>
+                        <td class="text-end">{{ g.totDebit  | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ g.totCredit | number:'1.3-3' }}</td>
+                        <td colspan="2"></td>
+                      </tr>
+                      <tr class="cct-balance-row">
+                        <td colspan="5">{{ 'CostCenterTransactions.Balance' | translate }}</td>
+                        <td class="text-end">{{ g.balDebit  | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ g.balCredit | number:'1.3-3' }}</td>
+                        <td colspan="2"></td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                  <tfoot class="fw-bold table-light">
+                    <tr>
+                      <td colspan="5" class="text-center">{{ 'General.Total' | translate }}</td>
+                      <td class="text-end">{{ grandDebit  | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ grandCredit | number:'1.3-3' }}</td>
+                      <td colspan="2"></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

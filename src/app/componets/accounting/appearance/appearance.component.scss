@@ -1,0 +1,103 @@
+.theme-card {
+  display: block;
+  border: 2px solid var(--default-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  background: var(--custom-white, #fff);
+  margin: 0;
+
+  &:hover {
+    border-color: var(--primary-color, #6366f1);
+    transform: translateY(-2px);
+  }
+
+  &.active {
+    border-color: var(--primary-color, #6366f1);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 99 102 241), 0.15);
+  }
+}
+
+.theme-preview {
+  height: 120px;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+
+  .tp-header {
+    height: 16px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.1);
+  }
+  .tp-row {
+    height: 10px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.06);
+    &.short { width: 60%; }
+  }
+
+  &.classic {
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    .tp-header { background: #6366f1; }
+    .tp-row { background: rgba(99, 102, 241, 0.18); border-radius: 6px; }
+  }
+
+  &.editorial {
+    background: #ffffff;
+    border: 1px solid #111827;
+    border-radius: 0;
+    .tp-header { background: #111827; border-radius: 0; height: 2px; }
+    .tp-row { background: #e5e7eb; border-radius: 0; height: 8px; }
+  }
+
+  &.light-mode {
+    background: #f8fafc;
+    .tp-header { background: #cbd5e1; }
+    .tp-row { background: #e2e8f0; }
+  }
+
+  &.dark-mode {
+    background: #0f172a;
+    .tp-header { background: #334155; }
+    .tp-row { background: #1e293b; }
+  }
+}
+
+.theme-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  padding: 0 2px;
+
+  .theme-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--default-text-color, #1e293b);
+  }
+
+  .theme-check i {
+    font-size: 1.2rem;
+    color: var(--default-border, #cbd5e1);
+  }
+}
+
+.theme-card.active .theme-check i { color: var(--primary-color, #6366f1); }
+
+[data-theme-mode="dark"] {
+  .theme-preview.classic {
+    background: linear-gradient(135deg, #1e293b 0%, #312e81 100%);
+  }
+  .theme-preview.editorial {
+    background: #0b0f19;
+    border-color: rgba(255, 255, 255, 0.55);
+    .tp-header { background: rgba(255, 255, 255, 0.9); }
+    .tp-row { background: rgba(255, 255, 255, 0.08); }
+  }
+  .theme-preview.light-mode .tp-header { background: #94a3b8; }
+  .theme-preview.light-mode .tp-row { background: #cbd5e1; }
+}

@@ -1,0 +1,52 @@
+.ag-container { padding: 1rem; }
+
+.table-section {
+  .table-responsive {
+    max-height: 60vh;
+    overflow: auto;
+
+    &::-webkit-scrollbar       { width: 10px; height: 10px; }
+    &::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    &::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; border: 2px solid #f1f5f9; }
+    &::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #f1f5f9;
+  }
+
+  thead.table-primary > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    white-space: nowrap;
+    /* Force an opaque background — Bootstrap's --bs-table-bg often resolves
+       to transparent on individual cells, leaving the sticky header
+       see-through while scrolling. #cfe2ff is the default .table-primary
+       tone; adjust here if you want a different shade. */
+    background-color: #cfe2ff !important;
+    background-clip: padding-box;
+  }
+
+  /* Make body cells opaque against the page background, so scrolled-under
+     rows can't bleed through the sticky header (which keeps its original
+     theme color from .table-primary unchanged). */
+  tbody > tr > td,
+  tfoot > tr > td {
+    background-color: var(--bs-body-bg, #fff);
+  }
+  tbody > tr:hover > td {
+    background-color: var(--bs-table-hover-bg, rgba(0,0,0,0.0375));
+  }
+
+  table {
+    min-width: max-content;
+    th, td { font-size: 0.82rem; white-space: nowrap; }
+  }
+}
+
+.ag-report-title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 0 1rem;
+  line-height: 1.6;
+}

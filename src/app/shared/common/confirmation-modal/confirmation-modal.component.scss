@@ -91,3 +91,39 @@
     min-width: 100px;
   }
 }
+
+// ── Dark Mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode=dark] {
+  .delete-confirm-dialog {
+    .modal-content {
+      background-color: var(--custom-white, #1e2533) !important;
+      border-color: var(--default-border, #2d3748) !important;
+    }
+  }
+
+  .delete-confirm-title {
+    color: var(--default-text-color, #e2e8f0) !important;
+  }
+
+  .delete-confirm-message {
+    color: var(--text-muted, #94a3b8) !important;
+  }
+
+  .delete-confirm-details {
+    background: var(--default-background, #151b26) !important;
+    border: 1px solid var(--default-border, #2d3748);
+
+    .detail-label { color: var(--text-muted, #94a3b8) !important; }
+    .detail-value { color: var(--default-text-color, #e2e8f0) !important; }
+  }
+
+  .delete-confirm-actions .btn-cancel {
+    background: var(--default-background, #151b26) !important;
+    border-color: var(--default-border, #2d3748) !important;
+    color: var(--default-text-color, #e2e8f0) !important;
+
+    &:hover {
+      background: var(--list-hover-focus-bg, #1e2d3d) !important;
+    }
+  }
+}

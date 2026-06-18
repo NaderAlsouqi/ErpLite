@@ -21,7 +21,7 @@
           <button class="btn btn-sm btn-secondary me-2" (click)="goBack()">
             <i class="ti ti-arrow-left me-1"></i>{{ 'General.Back' | translate }}
           </button>
-          <button class="btn btn-sm btn-primary me-2" (click)="printInvoice()">
+          <button class="btn btn-sm btn-primary me-2" *hasPermission="'ServiceInvoices.Print'" (click)="printInvoice()">
             <i class="ti ti-file-download me-1"></i>{{ 'ServiceInvoiceDetailsPage.Print' | translate }}
           </button>
         </div>
@@ -51,7 +51,7 @@
 
           <!-- Invoice items table -->
           <div class="table-responsive mb-4">
-            <table mat-table [dataSource]="dataSource" class="table table-bordered">
+            <table mat-table [dataSource]="dataSource" class="table table-bordered table-hover mb-0">
               <!-- Item Number Column -->
               <ng-container matColumnDef="ItemNumber">
                 <th mat-header-cell *matHeaderCellDef>{{ 'ServiceInvoiceDetailsPage.ItemNumber' | translate }}</th>
@@ -114,7 +114,7 @@
             </div>
             <div class="col-lg-4">
               <div class="table-responsive">
-                <table class="table table-bordered">
+                <table class="table table-bordered table-hover mb-0">
                   <tbody>
                     <tr>
                       <td class="fw-bold">{{ 'ServiceInvoiceDetailsPage.Subtotal' | translate }}</td>

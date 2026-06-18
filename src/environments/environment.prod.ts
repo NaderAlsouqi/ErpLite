@@ -9,7 +9,8 @@ export const environment = {
   // -- SkyLine Server Api Url --
   //apiUrl: 'https://test-erplite-api.skyline-inov.com/api',
   apiUrl: 'https://erplite-api.skyline-inov.com/api',
-  //apiUrl: 'http://localhost:5290/api',
+ // apiUrl: 'https://localhost:7089/api',
+  //apiUrl:'https://testerplite.skyline-inov.com:7091/api',
 
   // -- Fotara(Codexal) Api Url --
   //fotaraApiUrl: 'https://fotara-saas.codexal.co/api',
@@ -17,5 +18,10 @@ export const environment = {
   //fotaraApiUrl: 'https://localhost:7293',
 
 
-  appVersion: '1.0.5'
+  appVersion: '1.0.18',
+  emailJs: {
+    serviceId: 'service_v6egz67',
+    templateId: 'template_6sq43b8',
+    publicKey: 't208Bktl2m--R3h0V'
+  }
 };

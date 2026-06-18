@@ -1,0 +1,123 @@
+<!-- Page Header -->
+<div class="dashboard-header">
+  <div class="dashboard-header-text">
+    <h4 class="dashboard-title">{{ 'Dashboard.Title' | translate }}</h4>
+    <p class="dashboard-subtitle">{{ 'Dashboard.Subtitle' | translate }}</p>
+  </div>
+  <button class="btn btn-outline-primary btn-sm" (click)="load()" [disabled]="loading">
+    <i class="ti ti-refresh me-1"></i>
+    {{ 'Dashboard.Refresh' | translate }}
+  </button>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading" class="d-flex justify-content-center align-items-center" style="min-height:300px">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+  </div>
+</div>
+
+<ng-container *ngIf="!loading && data">
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+
+    <div class="kpi-card kpi-revenue">
+      <div class="kpi-icon">
+        <i class="ti ti-currency-dollar"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ formatCurrency(data.Kpis.TotalRevenue) }}</div>
+        <div class="kpi-label">{{ 'Dashboard.KPI.TotalRevenue' | translate }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-invoices">
+      <div class="kpi-icon">
+        <i class="ti ti-file-invoice"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ data.Kpis.TotalInvoices | number }}</div>
+        <div class="kpi-label">{{ 'Dashboard.KPI.TotalInvoices' | translate }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-customers">
+      <div class="kpi-icon">
+        <i class="ti ti-users"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ data.Kpis.TotalCustomers | number }}</div>
+        <div class="kpi-label">{{ 'Dashboard.KPI.TotalCustomers' | translate }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-monthly">
+      <div class="kpi-icon">
+        <i class="ti ti-calendar-stats"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ formatCurrency(data.Kpis.MonthlyRevenue) }}</div>
+        <div class="kpi-label">{{ 'Dashboard.KPI.MonthlyRevenue' | translate }}</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Charts Row 1: Monthly Sales + Invoice Types -->
+  <div class="charts-row">
+
+    <div class="chart-card chart-large">
+      <div class="chart-card-header">
+        <h6 class="chart-card-title">{{ 'Dashboard.Charts.MonthlySales' | translate }}</h6>
+      </div>
+      <div class="chart-card-body">
+        <apx-chart
+          [series]="monthlySeries"
+          [chart]="monthlyChart"
+          [xaxis]="monthlyXaxis"
+          [stroke]="monthlyStroke"
+          [fill]="monthlyFill"
+          [tooltip]="monthlyTooltip">
+        </apx-chart>
+      </div>
+    </div>
+
+    <div class="chart-card chart-small">
+      <div class="chart-card-header">
+        <h6 class="chart-card-title">{{ 'Dashboard.Charts.InvoicesByType' | translate }}</h6>
+      </div>
+      <div class="chart-card-body">
+        <apx-chart
+          [series]="donutSeries"
+          [chart]="donutChart"
+          [labels]="donutLabels"
+          [colors]="donutColors"
+          [dataLabels]="donutDataLabels"
+          [legend]="donutLegend"
+          [responsive]="donutResponsive">
+        </apx-chart>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Charts Row 2: Top Customers -->
+  <div class="charts-row">
+    <div class="chart-card chart-full">
+      <div class="chart-card-header">
+        <h6 class="chart-card-title">{{ 'Dashboard.Charts.TopCustomers' | translate }}</h6>
+      </div>
+      <div class="chart-card-body">
+        <apx-chart
+          [series]="customerSeries"
+          [chart]="customerChart"
+          [xaxis]="customerXaxis"
+          [plotOptions]="customerPlot"
+          [dataLabels]="customerDataLabels">
+        </apx-chart>
+      </div>
+    </div>
+  </div>
+
+</ng-container>

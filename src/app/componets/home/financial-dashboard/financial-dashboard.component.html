@@ -1,0 +1,353 @@
+<div class="fd-card">
+
+  <!-- ── Header ───────────────────────────────────────────────────── -->
+  <div class="fd-header">
+    <div class="fd-header-text">
+      <div class="fd-title">
+        <span class="fd-title-icon"><i class="ti ti-chart-pie-filled"></i></span>
+        {{ 'FinDash.Title' | translate }}
+      </div>
+      <div *ngIf="data" class="fd-subtitle">
+        <i class="ti ti-clock-hour-4 me-1"></i>
+        {{ 'FinDash.RefreshedAt' | translate }} <strong>{{ dateFrom }}</strong> — <strong>{{ dateTo }}</strong>
+      </div>
+    </div>
+    <div class="fd-actions">
+      <button type="button" class="fd-action-btn fd-action-btn--ghost"
+              (click)="customizing = !customizing"
+              [class.is-active]="customizing"
+              [title]="'FinDash.Customize' | translate">
+        <i class="ti ti-adjustments-horizontal"></i>
+      </button>
+      <button type="button" class="fd-action-btn fd-action-btn--success"
+              (click)="refresh()" [disabled]="loading"
+              [title]="'General.Refresh' | translate">
+        <i class="ti" [class.ti-refresh]="!loading" [class.ti-loader-2]="loading"
+           [class.fd-spin]="loading"></i>
+      </button>
+      <div class="fd-date-wrap">
+        <i class="ti ti-calendar"></i>
+        <span class="fd-date-label">{{ 'General.DateFrom' | translate }}</span>
+        <input type="date" class="fd-date" [(ngModel)]="dateFrom" (change)="refresh()" />
+      </div>
+      <div class="fd-date-wrap">
+        <i class="ti ti-calendar"></i>
+        <span class="fd-date-label">{{ 'General.DateTo' | translate }}</span>
+        <input type="date" class="fd-date" [(ngModel)]="dateTo" (change)="refresh()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Customize panel ───────────────────────────────────────────── -->
+  <div *ngIf="customizing" class="fd-customize">
+    <div class="fd-customize-row">
+      <div class="fd-customize-title">
+        <i class="ti ti-layout-grid me-1"></i>
+        {{ 'FinDash.PickCharts' | translate }}
+        <span class="fd-customize-count">
+          {{ allCards.length - hidden.size }}/{{ allCards.length }}
+        </span>
+      </div>
+      <button type="button" class="fd-show-all" (click)="showAll()">
+        <i class="ti ti-eye me-1"></i>{{ 'FinDash.ShowAll' | translate }}
+      </button>
+    </div>
+
+    <ng-container *ngFor="let group of ['kpi', 'chart']">
+      <div class="fd-customize-group">
+        <div class="fd-customize-group-label">
+          {{ (group === 'kpi' ? 'FinDash.GroupKPIs' : 'FinDash.GroupCharts') | translate }}
+          <span *ngIf="group === 'chart'" class="fd-cap-hint">
+            {{ visibleChartCount }}/{{ MAX_CHARTS }}
+          </span>
+        </div>
+        <div class="fd-customize-chips">
+          <label *ngFor="let c of allCards"
+                 class="fd-chip"
+                 [class.is-on]="isVisible(c.id)"
+                 [class.is-disabled]="chipDisabled(c)"
+                 [hidden]="c.group !== group">
+            <input type="checkbox" [checked]="isVisible(c.id)"
+                   [disabled]="chipDisabled(c)" (change)="toggle(c.id)" />
+            <span class="fd-chip-mark">
+              <i class="ti" [class.ti-check]="isVisible(c.id)" [class.ti-plus]="!isVisible(c.id)"></i>
+            </span>
+            <span class="fd-chip-label">{{ c.labelKey | translate }}</span>
+          </label>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ── Loading ───────────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <!-- ── KPI tiles ─────────────────────────────────────────────────── -->
+  <div *ngIf="data && !loading" class="fd-kpis">
+    <div *ngIf="isVisible('kpiAR')" class="fd-kpi fd-kpi-primary">
+      <i class="ti ti-receipt-2 fd-kpi-icon"></i>
+      <div>
+        <div class="fd-kpi-label">{{ 'FinDash.KPI.AR' | translate }}</div>
+        <div class="fd-kpi-value">{{ money(data.Kpis.AccountsReceivable) }}</div>
+      </div>
+    </div>
+    <div *ngIf="isVisible('kpiRevenue')" class="fd-kpi fd-kpi-success">
+      <i class="ti ti-trending-up fd-kpi-icon"></i>
+      <div>
+        <div class="fd-kpi-label">{{ 'FinDash.KPI.Revenue' | translate }}</div>
+        <div class="fd-kpi-value">{{ money(data.Kpis.Revenue) }}</div>
+      </div>
+    </div>
+    <div *ngIf="isVisible('kpiEquityRatio')" class="fd-kpi fd-kpi-info">
+      <i class="ti ti-chart-pie fd-kpi-icon"></i>
+      <div>
+        <div class="fd-kpi-label">{{ 'FinDash.KPI.EquityRatio' | translate }}</div>
+        <div class="fd-kpi-value">{{ pct(data.Kpis.EquityRatioPct) }}</div>
+      </div>
+    </div>
+    <div *ngIf="isVisible('kpiBurnRate')" class="fd-kpi fd-kpi-danger">
+      <i class="ti ti-flame fd-kpi-icon"></i>
+      <div>
+        <div class="fd-kpi-label">{{ 'FinDash.KPI.BurnRate' | translate }}</div>
+        <div class="fd-kpi-value">{{ money(data.Kpis.BurnRate) }}</div>
+      </div>
+    </div>
+    <div *ngIf="isVisible('kpiDebtEquity')" class="fd-kpi fd-kpi-warning">
+      <i class="ti ti-scale fd-kpi-icon"></i>
+      <div>
+        <div class="fd-kpi-label">{{ 'FinDash.KPI.DebtEquity' | translate }}</div>
+        <div class="fd-kpi-value">{{ ratio(data.Kpis.DebtToEquity) }}</div>
+      </div>
+    </div>
+    <div *ngIf="isVisible('kpiAP')" class="fd-kpi fd-kpi-primary">
+      <i class="ti ti-receipt fd-kpi-icon"></i>
+      <div>
+        <div class="fd-kpi-label">{{ 'FinDash.KPI.AP' | translate }}</div>
+        <div class="fd-kpi-value">{{ money(data.Kpis.AccountsPayable) }}</div>
+      </div>
+    </div>
+    <div *ngIf="isVisible('kpiCurrentRatio')" class="fd-kpi fd-kpi-success">
+      <i class="ti ti-arrow-up-bar fd-kpi-icon"></i>
+      <div>
+        <div class="fd-kpi-label">{{ 'FinDash.KPI.CurrentRatio' | translate }}</div>
+        <div class="fd-kpi-value">{{ ratio(data.Kpis.CurrentRatio) }}</div>
+      </div>
+    </div>
+    <div *ngIf="isVisible('kpiGrossMargin')" class="fd-kpi fd-kpi-info">
+      <i class="ti ti-percentage fd-kpi-icon"></i>
+      <div>
+        <div class="fd-kpi-label">{{ 'FinDash.KPI.GrossMargin' | translate }}</div>
+        <div class="fd-kpi-value">{{ pct(data.Kpis.GrossProfitMarginPct) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Charts ────────────────────────────────────────────────────── -->
+  <div *ngIf="data && !loading" class="fd-charts">
+
+    <div *ngIf="isVisible('chartWorkingCapital')" class="fd-chart fd-chart-wide">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.WorkingCapital' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartWorkingCapital')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <div class="fd-chart-subtitle">{{ 'FinDash.Last6Months' | translate }}</div>
+      <apx-chart
+        [series]="wcSeries" [chart]="wcChart" [xaxis]="wcXaxis"
+        [stroke]="wcStroke" [colors]="wcColors" [legend]="wcLegend"
+        [dataLabels]="wcDataLabels">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartInventory')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.Inventory' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartInventory')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <div class="fd-chart-subtitle">{{ 'FinDash.Last6Months' | translate }}</div>
+      <apx-chart
+        [series]="invSeries" [chart]="invChart" [xaxis]="invXaxis"
+        [stroke]="invStroke" [fill]="invFill" [colors]="invColors"
+        [dataLabels]="invDataLabels">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartArApTurnover')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.ArApTurnover' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartArApTurnover')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <div class="fd-chart-subtitle">{{ 'FinDash.Last6Months' | translate }}</div>
+      <apx-chart
+        [series]="turnoverSeries" [chart]="turnoverChart" [xaxis]="turnoverXaxis"
+        [plotOptions]="turnoverPlot" [colors]="turnoverColors"
+        [legend]="turnoverLegend" [dataLabels]="turnoverDataLabels">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartApAging')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.ApAging' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartApAging')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="apAgingSeries" [chart]="apAgingChart" [xaxis]="apAgingXaxis"
+        [yaxis]="apAgingYaxis" [plotOptions]="apAgingPlot"
+        [colors]="apAgingColors"
+        [dataLabels]="apAgingDataLabels" [legend]="apAgingLegend">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartArAging')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.ArAging' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartArAging')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="arAgingSeries" [chart]="arAgingChart" [xaxis]="arAgingXaxis"
+        [yaxis]="arAgingYaxis" [plotOptions]="arAgingPlot"
+        [colors]="arAgingColors"
+        [dataLabels]="arAgingDataLabels" [legend]="arAgingLegend">
+      </apx-chart>
+    </div>
+
+    <!-- Moved-from-reports cards (lazy data) -->
+    <div *ngIf="isVisible('chartBalanceSheet')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.BalanceSheet' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartBalanceSheet')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="bsSeries" [chart]="bsChart" [labels]="bsLabels"
+        [colors]="bsColors" [dataLabels]="bsDataLabels" [legend]="bsLegend">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartIncomeStatement')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.IncomeStatement' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartIncomeStatement')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="isSeries" [chart]="isChart" [xaxis]="isXaxis"
+        [plotOptions]="isPlot" [colors]="isColors"
+        [dataLabels]="isDataLabels" [legend]="isLegend">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartTrialBalance')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.TrialBalance' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartTrialBalance')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="tbSeries" [chart]="tbChart" [labels]="tbLabels"
+        [colors]="tbColors" [dataLabels]="tbDataLabels" [legend]="tbLegend">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartAging')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.AgingBuckets' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartAging')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="agingSeries" [chart]="agingChart" [xaxis]="agingXaxis"
+        [plotOptions]="agingPlot" [colors]="agingColors"
+        [dataLabels]="agingDataLabels" [legend]="agingLegend">
+      </apx-chart>
+    </div>
+
+    <!-- Sales / invoice charts (moved from HomeComponent) -->
+    <div *ngIf="isVisible('chartMonthlySales') && data1" class="fd-chart fd-chart-wide">
+      <div class="fd-chart-title">{{ 'Dashboard.Charts.MonthlySales' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartMonthlySales')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="monthlySeries" [chart]="monthlyChart" [xaxis]="monthlyXaxis"
+        [stroke]="monthlyStroke" [fill]="monthlyFill"
+        [colors]="monthlyColors" [tooltip]="monthlyTooltip">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartInvoicesByType') && data1" class="fd-chart">
+      <div class="fd-chart-title">{{ 'Dashboard.Charts.InvoicesByType' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartInvoicesByType')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="donutSeries" [chart]="donutChart" [labels]="donutLabels"
+        [colors]="donutColors" [dataLabels]="donutDataLabels"
+        [legend]="donutLegend" [responsive]="donutResponsive">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartSalesVsService') && data2" class="fd-chart fd-chart-wide">
+      <div class="fd-chart-title">{{ 'Dashboard2.Charts.SalesVsService' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartSalesVsService')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="svsSeries" [chart]="svsChart" [xaxis]="svsXaxis"
+        [stroke]="svsStroke" [fill]="svsFill"
+        [colors]="svsColors" [legend]="svsLegend">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartInvoiceCount') && data2" class="fd-chart fd-chart-wide">
+      <div class="fd-chart-title">{{ 'Dashboard2.Charts.InvoiceCount' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartInvoiceCount')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="countSeries" [chart]="countChart" [xaxis]="countXaxis"
+        [plotOptions]="countPlot" [colors]="countColors"
+        [legend]="countLegend" [dataLabels]="countDataLabels">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartCumulativeRevenue') && data1" class="fd-chart fd-chart-wide">
+      <div class="fd-chart-title">{{ 'Dashboard.Charts.CumulativeRevenue' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartCumulativeRevenue')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="cumulativeSeries" [chart]="cumulativeChart"
+        [xaxis]="cumulativeXaxis" [stroke]="cumulativeStroke"
+        [colors]="cumulativeColors">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartTopCustomers') && data1" class="fd-chart fd-chart-wide">
+      <div class="fd-chart-title">{{ 'Dashboard.Charts.TopCustomers' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartTopCustomers')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="customerSeries" [chart]="customerChart" [xaxis]="customerXaxis"
+        [plotOptions]="customerPlot" [colors]="customerColors"
+        [legend]="customerLegend" [dataLabels]="customerDataLabels">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartAccountsList')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.AccountsList' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartAccountsList')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="alSeries" [chart]="alChart" [xaxis]="alXaxis"
+        [plotOptions]="alPlot" [colors]="alColors"
+        [legend]="alLegend" [dataLabels]="alDataLabels">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartOpeningBalances')" class="fd-chart">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.OpeningBalances' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartOpeningBalances')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="obSeries" [chart]="obChart" [labels]="obLabels"
+        [colors]="obColors" [dataLabels]="obDataLabels" [legend]="obLegend">
+      </apx-chart>
+    </div>
+
+    <div *ngIf="isVisible('chartCcOpeningBalances')" class="fd-chart fd-chart-wide">
+      <div class="fd-chart-title">{{ 'FinDash.Chart.CcOpeningBalances' | translate }}
+        <a class="fd-chart-link" [routerLink]="chartRoute('chartCcOpeningBalances')" [title]="'FinDash.OpenPage' | translate"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <apx-chart
+        [series]="ccSeries" [chart]="ccChart" [xaxis]="ccXaxis"
+        [plotOptions]="ccPlot" [colors]="ccColors"
+        [legend]="ccLegend" [dataLabels]="ccDataLabels">
+      </apx-chart>
+    </div>
+
+  </div>
+</div>

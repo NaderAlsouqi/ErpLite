@@ -1,0 +1,132 @@
+.h2-container { padding: 1rem; }
+
+// ── Voucher analytics cards ──────────────────────────────────────────────────
+.h2-voucher-card {
+  .card-header { border-bottom: 1px solid var(--default-border); }
+  .card-title { font-size: 1rem; font-weight: 600; }
+}
+
+.h2-year-badge { font-weight: 700; letter-spacing: .04em; }
+
+// ── Chart-type switcher ──────────────────────────────────────────────────────
+.h2-switch {
+  .btn {
+    padding: 0.2rem 0.45rem;
+    border: 1px solid var(--default-border);
+    background: transparent;
+    color: var(--text-muted);
+    line-height: 1;
+    i { font-size: 0.95rem; }
+    &:hover { background: rgba(var(--primary-rgb), 0.08); color: var(--default-text-color); }
+    &.active {
+      background: rgba(var(--primary-rgb), 0.14);
+      color: var(--primary-color, #4f46e5);
+      border-color: rgba(var(--primary-rgb), 0.45);
+      z-index: 1;
+    }
+  }
+}
+
+.h2-pie-card {
+  .h2-pie-wrap { display: flex; justify-content: center; }
+  apx-chart { width: 100%; max-width: 560px; }
+}
+
+// ── Sample-data grid above each chart ────────────────────────────────────────
+.h2-data-grid {
+  max-height: 220px;
+  overflow: auto;
+  .h2-rowlbl { font-weight: 600; white-space: nowrap; }
+  th, td { white-space: nowrap; }
+}
+
+.h2-swatch {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  margin-inline-end: 7px;
+  vertical-align: middle;
+}
+
+.h2-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.h2-kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.6rem 0.4rem;
+  border-radius: 10px;
+  background: var(--default-background, #f8fafc);
+
+  .h2-kpi-val { font-size: 1.15rem; font-weight: 700; line-height: 1.1; }
+  .h2-kpi-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; }
+}
+
+// ── Action grid (shared look with Home) ──────────────────────────────────────
+.hp-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.hp-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 0.6rem;
+  border: 1px solid var(--default-border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--default-text-color);
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  min-height: 100px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -10px rgba(15, 23, 42, 0.25);
+    border-color: rgba(99, 102, 241, 0.4);
+  }
+
+  .hp-action-icon { font-size: 1.6rem; line-height: 1; }
+  .hp-action-label { font-size: 0.83rem; font-weight: 500; line-height: 1.25; word-break: break-word; }
+}
+
+@mixin accent($color) {
+  .hp-action-icon { color: $color; }
+  &:hover { border-color: rgba($color, 0.5); box-shadow: 0 6px 18px -10px rgba($color, 0.4); }
+}
+.hp-action-card-primary   { @include accent(#6366f1); }
+.hp-action-card-success   { @include accent(#22c55e); }
+.hp-action-card-info      { @include accent(#0ea5e9); }
+.hp-action-card-warning   { @include accent(#f59e0b); }
+.hp-action-card-danger    { @include accent(#ef4444); }
+.hp-action-card-purple    { @include accent(#8b5cf6); }
+.hp-action-card-secondary { @include accent(#64748b); }
+
+@mixin group-header-tint($color) { border-left: 4px solid $color; }
+.hp-group-header-primary   { @include group-header-tint(#6366f1); }
+.hp-group-header-success   { @include group-header-tint(#22c55e); }
+.hp-group-header-info      { @include group-header-tint(#0ea5e9); }
+.hp-group-header-warning   { @include group-header-tint(#f59e0b); }
+.hp-group-header-danger    { @include group-header-tint(#ef4444); }
+.hp-group-header-purple    { @include group-header-tint(#8b5cf6); }
+.hp-group-header-secondary { @include group-header-tint(#64748b); }
+
+::ng-deep [data-theme-mode="dark"] {
+  app-home2 {
+    .hp-action-card { background: var(--bs-tertiary-bg); color: var(--default-text-color); }
+    .h2-kpi { background: rgba(255,255,255,0.04); }
+  }
+}

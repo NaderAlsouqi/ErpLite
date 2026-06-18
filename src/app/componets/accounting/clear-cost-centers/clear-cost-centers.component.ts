@@ -11,6 +11,7 @@ import { CostCenterDto, CostCenterService } from '../../../shared/services/cost-
 import { ReportService } from '../../../shared/services/report.service';
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { forkJoin } from 'rxjs';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 export interface CostCenterNode {
   data: CostCenterDto;
@@ -55,6 +56,7 @@ export interface DisplayItem {
     NgbModule,
     NgSelectModule,
     ConfirmationModalComponent,
+    HasPermissionDirective,
   ],
   providers: [NgbModalConfig, NgbModal],
   templateUrl: './clear-cost-centers.component.html',

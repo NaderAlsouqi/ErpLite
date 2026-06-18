@@ -1,0 +1,290 @@
+<app-page-header
+  [title]="'IncomeStatement.Title' | translate"
+  [title1]="'Nav.Accounting.GLReports' | translate"
+  [activeTitle]="'IncomeStatement.Title' | translate">
+</app-page-header>
+
+<div class="row is-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">{{ 'IncomeStatement.Title' | translate }}</div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Row 1: Dates + Level + Stock account ─────── -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-2">
+            <label class="form-label">{{ 'General.DateFrom' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'General.DateTo' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="dateTo" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'IncomeStatement.Level' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="level" min="1" max="9" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'IncomeStatement.StockAcc' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="stockAccNo"
+                   placeholder="{{ 'IncomeStatement.StockAccPlaceholder' | translate }}" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="chkShowZero" [(ngModel)]="showZero" (change)="onFilterChange()" />
+              <label class="form-check-label" for="chkShowZero">
+                {{ 'IncomeStatement.ShowZero' | translate }}
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="chkExclClosing" [(ngModel)]="excludeClosing" (change)="onFilterChange()" />
+              <label class="form-check-label" for="chkExclClosing">
+                {{ 'IncomeStatement.ExcludeClosing' | translate }}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Row 2: Beginning stock + stock-method flag ─── -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-3">
+            <label class="form-label">{{ 'IncomeStatement.BeginningStock' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="beginningStock" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'IncomeStatement.EndingStock' | translate }}</label>
+            <input type="number" class="form-control"
+                   [value]="endingStock | number:'1.3-3'" readonly />
+            <small class="text-muted">{{ 'IncomeStatement.EndingStockHint' | translate }}</small>
+          </div>
+          <div *ngIf="result" class="col-md-6">
+            <small class="text-muted">
+              {{ 'IncomeStatement.StkMethodFlag' | translate }}:
+              <strong>{{ result.StkMethodRaw || '—' }}</strong>
+              ({{ (result.StkMethod ? 'IncomeStatement.Perpetual' : 'IncomeStatement.Periodic') | translate }})
+            </small>
+          </div>
+        </div>
+
+        <!-- ── Stock grid (بضاعة آخر المدة) ───────────────── -->
+        <div class="card border mb-4">
+          <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2 py-2">
+            <strong>{{ 'IncomeStatement.EndingStockGrid' | translate }}</strong>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary"
+                      (click)="loadStockGrid()" [disabled]="gridLoading || !stockAccNo">
+                <i class="ti ti-download me-1"></i>{{ 'IncomeStatement.LoadGrid' | translate }}
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-primary"
+                      (click)="addStockRow()">
+                <i class="ti ti-plus me-1"></i>{{ 'IncomeStatement.AddRow' | translate }}
+              </button>
+              <button type="button" class="btn btn-sm btn-primary"
+                      (click)="saveStockGrid()" [disabled]="gridSaving || stockGrid.length === 0">
+                <i class="ti ti-device-floppy me-1"></i>{{ 'IncomeStatement.SaveGrid' | translate }}
+              </button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <table class="table table-sm table-bordered table-hover mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th style="width: 25%">{{ 'IncomeStatement.AccNo' | translate }}</th>
+                  <th>{{ 'IncomeStatement.AccName' | translate }}</th>
+                  <th class="text-end" style="width: 25%">{{ 'IncomeStatement.Amount' | translate }}</th>
+                  <th style="width: 60px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="stockGrid.length === 0">
+                  <td colspan="4" class="text-center text-muted py-3">
+                    {{ 'IncomeStatement.GridEmptyHint' | translate }}
+                  </td>
+                </tr>
+                <tr *ngFor="let r of stockGrid; let i = index">
+                  <td>
+                    <input type="number" class="form-control form-control-sm"
+                           [(ngModel)]="r.AccNo"
+                           (change)="onStockAccChange(r); onFilterChange()" />
+                  </td>
+                  <td class="align-middle">{{ r.AccName || '—' }}</td>
+                  <td>
+                    <input type="number" class="form-control form-control-sm text-end"
+                           [(ngModel)]="r.Value" (change)="onFilterChange()" />
+                  </td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            (click)="removeStockRow(i)" title="{{ 'General.Delete' | translate }}">
+                      <i class="ti ti-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot *ngIf="stockGrid.length > 0" class="table-light fw-bold">
+                <tr>
+                  <td colspan="2" class="text-end">{{ 'General.Total' | translate }}</td>
+                  <td class="text-end">{{ endingStock | number:'1.3-3' }}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched && result">
+          <div class="is-print-area">
+            <div class="is-report-title">
+              {{ 'IncomeStatement.Title' | translate }}<br>
+              <small>{{ dateFrom }} — {{ dateTo }}</small>
+            </div>
+
+            <div class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>{{ 'IncomeStatement.AccNo' | translate }}</th>
+                      <th>{{ 'IncomeStatement.AccName' | translate }}</th>
+                      <th class="text-end">{{ 'IncomeStatement.Amount' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                    <!-- ── Income section ── -->
+                    <tr class="section-row"><td colspan="3">{{ 'IncomeStatement.Income' | translate }}</td></tr>
+                    <ng-container *ngFor="let r of result.SalesAccounts.concat(result.RevenueAccounts)">
+                      <tr [class.fw-bold]="isHeaderRow(r)">
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                        </td>
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ isAr ? r.AccName : r.AccEName }}</a>
+                        </td>
+                        <td class="text-end">{{ displayValue(r) | number:'1.3-3' }}</td>
+                      </tr>
+                    </ng-container>
+                    <tr class="subtotal-row">
+                      <td colspan="2">{{ 'IncomeStatement.IncomeTotal' | translate }}</td>
+                      <td class="text-end">{{ result.IncomeTotal | number:'1.3-3' }}</td>
+                    </tr>
+
+                    <!-- ── COGS section ── -->
+                    <tr class="section-row"><td colspan="3">{{ 'IncomeStatement.CogsTitle' | translate }}</td></tr>
+
+                    <ng-container *ngIf="!result.StkMethod">
+                      <tr>
+                        <td colspan="2">{{ 'IncomeStatement.BeginningStock' | translate }} (+)</td>
+                        <td class="text-end">{{ result.BeginningStock | number:'1.3-3' }}</td>
+                      </tr>
+                      <ng-container *ngFor="let r of result.PurchaseAccounts">
+                        <tr [class.fw-bold]="isHeaderRow(r)">
+                          <td>
+                            <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                               [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                          </td>
+                          <td>
+                            <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                               [queryParams]="{ focus: r.AccNo }">{{ isAr ? r.AccName : r.AccEName }}</a> (+)
+                          </td>
+                          <td class="text-end">{{ displayValue(r) | number:'1.3-3' }}</td>
+                        </tr>
+                      </ng-container>
+                      <tr class="subtotal-row">
+                        <td colspan="2">{{ 'IncomeStatement.PurchasesTotal' | translate }}</td>
+                        <td class="text-end">{{ result.PurchasesTotal | number:'1.3-3' }}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="2">{{ 'IncomeStatement.EndingStock' | translate }} (-)</td>
+                        <td class="text-end">{{ result.EndingStock | number:'1.3-3' }}</td>
+                      </tr>
+                    </ng-container>
+
+                    <ng-container *ngIf="result.StkMethod">
+                      <ng-container *ngFor="let r of result.PurchaseAccounts">
+                        <tr [class.fw-bold]="isHeaderRow(r)">
+                          <td>
+                            <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                               [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                          </td>
+                          <td>
+                            <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                               [queryParams]="{ focus: r.AccNo }">{{ isAr ? r.AccName : r.AccEName }}</a>
+                          </td>
+                          <td class="text-end">{{ displayValue(r) | number:'1.3-3' }}</td>
+                        </tr>
+                      </ng-container>
+                    </ng-container>
+
+                    <tr class="subtotal-row">
+                      <td colspan="2">{{ 'IncomeStatement.CogsTotal' | translate }}</td>
+                      <td class="text-end">{{ result.CogsTotal | number:'1.3-3' }}</td>
+                    </tr>
+
+                    <!-- Gross Profit -->
+                    <tr class="subtotal-row">
+                      <td colspan="2">{{ 'IncomeStatement.GrossProfit' | translate }}</td>
+                      <td class="text-end">{{ result.GrossProfit | number:'1.3-3' }}</td>
+                    </tr>
+
+                    <!-- Expenses section -->
+                    <tr class="section-row"><td colspan="3">{{ 'IncomeStatement.Expenses' | translate }} (-)</td></tr>
+                    <ng-container *ngFor="let r of result.ExpenseAccounts">
+                      <tr [class.fw-bold]="isHeaderRow(r)">
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                        </td>
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ isAr ? r.AccName : r.AccEName }}</a>
+                        </td>
+                        <td class="text-end">{{ displayValue(r) | number:'1.3-3' }}</td>
+                      </tr>
+                    </ng-container>
+                    <tr class="subtotal-row">
+                      <td colspan="2">{{ 'IncomeStatement.ExpensesTotal' | translate }}</td>
+                      <td class="text-end">{{ result.ExpensesTotal | number:'1.3-3' }}</td>
+                    </tr>
+
+                    <!-- Net Income / Profits or Losses -->
+                    <tr class="net-row">
+                      <td colspan="2">
+                        {{ (result.NetIncome >= 0 ? 'IncomeStatement.Profits' : 'IncomeStatement.Losses') | translate }}
+                      </td>
+                      <td class="text-end">{{ (result.NetIncome | number:'1.3-3') }}</td>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

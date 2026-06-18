@@ -4,7 +4,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
@@ -29,7 +29,10 @@ import {
 import { ChartOfAccountsService, ChartOfAccountDto } from '../../../shared/services/chart-of-accounts.service';
 import { CurrencyService, CurrencyDto } from '../../../shared/services/currency.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { CostCenterService, CostCenterDto } from '../../../shared/services/cost-center.service';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { VoucherSerialService, VoucherSerial } from '../../../shared/services/voucher-serial.service';
 
 // ─── Local line model ───────────────────────────────────────
 export interface VoucherLine {
@@ -57,6 +60,7 @@ export interface VoucherLine {
     MatIconModule,
     MatButtonModule,
     MatPaginatorModule,
+    HasPermissionDirective,
   ],
   providers: [
     NgbModalConfig,
@@ -81,10 +85,13 @@ export class JournalVouchersComponent implements OnInit {
   docNum = 0;
   private _loadedDocNum = 0;  // prevents blur from re-querying the new-form doc number
   myYear = new Date().getFullYear();
+  readonly currentYear = new Date().getFullYear();
   private _loadedYear = this.myYear;
   vType = this.DEFAULT_V_TYPE;
   docType = this.DEFAULT_DOC_TYPE;
   brNo = 0;
+  selectedVtypeNo = 0;
+  selectedSerial: VoucherSerial | null = null;
   date = this.formatDate(new Date());
   curNo = 1;
   rate = 1;
@@ -103,11 +110,27 @@ export class JournalVouchersComponent implements OnInit {
   get totalDebit(): number { return this.lines.reduce((s, l) => s + (l.debit || 0), 0); }
   get totalCredit(): number { return this.lines.reduce((s, l) => s + (l.credit || 0), 0); }
   get isBalanced(): boolean { return Math.abs(this.totalDebit - this.totalCredit) < 0.001; }
+  get numFmt(): string { const d = this.cs.decimals; return `1.${d}-${d}`; }
+
+  serialTypes: { VtypeNo: number; name: string }[] = [];
+  serialsByType: VoucherSerial[] = [];
+
+  private updateSerialTypes(): void {
+    const seen = new Set<number>();
+    this.serialTypes = (this.voucherSerials ?? [])
+      .filter(s => { if (seen.has(s.VtypeNo)) return false; seen.add(s.VtypeNo); return true; })
+      .map(s => ({ VtypeNo: s.VtypeNo, name: s.VoucherTypeName ?? s.SName }));
+  }
+
+  private updateSerialsByType(): void {
+    this.serialsByType = (this.voucherSerials ?? []).filter(s => s.VtypeNo === this.selectedVtypeNo);
+  }
 
   // ─── Lookups ────────────────────────────────────────────
   accounts: ChartOfAccountDto[] = [];
   currencies: CurrencyDto[] = [];
   costCenters: CostCenterDto[] = [];
+  voucherSerials: VoucherSerial[] = [];
 
   // ─── Navigation (PascalCase to match API) ───────────────
   navMinDocNum = 0;
@@ -149,6 +172,9 @@ export class JournalVouchersComponent implements OnInit {
     private currencyService: CurrencyService,
     private reportService: ReportService,
     private costCenterService: CostCenterService,
+    private cs: CompanySettingsService,
+    private voucherSerialService: VoucherSerialService,
+    private route: ActivatedRoute,
   ) {
     this.modalConfig.backdrop = 'static';
     this.modalConfig.keyboard = false;
@@ -162,8 +188,22 @@ export class JournalVouchersComponent implements OnInit {
     this.loadAccounts();
     this.loadCurrencies();
     this.loadCostCenters();
+    this.loadVoucherSerials();
     this._loadedYear = this.myYear;
-    this.initNewVoucher();
+
+    // Deep-link: ?docNum=&year=&vType=&docType= opens that voucher directly
+    // (e.g. clicked from the Journal Voucher Report or a detailed statement).
+    const qp = this.route.snapshot.queryParamMap;
+    const focusDoc = Number(qp.get('docNum'));
+    if (qp.has('docNum') && !isNaN(focusDoc) && focusDoc > 0) {
+      this.myYear  = Number(qp.get('year'))    || this.myYear;
+      this.vType   = Number(qp.get('vType'))   || this.vType;
+      this.docType = Number(qp.get('docType')) || this.docType;
+      this.docNum  = focusDoc;
+      this.loadVoucher(focusDoc);
+    } else {
+      this.initNewVoucher();
+    }
   }
 
   // ─── Lookups ────────────────────────────────────────────
@@ -184,6 +224,25 @@ export class JournalVouchersComponent implements OnInit {
         }
       },
       error: () => { }
+    });
+  }
+
+  loadVoucherSerials(): void {
+    this.voucherSerialService.getAll().subscribe({
+      next: d => {
+        this.voucherSerials = d ?? [];
+        this.updateSerialTypes();
+        if (this.voucherSerials.length) {
+          const first = this.voucherSerials[0];
+          this.selectedVtypeNo = first.VtypeNo;
+          this.updateSerialsByType();
+          this.selectedSerial  = first;
+          this.vType           = first.VSerialNo;
+          this.brNo            = first.BR_No;
+          this.docType         = first.VtypeNo;
+        }
+      },
+      error: () => {}
     });
   }
 
@@ -287,14 +346,15 @@ export class JournalVouchersComponent implements OnInit {
   }
 
   onDocNumChange(): void {
-    // Only load when the user typed a *different* number than the current one.
-    // Prevents a 404 when blur fires on the pre-filled "next doc num" of a new form.
-    if (this.docNum > 0 && this.docNum !== this._loadedDocNum) {
-      this.loadVoucher(this.docNum);
+    const max = this.navMaxDocNum + 1;
+    if (!this.docNum || this.docNum < 1 || this.docNum > max) {
+      this.docNum = max; return;
     }
+    if (this.docNum !== this._loadedDocNum) this.loadVoucher(this.docNum);
   }
 
   onYearChange(): void {
+    this.myYear = Math.min(Math.max(this.myYear, 1900), this.currentYear);
     if (this.myYear >= 1000 && this.myYear <= 9999 && this.myYear !== this._loadedYear) {
       if (this.activeTab === 'form') {
         this.loadVoucher(this.docNum);
@@ -318,8 +378,8 @@ export class JournalVouchersComponent implements OnInit {
       `<tr>
         <td style="text-align: center;">${l.acc || '—'}</td>
         <td style="text-align: center;">${l.accName || '—'}</td>
-        <td style="text-align: center;">${l.debit.toFixed(3)}</td>
-        <td style="text-align: center;">${l.credit.toFixed(3)}</td>
+        <td style="text-align: center;">${l.debit.toFixed(this.cs.decimals)}</td>
+        <td style="text-align: center;">${l.credit.toFixed(this.cs.decimals)}</td>
         <td style="text-align: center;">${l.des || '—'}</td>
         <td style="text-align: center;">${l.ccntrNo || '—'}</td>
       </tr>`
@@ -343,8 +403,8 @@ export class JournalVouchersComponent implements OnInit {
         <td style="text-align: center;">${r.DocNum}</td>
         <td style="text-align: center;">${r.Date}</td>
         <td style="text-align: center;">${r.UserName ?? '—'}</td>
-        <td style="text-align: center;">${r.TotalDebit.toFixed(3)}</td>
-        <td style="text-align: center;">${r.TotalCredit.toFixed(3)}</td>
+        <td style="text-align: center;">${r.TotalDebit.toFixed(this.cs.decimals)}</td>
+        <td style="text-align: center;">${r.TotalCredit.toFixed(this.cs.decimals)}</td>
         <td style="text-align: center;">${r.Post ? '*' : ''}</td>
       </tr>`
     ).join('');
@@ -352,11 +412,28 @@ export class JournalVouchersComponent implements OnInit {
     this.reportService.printReport(title, cols, rows);
   }
 
+  onSerialTypeChange(): void {
+    this.updateSerialsByType();
+    const first = this.serialsByType[0];
+    if (first) {
+      this.selectedSerial  = first;
+      this.vType           = first.VSerialNo;
+      this.brNo            = first.BR_No;
+      this.docType         = first.VtypeNo;
+    }
+    if (this.activeTab === 'list') { this.loadList(); return; }
+    if (this.vType > 0) this.initNewVoucher();
+  }
+
   // Changing vType resets the form to a new voucher under the new sequence
   onVTypeChange(): void {
-    if (this.vType > 0) {
-      this.initNewVoucher();
+    if (this.selectedSerial) {
+      this.vType   = this.selectedSerial.VSerialNo;
+      this.brNo    = this.selectedSerial.BR_No;
+      this.docType = this.selectedSerial.VtypeNo;
     }
+    if (this.activeTab === 'list') { this.loadList(); return; }
+    if (this.vType > 0) this.initNewVoucher();
   }
 
   // ─── Navigation buttons ──────────────────────────────────
@@ -587,6 +664,10 @@ export class JournalVouchersComponent implements OnInit {
   // ─── Helpers ─────────────────────────────────────────────
   private formatDate(d: Date): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  onDateChange(ev: { selectedDates: Date[] }): void {
+    if (!ev.selectedDates?.length) this.date = this.formatDate(new Date());
   }
 
   // ─── Attachments Methods ─────────────────────────────────

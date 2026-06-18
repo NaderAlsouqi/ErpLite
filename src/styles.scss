@@ -242,6 +242,11 @@ code[class*=language-]
   background: transparent !important;
   box-shadow: none !important;
 }
+// CDK overlays (incl. the F2 calculator) must float above the fixed sidebar
+// (z-index 1030) and header (1020) — the shared overlay container defaults to 1000.
+.cdk-overlay-container {
+  z-index: 1060;
+}
 .main-header-container .header-content-left{
   margin-block: 0px !important;
 }
@@ -749,9 +754,11 @@ app-footer{
   }
 }
 
-// ── Angular Material — table (MATCHING ERP) ──────────────────────────────────
+// ── Angular Material — table (unified to match accounting/definitions/currencies)
+// Primary-tinted header, full-grid borders, hover (no zebra) — same look as the
+// Bootstrap .table.table-bordered.table-hover used everywhere else.
 .mat-mdc-header-row {
-  background-color: #f8fafd !important; // Light background
+  background-color: var(--bs-primary-bg-subtle, #cfe2ff) !important;
 }
 
 .mat-mdc-header-cell,
@@ -759,24 +766,24 @@ th.mdc-data-table__header-cell,
 .mat-mdc-header-cell .mat-sort-header-button,
 .mat-mdc-header-cell .mat-sort-header-content,
 .mat-mdc-header-cell .mdc-data-table__header-cell-label {
-  color: var(--color-primary) !important; // Dark text
+  color: var(--color-primary) !important;
   font-weight: 700 !important;
   font-size: .8rem !important;
   letter-spacing: .03em;
-  border-bottom: 2px solid var(--color-border) !important;
 }
 
 .mat-sort-header-arrow { color: var(--color-primary) !important; }
 
 .mat-mdc-row {
-  &:nth-child(even) { background: #f8f9fc; }
-  &:hover { background: rgba(27,43,74,.04) !important; cursor: pointer; }
+  background: transparent !important;
+  &:hover { background: rgba(var(--primary-rgb), 0.06) !important; }
+  &.selected-row { background: rgba(var(--primary-rgb), 0.10) !important; }
 }
 
 .mat-mdc-cell,
 td.mdc-data-table__cell {
   color: var(--color-text) !important;
-  border-bottom-color: var(--color-border) !important;
+  border: 1px solid var(--color-border) !important;
 }
 
 // Material paginator
@@ -903,29 +910,38 @@ td.mdc-data-table__cell {
   }
 }
 
-// ── Angular Material table ──────────────────────────────────────────────────────
+// ── Angular Material table (dark — matches currencies) ──────────────────────────
 [data-theme-mode=dark] {
-  .mat-mdc-header-row { background: rgba(255, 255, 255, 0.04) !important; }
+  .mat-mdc-table { background: transparent !important; }
+
+  .mat-mdc-header-row { background: var(--default-background) !important; }
 
   .mat-mdc-header-cell,
-  th.mdc-data-table__header-cell,
+  th.mdc-data-table__header-cell {
+    color: var(--text-muted) !important;
+    background: var(--default-background) !important;
+    border: 1px solid var(--default-border) !important;
+  }
+  // Inner sort-header text: color only — no background/border box around the text
   .mat-mdc-header-cell .mat-sort-header-button,
   .mat-mdc-header-cell .mat-sort-header-content,
   .mat-mdc-header-cell .mdc-data-table__header-cell-label {
-    color: rgba(255, 255, 255, 0.75) !important;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
+    color: var(--text-muted) !important;
+    background: transparent !important;
+    border: 0 !important;
   }
 
-  .mat-sort-header-arrow { color: rgba(255, 255, 255, 0.55) !important; }
+  .mat-sort-header-arrow { color: var(--text-muted) !important; }
 
   .mat-mdc-row {
-    &:nth-child(even) { background: rgba(255, 255, 255, 0.025) !important; }
-    &:hover           { background: rgba(196, 18, 48, 0.08) !important; }
+    background: transparent !important;
+    &:hover           { background: var(--list-hover-focus-bg) !important; }
+    &.selected-row    { background: rgba(var(--primary-rgb), 0.12) !important; }
   }
 
   .mat-mdc-cell, td.mdc-data-table__cell {
-    color: rgba(255, 255, 255, 0.80) !important;
-    border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+    color: var(--default-text-color) !important;
+    border: 1px solid var(--default-border) !important;
   }
 
   .mat-mdc-paginator {
@@ -1049,15 +1065,1019 @@ td.mdc-data-table__cell {
   .text-muted        { color: rgba(255, 255, 255, 0.45) !important; }
   .page-header-breadcrumb h4 { color: rgba(255, 255, 255, 0.90) !important; }
 
-  // Bootstrap plain tables
+  // Bootstrap tables — unified app-wide to match accounting/definitions/currencies
   .table {
-    --bs-table-color:         rgba(255, 255, 255, 0.80);
-    --bs-table-border-color:  rgba(255, 255, 255, 0.08);
+    --bs-table-color:         var(--default-text-color);
+    --bs-table-border-color:  var(--default-border);
     --bs-table-striped-bg:    rgba(255, 255, 255, 0.025);
-    --bs-table-hover-bg:      rgba(196, 18, 48, 0.08);
-    thead th { color: rgba(255,255,255,0.75) !important; border-bottom-color: rgba(255,255,255,0.12) !important; }
-    td, th   { border-color: rgba(255,255,255,0.07) !important; }
+    --bs-table-hover-bg:      var(--list-hover-focus-bg);
+    background: transparent !important;
+
+    // Header — muted, themed regardless of table-primary/secondary/light variant
+    thead tr { background: var(--default-background) !important; }
+    thead th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+      border-bottom-color: var(--default-border) !important;
+    }
+
+    td { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    th { border-color: var(--default-border) !important; }
+
+    tbody tr        { background: transparent !important; }
+    tbody tr:hover  { background: var(--list-hover-focus-bg) !important; }
   }
+
+  // Selected-row highlight (clickable master/detail tables)
+  .selected-row,
+  .table tbody tr.selected-row { background: rgba(var(--primary-rgb), 0.12) !important; }
+}
+
+// ── Light-mode table consistency ────────────────────────────────────────────
+// 87% of tables already use thead.table-primary (matching currencies). Normalize
+// the few table-secondary / table-light headers to the same primary tint, and
+// give every selectable table the same selection highlight as currencies.
+html:not([data-theme-mode="dark"]):not([data-app-theme="editorial"]) {
+  .table > thead.table-secondary > tr > th,
+  .table > thead.table-light     > tr > th {
+    background-color: var(--bs-primary-bg-subtle, #cfe2ff) !important;
+    color: var(--bs-emphasis-color, #1e293b) !important;
+  }
+  .selected-row,
+  .table tbody tr.selected-row { background-color: rgba(var(--primary-rgb), 0.10) !important; }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// APP THEME · EDITORIAL — minimalist, hairline rules, editorial typography
+// Applied globally when <html data-app-theme="editorial"> is set.
+// Supports both light and dark color modes.
+// ══════════════════════════════════════════════════════════════════════════════
+[data-app-theme="editorial"] {
+  // ── Editorial design tokens (light) ───────────────────────────────────────
+  --ed-surface:       #ffffff;
+  --ed-bg:            #fafaf9;
+  --ed-border:        #e5e7eb;
+  --ed-border-strong: #111827;
+  --ed-text:          #111827;
+  --ed-text-muted:    #6b7280;
+  --ed-accent:        #111827;
+  --ed-hover:         #fafafa;
+  --ed-serif:         Georgia, 'Times New Roman', 'Noto Serif', 'Amiri', serif;
+  --ed-mono:          ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  // Map brand tokens to editorial palette so existing overrides feel coherent
+  --color-bg:      var(--ed-bg);
+  --color-surface: var(--ed-surface);
+  --color-border:  var(--ed-border);
+  --color-text:    var(--ed-text);
+  --color-text-muted: var(--ed-text-muted);
+
+  // Typography: serif titles, tight-letter-spacing
+  .app-header,
+  .app-content { background: var(--ed-bg) !important; }
+
+  .page-header-breadcrumb h4,
+  h1, h2, h3, h4 {
+    font-family: var(--ed-serif) !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.015em !important;
+  }
+
+  // ── Card ────────────────────────────────────────────────────────────────
+  .card.custom-card {
+    background: var(--ed-surface) !important;
+    border: none !important;
+    border-top: 1px solid var(--ed-border-strong) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+
+    .card-header {
+      background: var(--ed-surface) !important;
+      border-bottom: 1px solid var(--ed-border) !important;
+      padding: 1.25rem 1.5rem 0.75rem !important;
+
+      .card-title {
+        font-family: var(--ed-serif) !important;
+        font-weight: 400 !important;
+        font-size: 1.3rem !important;
+        color: var(--ed-text) !important;
+        letter-spacing: -0.02em !important;
+      }
+    }
+
+    .card-body { padding: 1rem 1.5rem 1.5rem !important; }
+  }
+
+  // ── Buttons ─────────────────────────────────────────────────────────────
+  .btn {
+    border-radius: 2px !important;
+    font-size: 0.78rem !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    padding: 0.45rem 0.9rem !important;
+    border-width: 1px !important;
+    box-shadow: none !important;
+  }
+  .btn-primary {
+    background: var(--ed-accent) !important;
+    border-color: var(--ed-accent) !important;
+    color: #fff !important;
+    &:hover, &:focus { background: #000 !important; border-color: #000 !important; }
+  }
+  .btn-danger {
+    background: #fff !important;
+    border-color: #b91c1c !important;
+    color: #b91c1c !important;
+    &:hover { background: #fef2f2 !important; }
+  }
+  .btn-success {
+    background: #fff !important;
+    border-color: #047857 !important;
+    color: #047857 !important;
+    &:hover { background: #ecfdf5 !important; }
+  }
+  .btn-outline-primary, .btn-outline-secondary,
+  .btn-outline-success, .btn-outline-info,
+  .btn-outline-danger, .btn-outline-warning {
+    background: transparent !important;
+    border-color: var(--ed-border) !important;
+    color: var(--ed-text) !important;
+    &:hover {
+      background: var(--ed-hover) !important;
+      border-color: var(--ed-border-strong) !important;
+      color: var(--ed-text) !important;
+    }
+  }
+
+  // ── Form controls ───────────────────────────────────────────────────────
+  .form-control, .form-select {
+    border-radius: 2px !important;
+    border-color: var(--ed-border) !important;
+    background: var(--ed-surface) !important;
+    color: var(--ed-text) !important;
+    box-shadow: none !important;
+    &:focus {
+      border-color: var(--ed-border-strong) !important;
+      box-shadow: 0 0 0 1px var(--ed-border-strong) !important;
+      background: var(--ed-surface) !important;
+    }
+  }
+  .input-group-text {
+    background: transparent !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+    color: var(--ed-text-muted) !important;
+  }
+  .form-label, label { color: var(--ed-text-muted) !important; font-size: 0.78rem !important; letter-spacing: 0.05em !important; text-transform: uppercase !important; font-weight: 500 !important; }
+
+  // ── Tables (Bootstrap + custom) ─────────────────────────────────────────
+  .table,
+  .accounts-table {
+    font-size: 0.9rem !important;
+    thead tr { background: var(--ed-surface) !important; }
+    th {
+      background: var(--ed-surface) !important;
+      color: var(--ed-text-muted) !important;
+      font-weight: 400 !important;
+      font-size: 0.7rem !important;
+      letter-spacing: 0.14em !important;
+      text-transform: uppercase !important;
+      border-bottom: 1px solid var(--ed-border-strong) !important;
+      padding: 0.6rem 0.875rem 0.5rem !important;
+    }
+    td {
+      background: transparent !important;
+      border-bottom: 1px solid var(--ed-border) !important;
+      color: var(--ed-text) !important;
+      padding: 0.85rem 0.875rem !important;
+    }
+    tbody tr:hover td { background: var(--ed-hover) !important; }
+  }
+
+  // ── Angular Material tables ─────────────────────────────────────────────
+  .mat-mdc-header-row { background: var(--ed-surface) !important; }
+  .mat-mdc-header-cell,
+  th.mdc-data-table__header-cell,
+  .mat-mdc-header-cell .mat-sort-header-button,
+  .mat-mdc-header-cell .mat-sort-header-content,
+  .mat-mdc-header-cell .mdc-data-table__header-cell-label {
+    color: var(--ed-text-muted) !important;
+    font-weight: 400 !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.14em !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid var(--ed-border-strong) !important;
+  }
+  .mat-mdc-row:nth-child(even) { background: transparent !important; }
+  .mat-mdc-row:hover { background: var(--ed-hover) !important; }
+  .mat-mdc-cell, td.mdc-data-table__cell {
+    color: var(--ed-text) !important;
+    border-bottom-color: var(--ed-border) !important;
+  }
+
+  // ── Numbers should feel tabular ─────────────────────────────────────────
+  .credit-value, .debit-value, .account-no-text {
+    font-family: var(--ed-mono) !important;
+  }
+
+  // ── Badges / chips flatten ──────────────────────────────────────────────
+  .badge {
+    border-radius: 2px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    font-size: 0.68rem !important;
+  }
+
+  // ── Modals ──────────────────────────────────────────────────────────────
+  .modal-content {
+    border-radius: 2px !important;
+    border: 1px solid var(--ed-border) !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08) !important;
+  }
+  .modal-header { border-bottom: 1px solid var(--ed-border) !important; }
+  .modal-footer { border-top: 1px solid var(--ed-border) !important; }
+  .modal-title {
+    font-family: var(--ed-serif) !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  // ── ng-select dropdown flatten ──────────────────────────────────────────
+  .ng-select .ng-select-container,
+  .ng-dropdown-panel {
+    border-radius: 2px !important;
+  }
+
+  // Make the chart-of-accounts COA scoped theme inherit unless overridden
+  .coa-theme-scope[data-coa-theme="classic"] .card.custom-card {
+    // if user keeps Classic in COA but Editorial globally, let global style win
+  }
+
+  // ── Chart of Accounts · flatten row tints to monochrome ─────────────────
+  .accounts-table .account-row {
+    &.row-parent,
+    &.row-leaf,
+    &.row-with-balance {
+      background: transparent !important;
+      td,
+      .account-no-text,
+      .account-name-text,
+      span { color: var(--ed-text) !important; }
+      &:hover { background: var(--ed-hover) !important; }
+    }
+    &[data-level] > td:first-child { border-inline-start: none !important; }
+    &.row-parent > td:first-child { border-right: none !important; }
+    &.row-parent td { font-weight: 600 !important; }
+  }
+
+  // ── Opening Balances · flatten debit/credit tints ───────────────────────
+  .ob-table {
+    thead tr { background: var(--ed-surface) !important; }
+    th {
+      color: var(--ed-text-muted) !important;
+      border-bottom-color: var(--ed-border-strong) !important;
+      &.col-debit, &.col-credit { color: var(--ed-text-muted) !important; }
+    }
+    td { color: var(--ed-text) !important; border-bottom-color: var(--ed-border) !important; }
+  }
+  .ob-row {
+    &.ob-row-debit,
+    &.ob-row-credit {
+      background: transparent !important;
+      &:hover { background: var(--ed-hover) !important; }
+    }
+  }
+  .debit-value,
+  .credit-value {
+    color: var(--ed-text) !important;
+    font-family: var(--ed-mono) !important;
+  }
+  .account-no-text { color: var(--ed-text) !important; font-family: var(--ed-mono) !important; }
+  .ob-totals-row {
+    background: var(--ed-surface) !important;
+    border-top: 1px solid var(--ed-border-strong) !important;
+    td { color: var(--ed-text) !important; }
+  }
+  .ob-diff-row {
+    &.balanced, &.unbalanced { background: transparent !important; }
+  }
+  .balance-badge {
+    border-radius: 2px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    &.balanced {
+      background: transparent !important;
+      color: var(--ed-text) !important;
+      border: 1px solid var(--ed-border-strong) !important;
+    }
+    &.unbalanced {
+      background: var(--ed-text) !important;
+      color: var(--ed-surface) !important;
+      border: 1px solid var(--ed-text) !important;
+    }
+  }
+  .ob-info-bar {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+  }
+  .ob-info-value {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border: 1px solid var(--ed-border) !important;
+    border-radius: 2px !important;
+  }
+  .ob-footer {
+    background: var(--ed-surface) !important;
+    border-top-color: var(--ed-border) !important;
+  }
+
+  // ── Link Groups-Accounts ────────────────────────────────────────────────
+  .lga-add-form {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+  }
+  .lga-label { color: var(--ed-text-muted) !important; text-transform: uppercase; letter-spacing: 0.05em; }
+  .lga-add-icon { color: var(--ed-text-muted) !important; }
+  .lga-count-badge {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border: 1px solid var(--ed-border-strong) !important;
+    border-radius: 2px !important;
+  }
+  .lga-table {
+    thead tr { background: var(--ed-surface) !important; }
+    th { color: var(--ed-text-muted) !important; border-bottom-color: var(--ed-border-strong) !important; }
+    td { color: var(--ed-text) !important; border-bottom-color: var(--ed-border) !important; }
+  }
+  .lga-row:hover { background: var(--ed-hover) !important; }
+  .lga-mono { color: var(--ed-text) !important; font-family: var(--ed-mono) !important; }
+  .lga-select .ng-select-container {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+  }
+
+  // ── Link Accounts ───────────────────────────────────────────────────────
+  .la-table {
+    thead tr { background: var(--ed-surface) !important; }
+    th { color: var(--ed-text-muted) !important; border-bottom-color: var(--ed-border-strong) !important; }
+    td { border-bottom-color: var(--ed-border) !important; }
+  }
+  .la-row:hover { background: var(--ed-hover) !important; }
+  .la-label,
+  .la-required { color: var(--ed-text) !important; }
+  .la-acc-name { color: var(--ed-text-muted) !important; }
+  .la-select .ng-select-container {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+  }
+  .la-select.la-select-required .ng-select-container {
+    background: transparent !important;
+    border-color: var(--ed-border-strong) !important;
+  }
+  .la-select .ng-value { font-family: var(--ed-mono) !important; color: var(--ed-text) !important; }
+  .la-opt-no { color: var(--ed-text) !important; }
+  .la-opt-name, .la-opt-ename { color: var(--ed-text-muted) !important; }
+
+  // ── Edit Account Name ───────────────────────────────────────────────────
+  .level-badge {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border: 1px solid var(--ed-border-strong) !important;
+    border-radius: 2px !important;
+    width: auto !important;
+    min-width: 28px;
+    height: 22px !important;
+    padding: 0 6px;
+    font-family: var(--ed-mono) !important;
+    font-weight: 500 !important;
+  }
+  .inline-input {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+    color: var(--ed-text) !important;
+    &:hover { background: var(--ed-surface) !important; border-color: var(--ed-border-strong) !important; }
+    &:focus { background: var(--ed-surface) !important; border-color: var(--ed-text) !important; box-shadow: none !important; }
+  }
+  .account-no { color: var(--ed-text) !important; font-family: var(--ed-mono) !important; }
+
+  // ── Clear Cost Centers ──────────────────────────────────────────────────
+  .cc-tree-table {
+    thead tr { background: var(--ed-surface) !important; }
+    th { color: var(--ed-text-muted) !important; border-bottom-color: var(--ed-border-strong) !important; }
+    td { color: var(--ed-text) !important; border-bottom-color: var(--ed-border) !important; }
+    tr:hover td { background: var(--ed-hover) !important; }
+  }
+  .cc-no { color: var(--ed-text) !important; font-family: var(--ed-mono) !important; }
+  .btn-tree-toggle {
+    background: transparent !important;
+    color: var(--ed-text-muted) !important;
+    border: 1px solid var(--ed-border) !important;
+    border-radius: 2px !important;
+    &:hover { background: var(--ed-hover) !important; color: var(--ed-text) !important; border-color: var(--ed-border-strong) !important; }
+    &.expanded { background: var(--ed-text) !important; color: var(--ed-surface) !important; border-color: var(--ed-text) !important; }
+  }
+  .tree-leaf-dot::after { background: var(--ed-border-strong) !important; }
+  .ccc-from-info {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+    color: var(--ed-text) !important;
+  }
+  .ccc-select-list {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+    color: var(--ed-text) !important;
+    option {
+      border-bottom-color: var(--ed-border) !important;
+      &:checked, &:hover { background: var(--ed-hover) !important; color: var(--ed-text) !important; }
+    }
+  }
+  .inline-select .ng-select-container {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+  }
+
+  // ── Transfer Account Movements ──────────────────────────────────────────
+  .tam-row { border-bottom-color: var(--ed-border) !important; }
+  .tam-label { color: var(--ed-text) !important; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.78rem !important; }
+  .tam-arrow { color: var(--ed-text-muted) !important; }
+  .tam-checkbox-row {
+    border-bottom-color: var(--ed-border) !important;
+    .form-check-label { color: var(--ed-text) !important; }
+    .form-check-input:checked {
+      background-color: var(--ed-text) !important;
+      border-color: var(--ed-text) !important;
+    }
+  }
+  .tam-select .ng-select-container {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+  }
+  .tam-val-no,
+  .tam-opt-no { color: var(--ed-text) !important; font-family: var(--ed-mono) !important; }
+  .tam-val-name,
+  .tam-opt-name { color: var(--ed-text) !important; }
+  .tam-opt-ename { color: var(--ed-text-muted) !important; }
+
+  // ── Cost-Center Opening Balances ────────────────────────────────────────
+  .ccob-info-bar {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+  }
+  .ccob-info-label { color: var(--ed-text-muted) !important; text-transform: uppercase; letter-spacing: 0.05em; }
+  .ccob-info-value { color: var(--ed-text) !important; }
+  .ccob-info-sep { background: var(--ed-border) !important; }
+  .ccob-empty-state { color: var(--ed-text-muted) !important; }
+  .ccob-table {
+    thead tr { background: var(--ed-surface) !important; }
+    th { color: var(--ed-text-muted) !important; border-bottom-color: var(--ed-border-strong) !important; }
+    td { color: var(--ed-text) !important; border-bottom-color: var(--ed-border) !important; }
+  }
+  .ccob-row:hover td { background: var(--ed-hover) !important; }
+  .ccob-row-debit td,
+  .ccob-row-credit td { background: transparent !important; }
+  .account-no-text { color: var(--ed-text) !important; font-family: var(--ed-mono) !important; }
+  .ccob-input {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+    color: var(--ed-text) !important;
+    &:focus { border-color: var(--ed-text) !important; box-shadow: none !important; }
+  }
+  .input-debit:not([value=""]):not(:placeholder-shown),
+  .input-credit:not([value=""]):not(:placeholder-shown) {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border-strong) !important;
+  }
+  .ccob-totals-row td {
+    background: var(--ed-surface) !important;
+    border-top: 1px solid var(--ed-border-strong) !important;
+    border-bottom-color: var(--ed-border) !important;
+    color: var(--ed-text) !important;
+  }
+  .ccob-diff-row.balanced,
+  .ccob-diff-row.unbalanced { background: transparent !important; }
+  .debit-value,
+  .credit-value { color: var(--ed-text) !important; font-family: var(--ed-mono) !important; }
+  .balance-badge {
+    border-radius: 2px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    &.balanced {
+      background: transparent !important;
+      color: var(--ed-text) !important;
+      border: 1px solid var(--ed-border-strong) !important;
+    }
+    &.unbalanced {
+      background: var(--ed-text) !important;
+      color: var(--ed-surface) !important;
+      border: 1px solid var(--ed-text) !important;
+    }
+  }
+  .ccob-select .ng-select-container,
+  .ccob-account-search .ng-select-container {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+  }
+  .ccob-account-search .acc-no { color: var(--ed-text) !important; font-family: var(--ed-mono) !important; }
+  .ccob-account-search .acc-name { color: var(--ed-text-muted) !important; }
+
+  // ── Bootstrap utility / alert / badge flattening ────────────────────────
+  // (affects journal-vouchers and similar Bootstrap-based voucher pages)
+  .table-primary,
+  .table-primary > th,
+  .table-primary > td {
+    background: var(--ed-surface) !important;
+    color: var(--ed-text-muted) !important;
+    border-color: var(--ed-border-strong) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .table-light,
+  .table-light > th,
+  .table-light > td {
+    background: var(--ed-surface) !important;
+    color: var(--ed-text) !important;
+    border-color: var(--ed-border) !important;
+  }
+  .table-bordered,
+  .table-bordered th,
+  .table-bordered td { border-color: var(--ed-border) !important; }
+
+  .alert {
+    border-radius: 2px !important;
+    background: var(--ed-surface) !important;
+    border: 1px solid var(--ed-border-strong) !important;
+    color: var(--ed-text) !important;
+  }
+  .alert-success { border-color: var(--ed-border-strong) !important; }
+  .alert-danger,
+  .alert-warning {
+    background: var(--ed-text) !important;
+    color: var(--ed-surface) !important;
+    border-color: var(--ed-text) !important;
+  }
+
+  .badge {
+    border-radius: 2px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500 !important;
+  }
+  .badge.bg-success {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border: 1px solid var(--ed-border-strong) !important;
+  }
+  .badge.bg-warning,
+  .badge.bg-danger {
+    background: var(--ed-text) !important;
+    color: var(--ed-surface) !important;
+    border: 1px solid var(--ed-text) !important;
+  }
+  .badge.bg-primary,
+  .badge.bg-info,
+  .badge.bg-secondary {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border: 1px solid var(--ed-border-strong) !important;
+  }
+
+  // Text utility colors (semantic → monochrome)
+  .text-primary,
+  .text-info { color: var(--ed-text) !important; }
+  .text-success { color: var(--ed-text) !important; font-weight: 500 !important; }
+  .text-danger { color: var(--ed-text) !important; font-weight: 500 !important; }
+  .text-warning { color: var(--ed-text) !important; }
+  .text-muted { color: var(--ed-text-muted) !important; }
+
+  .modal-title.text-danger { color: var(--ed-text) !important; }
+
+  // Spinner borders use accent colors — flatten
+  .spinner-border.text-primary,
+  .spinner-border.text-success,
+  .spinner-border.text-danger { color: var(--ed-text) !important; }
+
+  // ── Shared form-modal pattern (account-groups & similar definitions) ────
+  .form-modal-header {
+    background: var(--ed-surface) !important;
+    border-bottom: 1px solid var(--ed-border-strong) !important;
+    border-radius: 0 !important;
+  }
+  .form-modal-icon {
+    background: transparent !important;
+    border: 1px solid var(--ed-border-strong) !important;
+    border-radius: 2px !important;
+    i { color: var(--ed-text) !important; }
+    &.edit-mode {
+      background: transparent !important;
+      border-color: var(--ed-border-strong) !important;
+      i { color: var(--ed-text) !important; }
+    }
+  }
+  .form-modal-title { color: var(--ed-text) !important; font-family: var(--ed-serif) !important; }
+  .form-modal-subtitle { color: var(--ed-text-muted) !important; }
+  .form-modal-close {
+    background: transparent !important;
+    border: 1px solid var(--ed-border) !important;
+    border-radius: 2px !important;
+    color: var(--ed-text-muted) !important;
+    &:hover { background: var(--ed-hover) !important; color: var(--ed-text) !important; border-color: var(--ed-border-strong) !important; }
+  }
+  .form-modal-body { background: var(--ed-surface) !important; }
+  .form-modal-footer {
+    background: var(--ed-surface) !important;
+    border-top-color: var(--ed-border) !important;
+    border-radius: 0 !important;
+  }
+  .form-field-label { color: var(--ed-text-muted) !important; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem !important; i { color: var(--ed-text-muted) !important; } }
+  .form-field-input {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    border-radius: 2px !important;
+    color: var(--ed-text) !important;
+    &:focus { border-color: var(--ed-text) !important; box-shadow: none !important; }
+    &.is-invalid { border-color: var(--ed-text) !important; }
+  }
+  .form-btn-cancel {
+    background: transparent !important;
+    border: 1px solid var(--ed-border-strong) !important;
+    border-radius: 2px !important;
+    color: var(--ed-text) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    &:hover { background: var(--ed-hover) !important; color: var(--ed-text) !important; }
+  }
+  .form-btn-save { border-radius: 2px !important; }
+
+  .btn-print {
+    background: transparent !important;
+    border: 1px solid var(--ed-border-strong) !important;
+    border-radius: 2px !important;
+    color: var(--ed-text) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    i { color: var(--ed-text-muted) !important; }
+    &:hover {
+      background: var(--ed-hover) !important;
+      border-color: var(--ed-text) !important;
+      color: var(--ed-text) !important;
+      box-shadow: none !important;
+      i { color: var(--ed-text) !important; }
+    }
+  }
+}
+
+// ── EDITORIAL · DARK MODE ───────────────────────────────────────────────────
+[data-app-theme="editorial"][data-theme-mode="dark"],
+[data-theme-mode="dark"] [data-app-theme="editorial"] {
+  --ed-surface:       rgb(17, 24, 39);
+  --ed-bg:            rgb(11, 15, 25);
+  --ed-border:        rgba(255, 255, 255, 0.08);
+  --ed-border-strong: rgba(255, 255, 255, 0.55);
+  --ed-text:          rgba(255, 255, 255, 0.92);
+  --ed-text-muted:    rgba(255, 255, 255, 0.52);
+  --ed-accent:        rgba(255, 255, 255, 0.92);
+  --ed-hover:         rgba(255, 255, 255, 0.04);
+}
+[data-theme-mode="dark"][data-app-theme="editorial"] {
+  .app-header,
+  .app-content { background: var(--ed-bg) !important; }
+
+  // Card
+  .card.custom-card {
+    background: var(--ed-surface) !important;
+    border-top: 1px solid var(--ed-border-strong) !important;
+    .card-header {
+      background: var(--ed-surface) !important;
+      border-bottom-color: var(--ed-border) !important;
+      .card-title { color: var(--ed-text) !important; }
+    }
+  }
+
+  // Primary button flips: light surface on dark mode
+  .btn-primary {
+    background: var(--ed-accent) !important;
+    border-color: var(--ed-accent) !important;
+    color: rgb(11, 15, 25) !important;
+    &:hover, &:focus { background: #fff !important; border-color: #fff !important; color: rgb(11, 15, 25) !important; }
+  }
+  .btn-danger {
+    background: transparent !important;
+    border-color: #f87171 !important;
+    color: #fca5a5 !important;
+    &:hover { background: rgba(239, 68, 68, 0.1) !important; }
+  }
+  .btn-success {
+    background: transparent !important;
+    border-color: #34d399 !important;
+    color: #6ee7b7 !important;
+    &:hover { background: rgba(16, 185, 129, 0.1) !important; }
+  }
+  .btn-outline-primary, .btn-outline-secondary,
+  .btn-outline-success, .btn-outline-info,
+  .btn-outline-danger, .btn-outline-warning {
+    border-color: var(--ed-border) !important;
+    color: var(--ed-text) !important;
+    &:hover {
+      background: var(--ed-hover) !important;
+      border-color: var(--ed-border-strong) !important;
+      color: var(--ed-text) !important;
+    }
+  }
+
+  // Form controls
+  .form-control, .form-select {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    color: var(--ed-text) !important;
+    &::placeholder { color: var(--ed-text-muted) !important; }
+    &:focus {
+      background: var(--ed-surface) !important;
+      border-color: var(--ed-border-strong) !important;
+      box-shadow: 0 0 0 1px var(--ed-border-strong) !important;
+    }
+  }
+  .input-group-text {
+    background: transparent !important;
+    border-color: var(--ed-border) !important;
+    color: var(--ed-text-muted) !important;
+  }
+
+  // Tables
+  .table,
+  .accounts-table {
+    thead tr { background: var(--ed-surface) !important; }
+    th {
+      background: var(--ed-surface) !important;
+      color: var(--ed-text-muted) !important;
+      border-bottom-color: var(--ed-border-strong) !important;
+    }
+    td {
+      color: var(--ed-text) !important;
+      border-bottom-color: var(--ed-border) !important;
+    }
+    tbody tr:hover td { background: var(--ed-hover) !important; }
+  }
+
+  .mat-mdc-header-row { background: var(--ed-surface) !important; }
+  .mat-mdc-header-cell,
+  th.mdc-data-table__header-cell,
+  .mat-mdc-header-cell .mat-sort-header-button,
+  .mat-mdc-header-cell .mat-sort-header-content,
+  .mat-mdc-header-cell .mdc-data-table__header-cell-label {
+    color: var(--ed-text-muted) !important;
+    border-bottom: 1px solid var(--ed-border-strong) !important;
+  }
+  .mat-mdc-row:hover { background: var(--ed-hover) !important; }
+  .mat-mdc-cell, td.mdc-data-table__cell {
+    color: var(--ed-text) !important;
+    border-bottom-color: var(--ed-border) !important;
+  }
+
+  // Modals
+  .modal-content {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+    .modal-title { color: var(--ed-text) !important; }
+  }
+
+  // ng-select dropdown panel
+  .ng-dropdown-panel {
+    background-color: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+  }
+  .ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
+    background-color: var(--ed-surface) !important;
+    color: var(--ed-text) !important;
+    border-bottom-color: var(--ed-border) !important;
+  }
+  .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked {
+    background-color: var(--ed-hover) !important;
+  }
+
+  // Chart of Accounts · flatten row tints (dark)
+  .accounts-table .account-row {
+    &.row-parent,
+    &.row-leaf,
+    &.row-with-balance {
+      background: transparent !important;
+      td,
+      .account-no-text,
+      .account-name-text,
+      span { color: var(--ed-text) !important; }
+      &:hover { background: var(--ed-hover) !important; }
+    }
+    &[data-level] > td:first-child { border-inline-start: none !important; }
+    &.row-parent > td:first-child { border-right: none !important; }
+  }
+
+  // Opening Balances · dark flatten
+  .ob-table thead tr { background: var(--ed-surface) !important; }
+  .ob-table th {
+    color: var(--ed-text-muted) !important;
+    &.col-debit, &.col-credit { color: var(--ed-text-muted) !important; }
+  }
+  .ob-row.ob-row-debit,
+  .ob-row.ob-row-credit {
+    background: transparent !important;
+    &:hover { background: var(--ed-hover) !important; }
+  }
+  .debit-value, .credit-value,
+  .account-no-text { color: var(--ed-text) !important; }
+  .ob-totals-row { background: var(--ed-surface) !important; td { color: var(--ed-text) !important; } }
+  .ob-diff-row.balanced,
+  .ob-diff-row.unbalanced { background: transparent !important; }
+  .balance-badge.balanced {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border-color: var(--ed-border-strong) !important;
+  }
+  .balance-badge.unbalanced {
+    background: var(--ed-text) !important;
+    color: var(--ed-bg) !important;
+    border-color: var(--ed-text) !important;
+  }
+  .ob-info-bar { background: var(--ed-surface) !important; border-color: var(--ed-border) !important; }
+  .ob-info-value { background: transparent !important; color: var(--ed-text) !important; border: 1px solid var(--ed-border) !important; }
+  .ob-footer { background: var(--ed-surface) !important; border-top-color: var(--ed-border) !important; }
+
+  // Link Groups-Accounts · dark
+  .lga-add-form { background: var(--ed-surface) !important; border-color: var(--ed-border) !important; }
+  .lga-label, .lga-add-icon { color: var(--ed-text-muted) !important; }
+  .lga-count-badge { background: transparent !important; color: var(--ed-text) !important; border-color: var(--ed-border-strong) !important; }
+  .lga-table thead tr { background: var(--ed-surface) !important; }
+  .lga-table th { color: var(--ed-text-muted) !important; }
+  .lga-table td { color: var(--ed-text) !important; }
+  .lga-row:hover { background: var(--ed-hover) !important; }
+  .lga-mono { color: var(--ed-text) !important; }
+  .lga-select .ng-select-container { background: var(--ed-surface) !important; border-color: var(--ed-border) !important; }
+
+  // Link Accounts · dark
+  .la-table thead tr { background: var(--ed-surface) !important; }
+  .la-table th { color: var(--ed-text-muted) !important; }
+  .la-row:hover { background: var(--ed-hover) !important; }
+  .la-label, .la-required { color: var(--ed-text) !important; }
+  .la-acc-name { color: var(--ed-text-muted) !important; }
+  .la-select .ng-select-container { background: var(--ed-surface) !important; border-color: var(--ed-border) !important; }
+  .la-select.la-select-required .ng-select-container { background: transparent !important; border-color: var(--ed-border-strong) !important; }
+  .la-select .ng-value { color: var(--ed-text) !important; }
+  .la-opt-no { color: var(--ed-text) !important; }
+  .la-opt-name, .la-opt-ename { color: var(--ed-text-muted) !important; }
+
+  // Edit Account Name · dark
+  .level-badge {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border-color: var(--ed-border-strong) !important;
+  }
+  .account-no { color: var(--ed-text) !important; }
+
+  // Clear Cost Centers · dark
+  .cc-no { color: var(--ed-text) !important; }
+  .btn-tree-toggle {
+    background: transparent !important;
+    color: var(--ed-text-muted) !important;
+    border: 1px solid var(--ed-border) !important;
+    &:hover { background: var(--ed-hover) !important; color: var(--ed-text) !important; }
+    &.expanded { background: var(--ed-text) !important; color: var(--ed-bg) !important; border-color: var(--ed-text) !important; }
+  }
+  .tree-leaf-dot::after { background: var(--ed-border-strong) !important; }
+  .ccc-from-info { background: var(--ed-surface) !important; border-color: var(--ed-border) !important; color: var(--ed-text) !important; }
+  .ccc-select-list {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    color: var(--ed-text) !important;
+    option { background: var(--ed-surface) !important; color: var(--ed-text) !important; }
+  }
+  .inline-select .ng-select-container { background: var(--ed-surface) !important; border-color: var(--ed-border) !important; }
+
+  // Transfer Account Movements · dark
+  .tam-row { border-bottom-color: var(--ed-border) !important; }
+  .tam-label { color: var(--ed-text) !important; }
+  .tam-arrow { color: var(--ed-text-muted) !important; }
+  .tam-checkbox-row { border-bottom-color: var(--ed-border) !important; }
+  .tam-checkbox-row .form-check-label { color: var(--ed-text) !important; }
+  .tam-checkbox-row .form-check-input:checked {
+    background-color: var(--ed-text) !important;
+    border-color: var(--ed-text) !important;
+  }
+  .tam-select .ng-select-container { background: var(--ed-surface) !important; border-color: var(--ed-border) !important; }
+  .tam-val-no, .tam-opt-no { color: var(--ed-text) !important; }
+  .tam-val-name, .tam-opt-name { color: var(--ed-text) !important; }
+  .tam-opt-ename { color: var(--ed-text-muted) !important; }
+
+  // Cost-Center Opening Balances · dark
+  .ccob-info-bar { background: var(--ed-surface) !important; border-color: var(--ed-border) !important; }
+  .ccob-info-label { color: var(--ed-text-muted) !important; }
+  .ccob-info-value { color: var(--ed-text) !important; }
+  .ccob-info-sep { background: var(--ed-border) !important; }
+  .ccob-empty-state { color: var(--ed-text-muted) !important; }
+  .ccob-table thead tr { background: var(--ed-surface) !important; }
+  .ccob-table th { color: var(--ed-text-muted) !important; }
+  .ccob-table td { color: var(--ed-text) !important; }
+  .ccob-row:hover td { background: var(--ed-hover) !important; }
+  .ccob-row-debit td,
+  .ccob-row-credit td { background: transparent !important; }
+  .account-no-text { color: var(--ed-text) !important; }
+  .ccob-input {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+    color: var(--ed-text) !important;
+    &:focus { border-color: var(--ed-text) !important; box-shadow: none !important; }
+  }
+  .ccob-totals-row td {
+    background: var(--ed-surface) !important;
+    border-top-color: var(--ed-border-strong) !important;
+    border-bottom-color: var(--ed-border) !important;
+    color: var(--ed-text) !important;
+  }
+  .ccob-diff-row.balanced,
+  .ccob-diff-row.unbalanced { background: transparent !important; }
+  .debit-value, .credit-value { color: var(--ed-text) !important; }
+  .balance-badge.balanced {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border: 1px solid var(--ed-border-strong) !important;
+  }
+  .balance-badge.unbalanced {
+    background: var(--ed-text) !important;
+    color: var(--ed-bg) !important;
+    border: 1px solid var(--ed-text) !important;
+  }
+  .ccob-select .ng-select-container,
+  .ccob-account-search .ng-select-container {
+    background: var(--ed-surface) !important;
+    border-color: var(--ed-border) !important;
+  }
+  .ccob-account-search .acc-no { color: var(--ed-text) !important; }
+  .ccob-account-search .acc-name { color: var(--ed-text-muted) !important; }
+
+  // Bootstrap utility / alert / badge flattening · dark
+  .table-primary,
+  .table-primary > th,
+  .table-primary > td {
+    background: var(--ed-surface) !important;
+    color: var(--ed-text-muted) !important;
+    border-color: var(--ed-border-strong) !important;
+  }
+  .table-light,
+  .table-light > th,
+  .table-light > td {
+    background: var(--ed-surface) !important;
+    color: var(--ed-text) !important;
+    border-color: var(--ed-border) !important;
+  }
+  .table-bordered, .table-bordered th, .table-bordered td { border-color: var(--ed-border) !important; }
+
+  .alert {
+    background: var(--ed-surface) !important;
+    border: 1px solid var(--ed-border-strong) !important;
+    color: var(--ed-text) !important;
+  }
+  .alert-danger, .alert-warning {
+    background: var(--ed-text) !important;
+    color: var(--ed-bg) !important;
+    border-color: var(--ed-text) !important;
+  }
+
+  .badge.bg-success {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border: 1px solid var(--ed-border-strong) !important;
+  }
+  .badge.bg-warning, .badge.bg-danger {
+    background: var(--ed-text) !important;
+    color: var(--ed-bg) !important;
+    border: 1px solid var(--ed-text) !important;
+  }
+  .badge.bg-primary, .badge.bg-info, .badge.bg-secondary {
+    background: transparent !important;
+    color: var(--ed-text) !important;
+    border: 1px solid var(--ed-border-strong) !important;
+  }
+
+  .text-primary, .text-info, .text-success,
+  .text-danger, .text-warning { color: var(--ed-text) !important; }
+  .text-muted { color: var(--ed-text-muted) !important; }
+
+  .spinner-border.text-primary,
+  .spinner-border.text-success,
+  .spinner-border.text-danger { color: var(--ed-text) !important; }
 }
 
 // ── Toastr — Error Toast ───────────────────────────────────────────────────────
@@ -1190,4 +2210,265 @@ td.mdc-data-table__cell {
 
     &:hover { opacity: 1; }
   }
+}
+
+// ── Toastr — Dark Mode Overrides ───────────────────────────────────────────────
+[data-theme-mode=dark] {
+  #toast-container > .toast-success,
+  #toast-container > .toast-error,
+  #toast-container > .toast-info,
+  #toast-container > .toast-warning {
+    background-color: #1e2533 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .4);
+
+    .toast-title   { color: #e2e8f0; }
+    .toast-message { color: #94a3b8; }
+    .toast-close-button { color: #94a3b8; }
+  }
+
+  #toast-container > .toast-success { border-left-color: #22c55e; }
+  #toast-container > .toast-error   { border-left-color: #ef4444; }
+  #toast-container > .toast-info    { border-left-color: #3b82f6; }
+  #toast-container > .toast-warning { border-left-color: #f59e0b; }
+}
+
+// ── Fiscal year field — dark green / red ──────────────────────────────────
+.year-field {
+  label, .form-label { color: #2e7d32 !important; font-weight: 600; }
+  input  { color: #2e7d32 !important; font-weight: 600; }
+
+  &.year-off {
+    label, .form-label { color: #c0392b !important; }
+    input  { color: #c0392b !important; }
+  }
+}
+// standalone label / input (list-tab flex rows)
+label.year-field  { color: #2e7d32 !important; font-weight: 600; }
+input.year-field  { color: #2e7d32 !important; font-weight: 600; }
+label.year-off    { color: #c0392b !important; }
+input.year-off    { color: #c0392b !important; }
+
+// ── Cheque-number dropdown panels (appendTo="body") ───────────────────────
+// When appendTo="body" the panel loses its .ng-select ancestor, so
+// ng-select's own overflow/max-height rules no longer apply — we restore
+// them here and also enforce a minimum width.
+body > ng-dropdown-panel {
+  min-width: 380px !important;
+
+  .ng-dropdown-panel-items {
+    max-height: 280px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+  }
+
+  .ng-option {
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
+}
+/* ── ApexCharts donut/pie data-label overrides ───────────────────────
+   Force percentage labels white so they read on the dark navy slices.
+   Targets both the slice-percentage text and the donut-center text. */
+.apexcharts-pie-label,
+.apexcharts-pie-series text,
+.apexcharts-datalabels text,
+.apexcharts-datalabel-value,
+.apexcharts-datalabel-label {
+  fill: #ffffff !important;
+}
+
+/* ── Clickable record links in report/list tables ─────────────────────
+   Used across accounting reports to deep-link a record (account, voucher,
+   cheque) to its original page with ?focus=<id>. */
+.rec-link {
+  color: #0d6efd;
+  text-decoration: none;
+  cursor: pointer;
+}
+.rec-link:hover { text-decoration: underline; }
+
+/* ── Dark-mode: keep outline-primary action buttons (Print, toolbar) legible ──
+   The theme primary is a dark navy that vanishes on the dark header. Scoped to
+   <button> so btn-check toggle <label>s keep their selected/filled state. */
+[data-theme-mode="dark"] button.btn-outline-primary {
+  color: #c7d2fe !important;
+  border-color: #818cf8 !important;
+  background: rgba(129, 140, 248, .10) !important;
+}
+[data-theme-mode="dark"] button.btn-outline-primary:hover,
+[data-theme-mode="dark"] button.btn-outline-primary:focus,
+[data-theme-mode="dark"] button.btn-outline-primary:active {
+  background: #6366f1 !important;
+  border-color: #6366f1 !important;
+  color: #ffffff !important;
+}
+[data-theme-mode="dark"] button.btn-outline-primary:disabled,
+[data-theme-mode="dark"] button.btn-outline-primary.disabled {
+  color: rgba(199, 210, 254, .45) !important;
+  border-color: rgba(129, 140, 248, .3) !important;
+  background: transparent !important;
+}
+
+/* ── Unify ALL print buttons across the app ───────────────────────────────────
+   Any button that contains the printer icon gets one consistent look, no matter
+   its outline/size classes. Excludes filled btn-primary (modal CTAs). */
+.btn:has(> .ti-printer):not(.btn-primary),
+.btn:has(> i.ti-printer):not(.btn-primary) {
+  color: #0d6efd !important;
+  border-color: #0d6efd !important;
+  background-color: transparent !important;
+
+  &:hover, &:focus, &:active {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: #ffffff !important;
+  }
+}
+[data-theme-mode="dark"] .btn:has(> .ti-printer):not(.btn-primary),
+[data-theme-mode="dark"] .btn:has(> i.ti-printer):not(.btn-primary) {
+  color: #c7d2fe !important;
+  border-color: #818cf8 !important;
+  background-color: rgba(129, 140, 248, .10) !important;
+
+  &:hover, &:focus, &:active {
+    background-color: #6366f1 !important;
+    border-color: #6366f1 !important;
+    color: #ffffff !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GLOBAL TABLE UNIFICATION — force every table to match
+   accounting/definitions/currencies in BOTH light and dark mode.
+
+   Many report/entry components carry their own scoped `!important` table
+   header/row colors (e.g. `thead.table-primary th { background:#cfe2ff }`,
+   shaded parent rows). Because Angular view-encapsulation adds attribute
+   selectors, those component rules out-specify ordinary global rules and, in
+   particular, break dark mode (a light-blue header survives on a dark page).
+
+   The `:not(#_)` adds id-level specificity (#_ never matches anything), so
+   these globals reliably win over the encapsulated component `!important`
+   rules — without having to edit each page.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+// ── Light mode — full currency look (header tint, white rows, hover) ──────────
+html:not([data-theme-mode="dark"]):not(#_) {
+  .table { background: transparent !important; }
+
+  // Primary-tinted header — exact currency color (template uses a 10% brand tint)
+  .table > thead > tr > th,
+  .table > thead.table-primary > tr > th {
+    background-color: rgba(var(--primary-rgb), 0.10) !important;
+    color: #000 !important;
+    border-color: rgba(var(--primary-rgb), 0.10) !important;
+  }
+
+  // Plain white rows — neutralizes per-component parent/zebra shading
+  .table > tbody > tr > td {
+    background-color: transparent !important;
+    color: var(--default-text-color, #1e293b) !important;
+    border-color: var(--bs-border-color, #dee2e6) !important;
+  }
+  .table > tbody > tr:hover > td      { background-color: rgba(0, 0, 0, 0.03) !important; }
+  .table > tbody > tr.selected-row > td,
+  .table tbody tr.selected-row > td   { background-color: rgba(var(--primary-rgb), 0.10) !important; }
+
+  // Angular Material tables
+  .mat-mdc-header-row,
+  .mat-mdc-header-cell { background-color: rgba(var(--primary-rgb), 0.10) !important; color: #000 !important; }
+  .mat-mdc-row         { background: transparent !important; }
+  .mat-mdc-row:hover   { background-color: rgba(0, 0, 0, 0.03) !important; }
+  .mat-mdc-cell        { background: transparent !important; }
+}
+
+// ── Dark mode — full currency theming, beats component overrides ──────────────
+html[data-theme-mode="dark"]:not(#_) {
+  .table { background: transparent !important; }
+
+  .table > thead > tr > th,
+  .table > thead.table-primary > tr > th,
+  .table > thead.table-secondary > tr > th,
+  .table > thead.table-light > tr > th {
+    background-color: var(--default-background) !important;
+    color: var(--text-muted) !important;
+    border-color: var(--default-border) !important;
+  }
+
+  .table > tbody > tr > td {
+    background-color: transparent !important;
+    color: var(--default-text-color) !important;
+    border-color: var(--default-border) !important;
+  }
+  .table > tbody > tr:hover > td      { background-color: var(--list-hover-focus-bg) !important; }
+  .table > tbody > tr.selected-row > td,
+  .table tbody tr.selected-row > td   { background-color: rgba(var(--primary-rgb), 0.12) !important; }
+
+  // Angular Material tables
+  .mat-mdc-header-row,
+  .mat-mdc-header-cell                { background: var(--default-background) !important; color: var(--text-muted) !important; }
+  .mat-mdc-row                        { background: transparent !important; }
+  .mat-mdc-cell                       { background: transparent !important; color: var(--default-text-color) !important; }
+}
+
+// ── Uniform table cell size & spacing (theme-independent) ─────────────────────
+// Report/entry components hardcode many different cell font-sizes (0.72–0.9rem);
+// normalize every table to one readable scale + padding so they line up with the
+// currency table. (id-bump beats the per-component sizes.)
+:not(#_) .table > thead > tr > th,
+:not(#_) .table > tbody > tr > td {
+  font-size: 0.85rem !important;
+  padding: 0.5rem 0.5rem !important;
+  vertical-align: middle !important;
+}
+:not(#_) .mat-mdc-header-cell,
+:not(#_) .mat-mdc-cell {
+  font-size: 0.85rem !important;
+  padding: 0.5rem 0.5rem !important;
+  letter-spacing: normal !important;
+}
+:not(#_) .mat-mdc-cell        { border: 1px solid var(--default-border, #dee2e6) !important; }
+// Faint header border (matches currency's barely-visible header grid), not gray
+:not(#_) .mat-mdc-header-cell { border: 1px solid rgba(var(--primary-rgb), 0.10) !important; }
+
+// Kill the white box that MDC's sort-header button/content paints around the
+// header text — let the tinted header cell show through.
+:not(#_) .mat-mdc-header-cell .mat-sort-header-container,
+:not(#_) .mat-mdc-header-cell .mat-sort-header-content,
+:not(#_) .mat-mdc-header-cell .mat-sort-header-button,
+:not(#_) .mat-mdc-header-cell .mdc-data-table__header-cell-label,
+:not(#_) .mat-mdc-header-cell button {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+// MDC mat-rows default to a tall fixed height (52–56px); let padding define the
+// height so Material tables are as compact as the Bootstrap currency table.
+:not(#_) .mat-mdc-header-row,
+:not(#_) .mat-mdc-row {
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+// ── Bulletproof: template styles.css sets the Material header white/gray ──────
+//   .mat-mdc-table .mat-mdc-header-cell { background: var(--custom-row-header) !important }
+//   .mat-mdc-row ... { background: var(--custom-white) !important }  + #008BB9 border
+// Match the template's exact selector (+id-bump) so the currency look always wins.
+html:not([data-theme-mode="dark"]):not(#_) .mat-mdc-table .mat-mdc-header-cell {
+  background-color: rgba(var(--primary-rgb), 0.10) !important;
+  color: #000 !important;
+  border-color: rgba(var(--primary-rgb), 0.10) !important;
+}
+html[data-theme-mode="dark"]:not(#_) .mat-mdc-table .mat-mdc-header-cell {
+  background-color: var(--default-background) !important;
+  color: var(--text-muted) !important;
+  border-color: var(--default-border) !important;
+}
+:not(#_) .mat-mdc-table .mat-mdc-row,
+:not(#_) .mat-mdc-table .mat-mdc-footer-row,
+:not(#_) .mat-mdc-table .mat-mdc-cell { background-color: transparent !important; }
+// no white inner box on the sort-header button/content
+:not(#_) .mat-mdc-table .mat-mdc-header-cell :is(.mat-sort-header-container, .mat-sort-header-content, button, .mdc-data-table__header-cell-label) {
+  background: transparent !important;
+  box-shadow: none !important;
 }

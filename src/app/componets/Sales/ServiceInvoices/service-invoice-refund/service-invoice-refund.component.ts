@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ServiceInvoiceService as InvoiceService } from '../../../../shared/services/service-invoice.service';
 import { ReportService } from '../../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
 import { ToastrService } from 'ngx-toastr';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../shared/services/auth.service';
@@ -20,6 +21,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 
 // NgSelect import
 import { NgSelectModule } from '@ng-select/ng-select';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+import { ServiceAddRefundComponent } from '../service-add-refund/service-add-refund.component';
 
 
 interface RefundData {
@@ -73,7 +76,9 @@ export const MY_DATE_FORMATS = {
     MatPaginatorModule,
     MatCheckboxModule,
     ConfirmationModalComponent,
-    NgSelectModule
+    NgSelectModule,
+    HasPermissionDirective,
+    ServiceAddRefundComponent
   ],
   providers: [
     DatePipe,
@@ -127,6 +132,15 @@ export class ServiceInvoiceRefundComponent implements OnInit {
   // Filter state
   transferStatusFilter: 'all' | 'transferred' | 'not-transferred' = 'all';
 
+  // Tabs (entry / list), mirroring accounting/invoices/service
+  activeTab: 'form' | 'list' = 'list';
+  switchToForm(): void { this.activeTab = 'form'; }
+  switchToList(): void { this.activeTab = 'list'; }
+  onRefundSaved(): void {
+    if (this.deliveryId != null) this.loadRefunds(this.deliveryId);
+    this.activeTab = 'list';
+  }
+
   // Delete confirmation
   refundToDelete: RefundData | null = null;
   deleting: boolean = false;
@@ -139,6 +153,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
   constructor(
     private invoiceService: InvoiceService,
     private reportService: ReportService,
+    private cs: CompanySettingsService,
     private authService: AuthService,
     private translate: TranslateService,
     private toastr: ToastrService,
@@ -215,7 +230,7 @@ export class ServiceInvoiceRefundComponent implements OnInit {
           CustomerName: refund.CustomerName,
 
           FinancialYear: Math.floor(Number(refund.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(this.cs.billDecimals),
           // Use RIsTransfered to determine if the refund has been transferred
           IsTransferred: !!refund.RIsTransfered,
           RIsTransfered: !!refund.RIsTransfered,

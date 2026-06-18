@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 import { InvoiceService } from '../../../shared/services/invoice.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from "../../../shared/common/sharedmodule";
 
@@ -16,7 +18,8 @@ import { SharedModule } from "../../../shared/common/sharedmodule";
     ReactiveFormsModule,
     TranslateModule,
     RouterModule,
-    SharedModule
+    SharedModule,
+    HasPermissionDirective
   ],
   templateUrl: './add-refund.component.html',
   styleUrl: './add-refund.component.scss'
@@ -34,7 +37,8 @@ export class AddRefundComponent {
     private fb: FormBuilder,
     private invoiceService: InvoiceService,
     private toastr: ToastrService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cs: CompanySettingsService
   ) {
     this.refundForm = this.fb.group({
       invoiceNumber: ['', Validators.required],
@@ -213,7 +217,7 @@ export class AddRefundComponent {
           ItemNumber: String(item.ItemNumber),
           ItemTaxRate: item.ItemTaxRate,
           ItemTotalTax: +(unitTax * returnQty).toFixed(6),
-          ItemTotalWithTax: +(unitTotalWithTax * returnQty).toFixed(3),
+          ItemTotalWithTax: +(unitTotalWithTax * returnQty).toFixed(this.cs.billDecimals),
           Quantity: returnQty,
           ItemDiscount: item.ItemDiscount || 0,
           Price: item.ItemPrice,
@@ -252,7 +256,7 @@ export class AddRefundComponent {
       this.invoiceService.insertSalesInvoicePayback(paybackPayload).subscribe({
         next: (response) => {
           // Success message with refund amount
-          const totalRefundAmount = this.calculateTotalRefund().toFixed(3);
+          const totalRefundAmount = this.calculateTotalRefund().toFixed(this.cs.billDecimals);
           this.toastr.success(
             this.translate.instant('PaybackPage.PaybackSuccessWithAmount', {
               amount: totalRefundAmount,

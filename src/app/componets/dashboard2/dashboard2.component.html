@@ -1,0 +1,113 @@
+<!-- Page Header -->
+<div class="dashboard-header">
+  <div class="dashboard-header-text">
+    <h4 class="dashboard-title">{{ 'Dashboard2.Title' | translate }}</h4>
+    <p class="dashboard-subtitle">{{ 'Dashboard2.Subtitle' | translate }}</p>
+  </div>
+  <button class="btn btn-outline-primary btn-sm" (click)="load()" [disabled]="loading">
+    <i class="ti ti-refresh me-1"></i>
+    {{ 'Dashboard.Refresh' | translate }}
+  </button>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading" class="d-flex justify-content-center align-items-center" style="min-height:300px">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+  </div>
+</div>
+
+<ng-container *ngIf="!loading && data">
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+
+    <div class="kpi-card kpi-avg">
+      <div class="kpi-icon"><i class="ti ti-receipt"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ formatCurrency(data.Kpis.AvgInvoiceValue) }}</div>
+        <div class="kpi-label">{{ 'Dashboard2.KPI.AvgInvoiceValue' | translate }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-tax">
+      <div class="kpi-icon"><i class="ti ti-receipt-tax"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ formatCurrency(data.Kpis.TotalTax) }}</div>
+        <div class="kpi-label">{{ 'Dashboard2.KPI.TotalTax' | translate }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-week">
+      <div class="kpi-icon"><i class="ti ti-calendar-week"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ data.Kpis.InvoicesThisWeek | number }}</div>
+        <div class="kpi-label">{{ 'Dashboard2.KPI.InvoicesThisWeek' | translate }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-month">
+      <div class="kpi-icon"><i class="ti ti-calendar-month"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ data.Kpis.InvoicesThisMonth | number }}</div>
+        <div class="kpi-label">{{ 'Dashboard2.KPI.InvoicesThisMonth' | translate }}</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Charts Row 1: Revenue Comparison -->
+  <div class="charts-row">
+    <div class="chart-card chart-full">
+      <div class="chart-card-header">
+        <h6 class="chart-card-title">{{ 'Dashboard2.Charts.SalesVsService' | translate }}</h6>
+        <div class="chart-legend">
+          <span class="legend-dot" style="background:#6c5ce7"></span>
+          <span class="legend-label">{{ 'Dashboard2.Sales' | translate }}</span>
+          <span class="legend-dot ms-3" style="background:#00b894"></span>
+          <span class="legend-label">{{ 'Dashboard2.Service' | translate }}</span>
+        </div>
+      </div>
+      <div class="chart-card-body">
+        <apx-chart
+          [series]="revSeries"
+          [chart]="revChart"
+          [xaxis]="revXaxis"
+          [plotOptions]="revPlot"
+          [dataLabels]="revDataLabels"
+          [legend]="revLegend"
+          [colors]="revColors">
+        </apx-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2: Invoice Counts -->
+  <div class="charts-row">
+    <div class="chart-card chart-full">
+      <div class="chart-card-header">
+        <h6 class="chart-card-title">{{ 'Dashboard2.Charts.InvoiceCount' | translate }}</h6>
+        <div class="chart-legend">
+          <span class="legend-dot" style="background:#fd79a8"></span>
+          <span class="legend-label">{{ 'Dashboard2.Sales' | translate }}</span>
+          <span class="legend-dot ms-3" style="background:#fdcb6e"></span>
+          <span class="legend-label">{{ 'Dashboard2.Service' | translate }}</span>
+        </div>
+      </div>
+      <div class="chart-card-body">
+        <apx-chart
+          [series]="cntSeries"
+          [chart]="cntChart"
+          [xaxis]="cntXaxis"
+          [stroke]="cntStroke"
+          [fill]="cntFill"
+          [dataLabels]="cntDataLabels"
+          [legend]="cntLegend"
+          [colors]="cntColors"
+          [tooltip]="cntTooltip">
+        </apx-chart>
+      </div>
+    </div>
+  </div>
+
+</ng-container>

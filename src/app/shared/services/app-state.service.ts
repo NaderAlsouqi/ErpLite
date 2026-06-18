@@ -16,6 +16,7 @@ interface StateType {
   themePrimary: string,               // '58, 88, 146', '92, 144, 163', '161, 90, 223', '78, 172, 76', '223, 90, 90'
   themeBackground: string,
   backgroundImage: string,
+  appTheme: string,                   // classic, editorial
 };
 @Injectable({
   providedIn: 'root'
@@ -37,6 +38,7 @@ export class AppStateService {
     themePrimary: '',               // '58, 88, 146', '92, 144, 163', '161, 90, 223', '78, 172, 76', '223, 90, 90'
     themeBackground: '',
     backgroundImage: '',            // bgimg1, bgimg2, bgimg3, bgimg4, bgimg5
+    appTheme: 'classic',            // classic, editorial
   } // Store initial state
   private stateSubject = new BehaviorSubject<StateType>(this.initialState); // Use any for initial null value
   state$ = this.stateSubject.asObservable();
@@ -188,6 +190,10 @@ export class AppStateService {
     let html = document.querySelector('html');
     html?.setAttribute('data-bg-img', backgroundImage);
   }
+  private applyAppThemeSpecificChanges(appTheme: string) {
+    let html = document.querySelector('html');
+    html?.setAttribute('data-app-theme', appTheme || 'classic');
+  }
 
   public applyReset() {
     let html = document.querySelector('html');
@@ -259,6 +265,8 @@ export class AppStateService {
     if (state['backgroundImage']) {
       this.applybackgroundImageSpecificChanges(state['backgroundImage']);
     }
+    // App theme (classic | editorial) — always apply so attribute is set on startup too
+    this.applyAppThemeSpecificChanges(state['appTheme'] || 'classic');
 
 
 

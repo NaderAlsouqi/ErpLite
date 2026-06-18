@@ -1,0 +1,51 @@
+.sb-line-table th,
+.sb-line-table td {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.sb-line-table .col-des   { min-width: 180px; }
+.sb-line-table .col-qty   { width: 90px; }
+.sb-line-table .col-price { width: 110px; }
+.sb-line-table .col-total { width: 110px; }
+.sb-line-table .col-acc   { min-width: 200px; }
+.sb-line-table .col-del   { width: 50px; }
+
+.inline-input {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.totals-row {
+  background: var(--bs-light);
+}
+
+/* ── GL entry (القيد) popup ─────────────────────────────────── */
+.gl-entry-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1065;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4rem 1rem 1rem;
+  overflow-y: auto;
+}
+
+.gl-entry-dialog {
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 720px;
+
+  .modal-header,
+  .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+  .modal-body {
+    padding: 1rem;
+  }
+}

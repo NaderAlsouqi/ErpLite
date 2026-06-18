@@ -1,0 +1,337 @@
+<app-page-header
+  [title]="'JvReport.Title' | translate"
+  [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'JvReport.Title' | translate">
+</app-page-header>
+
+<div class="row jvr-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- ── Card header ─────────────────────────────────────── -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-printer me-2"></i>
+          {{ 'JvReport.Title' | translate }}
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" (click)="search()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-search me-1"></i>
+            {{ 'General.Search' | translate }}
+          </button>
+          <button class="btn btn-outline-primary" (click)="print()" [disabled]="!hasResults">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-outline-secondary" (click)="clearFilters()">
+            <i class="ti ti-refresh me-1"></i>{{ 'General.Clear' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Filters ────────────────────────────────────────── -->
+      <div class="card-body border-bottom pb-3">
+
+        <!-- Filter mode toggle -->
+        <div class="d-flex gap-4 align-items-center mb-3">
+          <span class="fw-semibold small">{{ 'JvReport.FilterBy' | translate }}</span>
+          <div class="form-check form-check-inline mb-0">
+            <input class="form-check-input" type="radio" id="modeDate" [(ngModel)]="filterMode" value="Date" (change)="onFilterChange()">
+            <label class="form-check-label" for="modeDate">{{ 'JvReport.ByDate' | translate }}</label>
+          </div>
+          <div class="form-check form-check-inline mb-0">
+            <input class="form-check-input" type="radio" id="modeDoc" [(ngModel)]="filterMode" value="DocNum" (change)="onFilterChange()">
+            <label class="form-check-label" for="modeDoc">{{ 'JvReport.ByDocNum' | translate }}</label>
+          </div>
+        </div>
+
+        <div class="row g-3 align-items-end">
+
+          <!-- Date range -->
+          <ng-container *ngIf="filterMode === 'Date'">
+            <div class="col-md-2">
+              <label class="form-label">{{ 'JvReport.DateFrom' | translate }}</label>
+              <input class="form-control" type="text" [(ngModel)]="dateFrom" (ngModelChange)="onFilterChange()"
+                mwlFlatpickr [altInput]="true" [convertModelValue]="true"
+                [altFormat]="'d/m/Y'" dateFormat="Y-m-d" [options]="dateOptions">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">{{ 'JvReport.DateTo' | translate }}</label>
+              <input class="form-control" type="text" [(ngModel)]="dateTo" (ngModelChange)="onFilterChange()"
+                mwlFlatpickr [altInput]="true" [convertModelValue]="true"
+                [altFormat]="'d/m/Y'" dateFormat="Y-m-d" [options]="dateOptions">
+            </div>
+          </ng-container>
+
+          <!-- DocNum range -->
+          <ng-container *ngIf="filterMode === 'DocNum'">
+            <div class="col-md-2">
+              <label class="form-label">{{ 'JvReport.DocNumFrom' | translate }}</label>
+              <input type="number" class="form-control" [(ngModel)]="docNumFrom" min="1" (change)="onFilterChange()">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">{{ 'JvReport.DocNumTo' | translate }}</label>
+              <input type="number" class="form-control" [(ngModel)]="docNumTo" min="1" (change)="onFilterChange()">
+            </div>
+          </ng-container>
+
+          <!-- ── نوع السند + نوع التسلسل boxes ───────────────── -->
+          <div class="col-12">
+            <div class="row g-3">
+
+              <!-- نوع السند -->
+              <div class="col-md-4">
+                <div class="jvr-filter-box">
+                  <div class="jvr-filter-box-title">{{ 'JvReport.DocType' | translate }}</div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" id="docTypeSpecific"
+                      name="docTypeGroup" [(ngModel)]="docTypeMode" value="specific" (change)="onFilterChange()">
+                    <label class="form-check-label" for="docTypeSpecific">
+                      {{ 'JvReport.SpecificDocType' | translate }}
+                    </label>
+                  </div>
+                  <ng-select
+                    [items]="voucherTypes"
+                    [bindLabel]="isAr ? 'TName' : 'TEName'"
+                    bindValue="VTypeNo"
+                    [(ngModel)]="docTypeSpecific"
+                    [clearable]="true"
+                    [disabled]="docTypeMode !== 'specific'"
+                    (change)="onDocTypeChange($event); onFilterChange()"
+                    [placeholder]="'JvReport.SelectDocType' | translate"
+                    appendTo="body"
+                    class="mb-2">
+                  </ng-select>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" id="docTypeAll"
+                      name="docTypeGroup" [(ngModel)]="docTypeMode" value="all"
+                      (change)="onDocTypeChange(null); onFilterChange()">
+                    <label class="form-check-label" for="docTypeAll">
+                      {{ 'JvReport.AllDocTypes' | translate }}
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="hideSmall"
+                      [(ngModel)]="hideSmallMovements" (change)="onFilterChange()">
+                    <label class="form-check-label text-danger fw-semibold small" for="hideSmall">
+                      {{ 'JvReport.HideSmall' | translate }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- نوع التسلسل -->
+              <div class="col-md-4">
+                <div class="jvr-filter-box">
+                  <div class="jvr-filter-box-title">{{ 'JvReport.VType' | translate }}</div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" id="vTypeSpecific"
+                      name="vTypeGroup" [(ngModel)]="vTypeMode" value="specific" (change)="onFilterChange()">
+                    <label class="form-check-label" for="vTypeSpecific">
+                      {{ 'JvReport.SpecificSerial' | translate }}
+                    </label>
+                  </div>
+                  <ng-select
+                    [items]="voucherSerials"
+                    bindValue="VSerialNo"
+                    [(ngModel)]="vTypeSpecific"
+                    [clearable]="true"
+                    [disabled]="vTypeMode !== 'specific'"
+                    (change)="vTypeMode = 'specific'; onFilterChange()"
+                    [placeholder]="'JvReport.SelectSerial' | translate"
+                    appendTo="body"
+                    class="mb-2">
+                    <ng-template ng-label-tmp let-s="item">
+                      {{ s.VSerialNo }} — {{ isAr ? s.SName : s.Sename }}
+                    </ng-template>
+                    <ng-template ng-option-tmp let-s="item">
+                      {{ s.VSerialNo }} — {{ isAr ? s.SName : s.Sename }}
+                    </ng-template>
+                  </ng-select>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" id="vTypeAll"
+                      name="vTypeGroup" [(ngModel)]="vTypeMode" value="all" (change)="onFilterChange()">
+                    <label class="form-check-label" for="vTypeAll">
+                      {{ 'JvReport.AllSerials' | translate }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Post status -->
+          <div class="col-md-2">
+            <label class="form-label">{{ 'JvReport.PostStatus' | translate }}</label>
+            <select class="form-select" [(ngModel)]="postStatus" (change)="onFilterChange()">
+              <option *ngFor="let o of postStatusOptions" [ngValue]="o.value">
+                {{ o.label | translate }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Order by -->
+          <div class="col-md-2">
+            <label class="form-label">{{ 'JvReport.OrderBy' | translate }}</label>
+            <select class="form-select" [(ngModel)]="orderBy" (change)="onFilterChange()">
+              <option *ngFor="let o of orderByOptions" [value]="o.value">
+                {{ o.label | translate }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Description search -->
+          <div class="col-md-2">
+            <label class="form-label">{{ 'JournalVoucher.Description' | translate }}</label>
+            <input type="text" class="form-control" [(ngModel)]="searchDes" (change)="onFilterChange()"
+              [placeholder]="'JvReport.DescPlaceholder' | translate">
+          </div>
+
+          <!-- Account no -->
+          <div class="col-md-3">
+            <label class="form-label">{{ 'JournalVoucher.Account' | translate }}</label>
+            <ng-select
+              [items]="accounts"
+              bindValue="no"
+              [(ngModel)]="accNo"
+              [searchFn]="accountSearchFn"
+              [clearable]="true"
+              (change)="onFilterChange()"
+              [placeholder]="'JvReport.All' | translate"
+              appendTo="body">
+              <ng-template ng-label-tmp let-a="item">
+                {{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}
+              </ng-template>
+              <ng-template ng-option-tmp let-a="item">
+                {{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <!-- Amount from -->
+          <div class="col-md-2">
+            <label class="form-label">{{ 'JvReport.AmtFrom' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="amtFrom" min="0" (change)="onFilterChange()">
+          </div>
+
+          <!-- Amount to -->
+          <div class="col-md-2">
+            <label class="form-label">{{ 'JvReport.AmtTo' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="amtTo" min="0" (change)="onFilterChange()">
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Results ────────────────────────────────────────── -->
+      <div class="card-body p-0">
+
+        <!-- Empty / prompt state -->
+        <div *ngIf="!loading && !hasResults" class="text-center py-5 text-muted">
+          <i class="ti ti-file-search d-block" style="font-size:2.5rem"></i>
+          <p class="mt-2 mb-0">{{ 'JvReport.SearchPrompt' | translate }}</p>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && hasResults">
+
+          <!-- Summary bar -->
+          <div class="jvr-summary px-3 py-2 border-bottom d-flex gap-4 flex-wrap">
+            <span class="small">
+              <span class="text-muted me-1">{{ 'JvReport.Vouchers' | translate }}:</span>
+              <strong>{{ groups.length }}</strong>
+            </span>
+            <span class="small">
+              <span class="text-muted me-1">{{ 'JournalVoucher.Debit' | translate }}:</span>
+              <strong class="text-success">{{ grandDebit | number:numFmt }}</strong>
+            </span>
+            <span class="small">
+              <span class="text-muted me-1">{{ 'JournalVoucher.Credit' | translate }}:</span>
+              <strong class="text-danger">{{ grandCredit | number:numFmt }}</strong>
+            </span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover jvr-table mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th class="col-docnum">{{ 'JournalVoucher.DocNum'      | translate }}</th>
+                  <th class="col-date">{{ 'JournalVoucher.Date'           | translate }}</th>
+                  <th class="col-serial">{{ 'JvReport.SerialName'         | translate }}</th>
+                  <th class="col-acc">{{ 'JournalVoucher.Account'         | translate }}</th>
+                  <th class="col-accname">{{ 'JournalVoucher.AccName'     | translate }}</th>
+                  <th class="col-des">{{ 'JournalVoucher.Description'     | translate }}</th>
+                  <th class="col-cc">{{ 'JournalVoucher.CostCenter'       | translate }}</th>
+                  <th class="col-amt">{{ 'JournalVoucher.Debit'           | translate }}</th>
+                  <th class="col-amt">{{ 'JournalVoucher.Credit'          | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let g of groups">
+                  <tr *ngFor="let line of g.lines; let i = index"
+                      [class.jvr-first-row]="i === 0">
+                    <td *ngIf="i === 0" [attr.rowspan]="g.lines.length"
+                        class="col-docnum text-center fw-bold jvr-group-cell">
+                      <a class="rec-link" [routerLink]="['/accounting/vouchers/journal']"
+                         [queryParams]="{ docNum: g.docNum, year: vYear(g.date), vType: g.lines[0].VType, docType: g.lines[0].DocType }">{{ g.docNum }}</a>
+                    </td>
+                    <td *ngIf="i === 0" [attr.rowspan]="g.lines.length"
+                        class="col-date text-center jvr-group-cell">
+                      {{ g.date | date:'dd/MM/yyyy' }}
+                    </td>
+                    <td *ngIf="i === 0" [attr.rowspan]="g.lines.length"
+                        class="col-serial jvr-group-cell">
+                      {{ g.serialName }}
+                    </td>
+                    <td class="col-acc text-center">
+                      <a *ngIf="line.AccNo" class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                         [queryParams]="{ focus: line.AccNo }">{{ line.AccNo }}</a>
+                    </td>
+                    <td class="col-accname">
+                      <a *ngIf="line.AccNo" class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                         [queryParams]="{ focus: line.AccNo }">{{ line.AccName }}</a>
+                      <span *ngIf="!line.AccNo">{{ line.AccName }}</span>
+                    </td>
+                    <td class="col-des">{{ line.Des }}</td>
+                    <td class="col-cc">{{ line.CcName }}</td>
+                    <td class="col-amt text-end text-success fw-semibold">
+                      {{ line.Debit  > 0 ? (line.Debit  | number:numFmt) : '' }}
+                    </td>
+                    <td class="col-amt text-end text-danger fw-semibold">
+                      {{ line.Credit > 0 ? (line.Credit | number:numFmt) : '' }}
+                    </td>
+                  </tr>
+                  <!-- Subtotal per voucher -->
+                  <tr class="jvr-subtotal">
+                    <td colspan="7" class="text-end fw-semibold small">
+                      {{ 'JvReport.Subtotal' | translate }}
+                    </td>
+                    <td class="text-end fw-semibold text-success">{{ g.totalDebit  | number:numFmt }}</td>
+                    <td class="text-end fw-semibold text-danger">{{ g.totalCredit | number:numFmt }}</td>
+                  </tr>
+                </ng-container>
+
+                <!-- Grand total -->
+                <tr class="jvr-grand-total">
+                  <td colspan="7" class="text-end fw-bold">{{ 'JvReport.GrandTotal' | translate }}</td>
+                  <td class="text-end fw-bold text-success">{{ grandDebit  | number:numFmt }}</td>
+                  <td class="text-end fw-bold text-danger">{{ grandCredit | number:numFmt }}</td>
+                </tr>
+
+                <!-- No data -->
+                <tr *ngIf="groups.length === 0">
+                  <td colspan="9" class="text-center text-muted py-4">
+                    <i class="ti ti-folder-open fs-2 d-block mb-2"></i>
+                    {{ 'General.NoRecordsFound' | translate }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+
+      </div><!-- /card-body results -->
+    </div><!-- /card -->
+  </div>
+</div>

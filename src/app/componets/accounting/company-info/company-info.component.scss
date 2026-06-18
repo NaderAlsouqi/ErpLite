@@ -1,0 +1,143 @@
+// ── Save footer ───────────────────────────────────────────────────────────────
+.ci-footer {
+  display: flex;
+  justify-content: flex-end;   // flex-end = physical LEFT in RTL
+}
+
+// ── Section title ─────────────────────────────────────────────────────────────
+.ci-section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-color, #6366f1);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--default-border, #e2e8f0);
+  margin-bottom: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+// ── Checkbox groups ────────────────────────────────────────────────────────────
+.ci-check-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background: transparent;
+  height: 100%;
+
+  .form-check {
+    margin: 0;
+    padding: 0.55rem 0.75rem 0.55rem 2.25rem;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    transition: background 0.12s, border-color 0.12s;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(99, 102, 241, 0.06);
+      border-color: rgba(99, 102, 241, 0.18);
+    }
+
+    // Highlight checked rows
+    &:has(.form-check-input:checked) {
+      background: rgba(99, 102, 241, 0.08);
+      border-color: rgba(99, 102, 241, 0.25);
+    }
+  }
+
+  .form-check-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: #334155;
+    user-select: none;
+  }
+
+  .form-check-input {
+    cursor: pointer;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.1rem;
+    border: 2px solid #94a3b8;
+    border-radius: 4px;
+
+    &:checked {
+      background-color: var(--primary-color, #6366f1);
+      border-color: var(--primary-color, #6366f1);
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      border-color: var(--primary-color, #6366f1);
+    }
+  }
+}
+
+// ── Inline tax checkboxes (outside the group) ─────────────────────────────────
+.form-check-inline {
+  padding: 0.45rem 0.75rem 0.45rem 2rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  transition: background 0.12s, border-color 0.12s;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.06);
+    border-color: rgba(99, 102, 241, 0.18);
+  }
+
+  &:has(.form-check-input:checked) {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.25);
+  }
+
+  .form-check-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: #334155;
+  }
+
+  .form-check-input {
+    cursor: pointer;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.1rem;
+    border: 2px solid #94a3b8;
+    border-radius: 4px;
+
+    &:checked {
+      background-color: var(--primary-color, #6366f1);
+      border-color: var(--primary-color, #6366f1);
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      border-color: var(--primary-color, #6366f1);
+    }
+  }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .ci-check-group {
+    .form-check {
+      &:hover { background: rgba(99, 102, 241, 0.1) !important; border-color: rgba(99, 102, 241, 0.25) !important; }
+      &:has(.form-check-input:checked) { background: rgba(99, 102, 241, 0.14) !important; border-color: rgba(99, 102, 241, 0.35) !important; }
+    }
+    .form-check-label  { color: var(--default-text-color) !important; }
+    .form-check-input  { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+    .form-check-input:checked { background-color: var(--primary-color, #6366f1) !important; border-color: var(--primary-color, #6366f1) !important; }
+  }
+
+  .form-check-inline {
+    &:hover { background: rgba(99, 102, 241, 0.1) !important; border-color: rgba(99, 102, 241, 0.25) !important; }
+    &:has(.form-check-input:checked) { background: rgba(99, 102, 241, 0.14) !important; border-color: rgba(99, 102, 241, 0.35) !important; }
+    .form-check-label  { color: var(--default-text-color) !important; }
+    .form-check-input  { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+    .form-check-input:checked { background-color: var(--primary-color, #6366f1) !important; border-color: var(--primary-color, #6366f1) !important; }
+  }
+
+  .ci-section-title { border-bottom-color: var(--default-border) !important; }
+}

@@ -1,17 +1,13 @@
-import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { NgbModal, NgbModalConfig, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatSortModule, Sort } from '@angular/material/sort';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { CurrencyDto, CurrencyService } from '../../../shared/services/currency.service';
-import { ReportService } from '../../../shared/services/report.service';
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { ReportService } from '../../../shared/services/report.service';
 
 @Component({
   selector: 'app-currencies',
@@ -20,58 +16,40 @@ import { ConfirmationModalComponent } from '../../../shared/common/confirmation-
     CommonModule,
     FormsModule,
     TranslateModule,
-    RouterModule,
     SharedModule,
-    NgbModule,
-    MatTableModule,
-    MatSortModule,
-    MatPaginatorModule,
     ConfirmationModalComponent,
+    HasPermissionDirective,
   ],
-  providers: [NgbModalConfig, NgbModal],
   templateUrl: './currencies.component.html',
   styleUrl: './currencies.component.scss',
-  encapsulation: ViewEncapsulation.None,
 })
 export class CurrenciesComponent implements OnInit {
-  @ViewChild('currencyFormModal') currencyFormModal!: TemplateRef<any>;
   @ViewChild('confirmModal') confirmModal!: ConfirmationModalComponent;
 
-  displayedColumns: string[] = ['cur_no', 'cur', 'ename', 'lrate', 'dec', 'Actions'];
-  dataSource = new MatTableDataSource<CurrencyDto>([]);
-  allData: CurrencyDto[] = [];
+  currencies: CurrencyDto[] = [];
+  filteredCurrencies: CurrencyDto[] = [];
+  filterName = '';
 
-  pageSize = 10;
-  pageSizeOptions = [5, 10, 25, 50];
-  pageIndex = 0;
-  totalItems = 0;
-
+  currentCurrency: CurrencyDto = this.initForm();
   loading = false;
-  submitted = false;
-  isEditMode = false;
-  modalRef!: NgbModalRef;
-  searchTerm = '';
-  selectedId: number | null = null;
+  saving = false;
+  activeTab: 'form' | 'list' = 'form';
 
-  currencyForm: CurrencyDto = this.emptyForm();
+  switchToForm(): void { this.activeTab = 'form'; }
+  switchToList(): void { this.activeTab = 'list'; }
 
   constructor(
     private currencyService: CurrencyService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private modalService: NgbModal,
-    private modalConfig: NgbModalConfig,
-    private reportService: ReportService
-  ) {
-    this.modalConfig.backdrop = 'static';
-    this.modalConfig.keyboard = false;
-  }
+    private reportService: ReportService,
+  ) {}
 
   ngOnInit(): void {
-    this.loadCurrencies();
+    this.loadData();
   }
 
-  private emptyForm(): CurrencyDto {
+  private initForm(): CurrencyDto {
     return {
       cur_no: 0, cur: '', ename: '', dec: null, lrate: null,
       bank_num: null, BoxOffice: null, CodeNo: null, AccountNo: null,
@@ -80,150 +58,123 @@ export class CurrenciesComponent implements OnInit {
     };
   }
 
-  loadCurrencies(): void {
+  loadData(): void {
     this.loading = true;
     this.currencyService.getAll().subscribe({
       next: (data) => {
-        this.allData = data;
-        this.totalItems = data.length;
-        this.applyFilter();
+        this.currencies = data;
+        this.applyFilters();
+        this.setNextNo();
         this.loading = false;
       },
-      error: () => { this.loading = false; },
+      error: () => { this.loading = false; }
     });
   }
 
-  openAddModal(): void {
-    this.isEditMode = false;
-    this.submitted = false;
-    const nextNo = this.allData.length > 0
-      ? Math.max(...this.allData.map(c => c.cur_no)) + 1
-      : 1;
-    this.currencyForm = { ...this.emptyForm(), cur_no: nextNo };
-    this.modalRef = this.modalService.open(this.currencyFormModal, {
-      centered: true, size: 'lg', windowClass: 'form-modal-dialog animate__animated animate__fadeIn',
+  private setNextNo(): void {
+    const max = this.currencies.length > 0 ? Math.max(...this.currencies.map(c => c.cur_no)) : 0;
+    this.currentCurrency.cur_no = max + 1;
+  }
+
+  applyFilters(): void {
+    const term = this.filterName.toLowerCase();
+    this.filteredCurrencies = this.currencies.filter(c =>
+      !term ||
+      c.cur_no.toString().includes(term) ||
+      c.cur?.toLowerCase().includes(term) ||
+      c.ename?.toLowerCase().includes(term)
+    );
+  }
+
+  clearFilters(): void {
+    this.filterName = '';
+    this.applyFilters();
+  }
+
+  onNoChange(): void {
+    const no = +this.currentCurrency.cur_no;
+    if (!no) return;
+    const existing = this.currencies.find(c => +c.cur_no === no);
+    if (existing) this.currentCurrency = { ...existing };
+  }
+
+  onSelectRow(currency: CurrencyDto): void {
+    this.currentCurrency = { ...currency };
+    this.activeTab = 'form';   // open the selected record in the entry tab for editing
+  }
+
+  save(): void {
+    if (!this.validate()) return;
+    const isEdit = this.currencies.some(c => +c.cur_no === +this.currentCurrency.cur_no);
+    this.saving = true;
+    const req = isEdit
+      ? this.currencyService.update(this.currentCurrency.cur_no, this.currentCurrency)
+      : this.currencyService.add(this.currentCurrency);
+    req.subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || this.translate.instant('General.SaveSuccess'));
+        this.loadData();
+        this.reset();
+        this.saving = false;
+      },
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || err.error?.Message || this.translate.instant('General.Error'));
+        this.saving = false;
+      }
     });
   }
 
-  openEditModal(currency: CurrencyDto): void {
-    this.isEditMode = true;
-    this.submitted = false;
-    this.selectedId = currency.cur_no;
-    this.currencyForm = { ...currency };
-    this.modalRef = this.modalService.open(this.currencyFormModal, {
-      centered: true, size: 'lg', windowClass: 'form-modal-dialog animate__animated animate__fadeIn',
-    });
-  }
-
-  saveCurrency(): void {
-    this.submitted = true;
-    if (!this.currencyForm.cur?.trim() || !this.currencyForm.ename?.trim()) return;
-    if (!this.isEditMode && (!this.currencyForm.cur_no || this.currencyForm.cur_no <= 0)) return;
-
-    this.loading = true;
-
-    if (this.isEditMode && this.selectedId != null) {
-      this.currencyService.update(this.selectedId, this.currencyForm).subscribe({
-        next: () => {
-          this.toastr.success(this.translate.instant('Currencies.UpdateSuccess'));
-          this.modalRef?.close();
-          this.loadCurrencies();
-          this.loading = false;
-        },
-        error: () => { this.loading = false; },
-      });
-    } else {
-      this.currencyService.add(this.currencyForm).subscribe({
-        next: () => {
-          this.toastr.success(this.translate.instant('Currencies.AddSuccess'));
-          this.modalRef?.close();
-          this.loadCurrencies();
-          this.loading = false;
-        },
-        error: () => { this.loading = false; },
-      });
-    }
-  }
-
-  confirmDelete(currency: CurrencyDto): void {
-    this.selectedId = currency.cur_no;
+  delete(): void {
+    if (!this.currentCurrency.cur_no) return;
     this.confirmModal.show();
   }
 
-  deleteCurrency(): void {
-    if (this.selectedId == null) return;
-    this.loading = true;
-    this.currencyService.delete(this.selectedId).subscribe({
-      next: () => {
-        this.toastr.success(this.translate.instant('Currencies.DeleteSuccess'));
-        this.loadCurrencies();
-        this.loading = false;
+  confirmDelete(): void {
+    this.currencyService.delete(this.currentCurrency.cur_no).subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || this.translate.instant('General.DeleteSuccess'));
+        this.loadData();
+        this.reset();
       },
-      error: () => { this.loading = false; },
-    });
-  }
-
-  onSearch(): void {
-    this.pageIndex = 0;
-    this.applyFilter();
-  }
-
-  private applyFilter(): void {
-    const term = this.searchTerm.toLowerCase();
-    const filtered = term
-      ? this.allData.filter(
-          (c) =>
-            c.cur.toLowerCase().includes(term) ||
-            c.ename.toLowerCase().includes(term) ||
-            c.cur_no?.toString().includes(term)
-        )
-      : [...this.allData];
-
-    this.totalItems = filtered.length;
-    const start = this.pageIndex * this.pageSize;
-    this.dataSource.data = filtered.slice(start, start + this.pageSize);
-  }
-
-  onSortChange(sort: Sort): void {
-    if (!sort.direction) return;
-    this.allData.sort((a, b) => {
-      const asc = sort.direction === 'asc';
-      switch (sort.active) {
-        case 'cur_no': return this.compare(a.cur_no, b.cur_no, asc);
-        case 'cur':    return this.compare(a.cur, b.cur, asc);
-        case 'ename':  return this.compare(a.ename, b.ename, asc);
-        case 'lrate':  return this.compare(a.lrate ?? 0, b.lrate ?? 0, asc);
-        case 'dec':    return this.compare(a.dec ?? 0, b.dec ?? 0, asc);
-        default: return 0;
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || this.translate.instant('General.Error'));
       }
     });
-    this.pageIndex = 0;
-    this.applyFilter();
   }
 
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.applyFilter();
+  reset(): void {
+    this.currentCurrency = this.initForm();
+    this.setNextNo();
   }
 
-  private compare(a: any, b: any, asc: boolean): number {
-    return (a < b ? -1 : 1) * (asc ? 1 : -1);
+  validate(): boolean {
+    if (!this.currentCurrency.cur_no || this.currentCurrency.cur_no <= 0) {
+      this.toastr.warning(this.translate.instant('Currencies.CurrencyNumberRequired'));
+      return false;
+    }
+    if (!this.currentCurrency.cur?.trim()) {
+      this.toastr.warning(this.translate.instant('Currencies.ArabicNameRequired'));
+      return false;
+    }
+    if (!this.currentCurrency.ename?.trim()) {
+      this.toastr.warning(this.translate.instant('Currencies.EnglishNameRequired'));
+      return false;
+    }
+    return true;
   }
 
-  printTable(): void {
-    const title = this.translate.instant('Currencies.Title');
+  print(): void {
+    const t = (k: string) => this.translate.instant(k);
     const cols = [
-      { label: this.translate.instant('Currencies.CurrencyNumber'), key: 'cur_no' },
-      { label: this.translate.instant('Currencies.ArabicName'),     key: 'cur' },
-      { label: this.translate.instant('Currencies.EnglishName'),    key: 'ename' },
-      { label: this.translate.instant('Currencies.ExchangeRate'),   key: 'lrate' },
-      { label: this.translate.instant('Currencies.DecimalPlaces'),  key: 'dec' },
+      { label: t('Currencies.CurrencyNo') },
+      { label: t('Currencies.ArabicName') },
+      { label: t('Currencies.EnglishName') },
+      { label: t('Currencies.ExchangeRate') },
+      { label: t('Currencies.Decimals') },
     ];
-    const rows = this.allData.map(r =>
-      cols.map(c => (r as any)[c.key] ?? '—').join('</td><td>')
-    ).map(r => `<tr><td>${r}</td></tr>`).join('');
-    
-    this.reportService.printReport(title, cols, rows);
+    const rows = this.filteredCurrencies.map(c =>
+      `<tr><td>${c.cur_no ?? '—'}</td><td>${c.cur ?? '—'}</td><td>${c.ename ?? '—'}</td><td>${c.lrate ?? '—'}</td><td>${c.dec ?? '—'}</td></tr>`
+    ).join('');
+    this.reportService.printReport(t('Currencies.Title'), cols, rows);
   }
 }

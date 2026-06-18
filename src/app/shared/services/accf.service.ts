@@ -59,6 +59,11 @@ export class AccfService {
     return this.http.put(`${this.apiUrl}/UpdateBatch`, rows);
   }
 
+  /** Parent (branched) accounts only — used by Branched Account Statement. */
+  getBranched(): Observable<AccfDto[]> {
+    return this.http.get<AccfDto[]>(`${this.apiUrl}/GetBranched`);
+  }
+
   /** All accounts (leaf + parent) with name fields — used by Edit Account Names page. */
   getAllNames(): Observable<AccfNameDto[]> {
     return this.http.get<AccfNameDto[]>(`${this.apiUrl}/GetAllNames`);

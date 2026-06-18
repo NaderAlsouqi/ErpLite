@@ -530,7 +530,7 @@ export class FotaraService {
       inv_number: parseInt(refundInvoiceData.inv_number as any, 10),
       serial_number: parseInt(refundInvoiceData.serial_number as any, 10),
       inv_date: refundInvoiceData.inv_date || '',
-      type_code: (refundInvoiceData.type_code === '381' || !refundInvoiceData.type_code) ? '012' : refundInvoiceData.type_code,
+      type_code: (refundInvoiceData.type_code || '021').padStart(3, '0'),
       note: refundInvoiceData.note || '',
       original_inv_number: refundInvoiceData.original_inv_number?.toString() || '',
       original_serial_number: refundInvoiceData.original_serial_number || '',
@@ -649,7 +649,6 @@ export class FotaraService {
    * Handle HTTP errors and show user-friendly messages
    */
   private handleError(operation: string) {
-    debugger;
     return (error: any): Observable<never> => {
       console.error(`${operation} failed:`, error);
 
@@ -659,8 +658,18 @@ export class FotaraService {
         errorMessage = this.translate.instant('General.ConnectionError');
       } else if (error.status === 404) {
         errorMessage = this.translate.instant('General.NotFound');
-      } else if (error.error && error.error.message) {
-        errorMessage = error.error.message;
+      } else if (error.error) {
+        if (typeof error.error === 'string' && error.error.trim()) {
+          errorMessage = error.error;
+        } else if (error.error.message) {
+          errorMessage = error.error.message;
+        } else if (error.error.detail) {
+          errorMessage = error.error.detail;
+        } else if (error.error.title) {
+          errorMessage = error.error.title;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       this.toastr.error(

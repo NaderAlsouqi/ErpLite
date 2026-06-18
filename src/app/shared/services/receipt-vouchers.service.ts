@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, catchError, throwError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ToastrService } from 'ngx-toastr';
 import { TranslateService } from '@ngx-translate/core';
@@ -62,6 +62,17 @@ export interface CheqReceiptDto extends CashReceiptDto {
   Cheques: ChequeResponse[];
 }
 
+export interface ReceiptVoucherListDto {
+  DocumentNumber: string;
+  Date: string;
+  Description: string;
+  Trans_Num: number;
+  CusName: string;
+  Amount: number;
+  Doctype: number;
+  Cheques?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -72,7 +83,7 @@ export class ReceiptVouchersService {
     private http: HttpClient,
     private toastr: ToastrService,
     private translate: TranslateService
-  ) {}
+  ) { }
 
   getCustomers(deliveryId: number): Observable<Customer[]> {
     return this.http.get<Customer[]>(`${this.apiUrl}/Accounts/GetCustomers/${deliveryId}`)
@@ -88,14 +99,14 @@ export class ReceiptVouchersService {
       );
   }
 
-    getCustomersLevelZero(): Observable<Customer[]> {
+  getCustomersLevelZero(): Observable<Customer[]> {
     return this.http.get<Customer[]>(`${this.apiUrl}/Accounts/GetCustomerAccountsLevelZero`)
       .pipe(
         catchError(this.handleError('Get customers'))
       );
   }
 
-getCheques(documentNumber: number,Trans_Num: number): Observable<ChequeResponse[]> {
+  getCheques(documentNumber: number, Trans_Num: number): Observable<ChequeResponse[]> {
     return this.http.get<ChequeResponse[]>(`${this.apiUrl}/Invoice/GetAllCheqs/${documentNumber}/${Trans_Num}`)
       .pipe(
         catchError(this.handleError('Get cheques'))
@@ -103,10 +114,21 @@ getCheques(documentNumber: number,Trans_Num: number): Observable<ChequeResponse[
   }
 
   getInvoices(): Observable<Invoice[]> {
+    // Invoices are optional context for a receipt; if the endpoint is unavailable
+    // (e.g. 404 on this tenant), degrade gracefully to "no data" instead of erroring.
     return this.http.get<Invoice[]>(`${this.apiUrl}/Invoice/GetInvoices`)
       .pipe(
-        catchError(this.handleError('Get invoices'))
+        catchError(() => of([]))
       );
+  }
+
+  getAllReceiptVouchers(dateFrom?: string | null, dateTo?: string | null, docNum?: string | null): Observable<ReceiptVoucherListDto[]> {
+    let params = new HttpParams();
+    if (dateFrom) params = params.set('dateFrom', dateFrom);
+    if (dateTo) params = params.set('dateTo', dateTo);
+    if (docNum) params = params.set('docNum', docNum);
+    return this.http.get<ReceiptVoucherListDto[]>(`${this.apiUrl}/Invoice/GetAllReceiptVouchers`, { params })
+      .pipe(catchError(this.handleError('Get all receipt vouchers')));
   }
 
   addCashReceipt(cashReceipt: CashReceiptDto): Observable<any> {
@@ -120,13 +142,13 @@ getCheques(documentNumber: number,Trans_Num: number): Observable<ChequeResponse[
     formData.append('Amount', cashReceipt.Amount.toString());
     formData.append('Description', cashReceipt.Description || '');
     formData.append('CreditAccountNumber', cashReceipt.CreditAccountNumber.toString());
-  
+
     return this.http.post(`${this.apiUrl}/Invoice/AddNewCashReceipt`, formData)
       .pipe(
         catchError(this.handleError('Add cash receipt'))
       );
   }
-  
+
   addChequeReceipt(receipt: CheqReceiptDto): Observable<any> {
     return this.http.post(`${this.apiUrl}/Invoice/AddNewChequeReceipt`, receipt)
       .pipe(
@@ -141,9 +163,9 @@ getCheques(documentNumber: number,Trans_Num: number): Observable<ChequeResponse[
     debugger;
     return (error: any): Observable<never> => {
       console.error(`${operation} failed:`, error);
-      
+
       let errorMessage = this.translate.instant('General.OperationFailed', { operation });
-      
+
       if (error.status === 0) {
         errorMessage = this.translate.instant('General.ConnectionError');
       } else if (error.status === 404) {
@@ -151,12 +173,12 @@ getCheques(documentNumber: number,Trans_Num: number): Observable<ChequeResponse[
       } else if (error.error && error.error.message) {
         errorMessage = error.error.message;
       }
-      
+
       this.toastr.error(
-        errorMessage, 
+        errorMessage,
         this.translate.instant('General.Error')
       );
-      
+
       return throwError(() => new Error(errorMessage));
     };
   }

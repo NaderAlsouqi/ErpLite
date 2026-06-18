@@ -13,8 +13,10 @@ import { AccfDto, AccfService } from '../../../shared/services/accf.service';
 import { CostCenterDto, CostCenterService } from '../../../shared/services/cost-center.service';
 import { CenterBalService } from '../../../shared/services/center-bal.service';
 import { ComfService } from '../../../shared/services/comf.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { CurrencyDto, CurrencyService } from '../../../shared/services/currency.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 export interface CcBalRow {
   accNo: number;
@@ -37,6 +39,7 @@ export interface CcBalRow {
     NgbModule,
     NgSelectModule,
     ConfirmationModalComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './cc-opening-balances.component.html',
   styleUrl:    './cc-opening-balances.component.scss',
@@ -72,6 +75,7 @@ export class CcOpeningBalancesComponent implements OnInit {
     private reportService:     ReportService,
     private toastr:            ToastrService,
     private translate:         TranslateService,
+    private cs:                CompanySettingsService,
   ) {}
 
   ngOnInit(): void {
@@ -218,6 +222,11 @@ export class CcOpeningBalancesComponent implements OnInit {
     return this.rows.filter(r => r._dirty).length;
   }
 
+  get numFmt(): string {
+    const d = this.cs.decimals;
+    return `1.${d}-${d}`;
+  }
+
   // ── Input handlers ──────────────────────────────────────────────────────────
 
   onDebitChange(row: CcBalRow): void {
@@ -293,8 +302,8 @@ export class CcOpeningBalancesComponent implements OnInit {
         const cells = [
           r.accNo,
           r.accName,
-          r.bb > 0 ? r.bb.toFixed(3) : '—',
-          r.bb < 0 ? Math.abs(r.bb).toFixed(3) : '—',
+          r.bb > 0 ? r.bb.toFixed(this.cs.decimals) : '—',
+          r.bb < 0 ? Math.abs(r.bb).toFixed(this.cs.decimals) : '—',
         ];
         return `<tr><td>${cells.join('</td><td>')}</td></tr>`;
       }).join('');

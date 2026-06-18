@@ -1,0 +1,152 @@
+<app-page-header
+  [title]="'AccountsListReport.Title' | translate"
+  [title1]="'Nav.Accounting.GLReports' | translate"
+  [activeTitle]="'AccountsListReport.Title' | translate">
+</app-page-header>
+
+<div class="row alr-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-list-details me-2"></i>
+          {{ 'AccountsListReport.Title' | translate }}
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched || rows.length === 0">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Filters ─────────────────────────────────────── -->
+        <div class="row g-3 align-items-end mb-3">
+
+          <!-- حتى المستوى -->
+          <div class="col-md-2">
+            <label class="form-label">{{ 'AccountsListReport.MaxLevel' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="maxLevel" min="1" max="9" (change)="onFilterChange()" />
+          </div>
+
+          <!-- Scope radios -->
+          <div class="col-md-4">
+            <label class="form-label d-block">{{ 'AccountsListReport.Scope' | translate }}</label>
+            <div class="d-flex gap-3 flex-wrap">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="scopeAll" name="scopeGroup"
+                  [(ngModel)]="specificAccount" [value]="false" (change)="onModeChange(); onFilterChange()" />
+                <label class="form-check-label" for="scopeAll">
+                  {{ 'AccountsListReport.AllAccounts' | translate }}
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="scopeSpecific" name="scopeGroup"
+                  [(ngModel)]="specificAccount" [value]="true" (change)="onModeChange(); onFilterChange()" />
+                <label class="form-check-label" for="scopeSpecific">
+                  {{ 'AccountsListReport.SpecificAccount' | translate }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account picker (only for لحساب معين) -->
+          <div class="col-md-6" *ngIf="specificAccount">
+            <label class="form-label">{{ 'AccountsListReport.Account' | translate }}</label>
+            <ng-select
+              [items]="allAccounts"
+              [(ngModel)]="selectedAcc"
+              [searchFn]="accountSearchFn"
+              [loading]="lookupLoading"
+              [clearable]="true"
+              [placeholder]="'AccountsListReport.SelectAccount' | translate"
+              appendTo="body"
+              (change)="onFilterChange()">
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.no }} — {{ isAr ? item.name : item.Ename }}
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                {{ item.no }} — {{ isAr ? item.name : item.Ename }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched">
+          <div class="alr-print-area">
+            <div class="alr-report-title">
+              {{ 'AccountsListReport.Title' | translate }}
+            </div>
+
+            <div *ngIf="rows.length === 0" class="alert alert-info text-center">
+              {{ 'General.NoData' | translate }}
+            </div>
+
+            <div *ngIf="rows.length > 0" class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 alr-table">
+                  <thead class="table-primary">
+                    <tr>
+                      <th class="text-center">{{ 'AccountsListReport.AccNo' | translate }}</th>
+                      <th class="text-center">{{ 'AccountsListReport.Level' | translate }}</th>
+                      <th>{{ 'AccountsListReport.AccName' | translate }}</th>
+                      <th class="text-center">{{ 'AccountsListReport.Belong' | translate }}</th>
+                      <th class="text-center">{{ 'AccountsListReport.BranchState' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let r of rows" [class.alr-parent]="r.branched">
+                      <td class="text-center">
+                        <a class="alr-link" [routerLink]="['/accounting/gl/accounts-list']"
+                           [queryParams]="{ focus: r.no }">{{ r.no }}</a>
+                      </td>
+                      <td class="text-center">{{ r.level }}</td>
+                      <td>
+                        <a class="alr-link" [routerLink]="['/accounting/gl/accounts-list']"
+                           [queryParams]="{ focus: r.no }">{{ isAr ? r.name : r.Ename }}</a>
+                      </td>
+                      <td class="text-center">
+                        <a *ngIf="r.belong != null" class="alr-link"
+                           [routerLink]="['/accounting/gl/accounts-list']"
+                           [queryParams]="{ focus: r.belong }">{{ r.belong }}</a>
+                        <span *ngIf="r.belong == null">___</span>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge" [ngClass]="r.branched ? 'bg-primary-transparent' : 'bg-light text-muted'">
+                          {{ (r.branched ? 'AccountsListReport.Branched' : 'AccountsListReport.NotBranched') | translate }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot class="fw-bold table-light">
+                    <tr>
+                      <td colspan="5" class="text-center">
+                        {{ 'AccountsListReport.TotalAccounts' | translate }}: {{ rows.length }}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

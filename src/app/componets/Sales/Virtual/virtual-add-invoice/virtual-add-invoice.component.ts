@@ -39,6 +39,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FlatpickrModule } from 'angularx-flatpickr';
 import { FlatpickrDefaults } from 'angularx-flatpickr';
 import { FotaraService } from "../../../../shared/services/fotara.service";
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 
 interface VirtualInvoiceData {
@@ -70,7 +71,8 @@ interface VirtualInvoiceData {
     MatSelectModule,
     MatCheckboxModule,
     SharedModule,
-    FlatpickrModule // Add this to your existing imports
+    FlatpickrModule, // Add this to your existing imports
+    HasPermissionDirective
   ],
   providers: [
     DatePipe,

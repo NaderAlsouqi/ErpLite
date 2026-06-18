@@ -4,14 +4,14 @@
   [activeTitle]="'Nav.Accounting.ClearCostCenters' | translate">
 </app-page-header>
 
-<div class="row">
+<div class="row cc-container">
   <div class="col-xl-12">
     <div class="card custom-card">
 
       <div class="card-header">
         <div class="card-title">{{ 'ClearCostCenters.Title' | translate }}</div>
         <div class="card-options">
-          <button class="btn btn-outline-primary me-1" (click)="printTable()">
+          <button class="btn btn-outline-primary me-1" *hasPermission="'CostCenters.Print'" (click)="printTable()">
             <i class="ti ti-printer me-1"></i>
             {{ 'General.Print' | translate }}
           </button>
@@ -23,7 +23,7 @@
             <i class="ti ti-fold me-1"></i>
             {{ 'ClearCostCenters.CollapseAll' | translate }}
           </button>
-          <button class="btn btn-primary" (click)="addNewRow()">
+          <button class="btn btn-primary" *hasPermission="'CostCenters.Create'" (click)="addNewRow()">
             <i class="ti ti-plus me-1"></i>
             {{ 'ClearCostCenters.AddCostCenter' | translate }}
           </button>
@@ -72,8 +72,8 @@
 
         <!-- Tree Table -->
         <div *ngIf="!loading" class="table-responsive">
-          <table class="cc-tree-table">
-            <thead>
+          <table class="table table-bordered table-hover cc-tree-table mb-0">
+            <thead class="table-primary">
               <tr>
                 <th class="col-no">{{ 'ClearCostCenters.CcntrNo' | translate }}</th>
                 <th class="col-name">{{ 'ClearCostCenters.ArabicName' | translate }}</th>
@@ -114,12 +114,14 @@
                   </td>
                   <td class="col-belong">{{ item.node!.data.belong || '—' }}</td>
                   <td class="col-actions text-center">
-                    <button class="btn btn-sm btn-outline-success me-1"
+                    <button class="btn btn-sm btn-outline-primary me-1"
+                      *hasPermission="'CostCenters.Create'"
                       (click)="addNewRow(item.node!)"
                       [title]="'ClearCostCenters.AddChild' | translate">
                       <i class="ti ti-git-branch"></i>
                     </button>
                     <button class="btn btn-sm btn-warning"
+                      *hasPermission="'CostCenters.Edit'"
                       (click)="initiateClear(item.node!)"
                       [title]="'ClearCostCenters.ClearBtn' | translate">
                       <i class="ti ti-arrows-exchange me-1"></i>
@@ -169,6 +171,7 @@
                   </td>
                   <td class="col-actions text-center">
                     <button class="btn btn-sm btn-success me-1"
+                      *hasPermission="'CostCenters.Edit'"
                       (click)="saveEditedRow(item.node!.data.CcntrNo)"
                       [disabled]="saving"
                       [title]="'General.Save' | translate">
@@ -187,7 +190,7 @@
                 <!-- ── New inline row ─────────────────────────────────────── -->
                 <tr *ngIf="item.kind === 'new'" class="row-new">
                   <td class="col-no">
-                    <input type="number" class="form-control inline-input"
+                    <input type="number" min="1" step="1" class="form-control inline-input"
                       [(ngModel)]="item.row!.CcntrNo"
                       [class.is-invalid]="submitted && (!item.row!.CcntrNo || item.row!.CcntrNo <= 0)"
                       [placeholder]="'ClearCostCenters.CcntrNo' | translate" />
@@ -224,6 +227,7 @@
                   </td>
                   <td class="col-actions text-center">
                     <button class="btn btn-sm btn-success me-1"
+                      *hasPermission="'CostCenters.Create'"
                       (click)="saveNewRow(item.row!)"
                       [disabled]="saving"
                       [title]="'General.Save' | translate">

@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -92,6 +92,10 @@ export class ChartOfAccountsComponent implements OnInit {
   pendingDeleteNo: number | null = null;
   deleting = false;
 
+  // ── Deep-link focus (e.g. from the printed Accounts List report) ──────────
+  highlightedNo: number | null = null;
+  private pendingFocus: number | null = null;
+
   constructor(
     private accountsService: ChartOfAccountsService,
     private toastr: ToastrService,
@@ -100,16 +104,56 @@ export class ChartOfAccountsComponent implements OnInit {
     private costCenterService: CostCenterService,
     private comfService: ComfService,
     private accountingState: AccountingStateService,
+    private route: ActivatedRoute,
     private el: ElementRef
   ) {}
 
   ngOnInit(): void {
+    const focusParam = this.route.snapshot.queryParamMap.get('focus');
+    const focusNo = focusParam != null ? Number(focusParam) : NaN;
+    if (!isNaN(focusNo) && focusNo > 0) this.pendingFocus = focusNo;
+
     this.loadData();
     this.costCenterService.getAll().subscribe(data => {
       const sorted = data.sort((a, b) => (a.CcntrNo ?? 0) - (b.CcntrNo ?? 0));
       this.costCenters = sorted;
       this.firstCcntrNo = sorted.length > 0 ? (sorted[0].CcntrNo ?? null) : null;
     });
+  }
+
+  /**
+   * Reveal an account in the tree (expanding all of its ancestors), scroll to
+   * it, and briefly highlight it. Called when arriving with ?focus=<no>.
+   */
+  private focusAccount(no: number): void {
+    const target = this.nodeMap.get(no);
+    if (!target) {
+      this.toastr.warning(this.translate.instant('ChartOfAccounts.AccountNotFound') + ' ' + no);
+      return;
+    }
+    // Expand every ancestor so the target row becomes visible.
+    const guard = new Set<number>();
+    let belong = target.data.belong ?? null;
+    while (belong != null && belong > 0 && !guard.has(belong)) {
+      guard.add(belong);
+      const anc = this.nodeMap.get(belong);
+      if (!anc) break;
+      anc.expanded = true;
+      belong = anc.data.belong ?? null;
+    }
+
+    this.searchMode  = false;
+    this.searchTerm  = '';
+    this.focusedNode = null;
+    this.buildVisibleList();
+
+    this.highlightedNo = no;
+    setTimeout(() => {
+      const row = this.el.nativeElement.querySelector(`#acc-row-${no}`);
+      row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+    // Fade the highlight out after a few seconds.
+    setTimeout(() => { this.highlightedNo = null; }, 4500);
   }
 
   get isDirty(): boolean {
@@ -131,6 +175,11 @@ export class ChartOfAccountsComponent implements OnInit {
         this.computeSubtotals();
         this.buildVisibleList();
         this.loading = false;
+        if (this.pendingFocus != null) {
+          const no = this.pendingFocus;
+          this.pendingFocus = null;
+          this.focusAccount(no);
+        }
       },
       error: () => { this.loading = false; },
     });

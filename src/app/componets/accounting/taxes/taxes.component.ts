@@ -1,18 +1,15 @@
-import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { ToastrService } from 'ngx-toastr';
-import { NgbModal, NgbModalConfig, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatSortModule, Sort } from '@angular/material/sort';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { TaxDto, TaxService } from '../../../shared/services/tax.service';
-import { ReportService } from '../../../shared/services/report.service';
 import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/services/chart-of-accounts.service';
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { ReportService } from '../../../shared/services/report.service';
 
 @Component({
   selector: 'app-taxes',
@@ -21,213 +18,170 @@ import { ConfirmationModalComponent } from '../../../shared/common/confirmation-
     CommonModule,
     FormsModule,
     TranslateModule,
-    RouterModule,
+    NgSelectModule,
     SharedModule,
-    NgbModule,
-    MatTableModule,
-    MatSortModule,
-    MatPaginatorModule,
     ConfirmationModalComponent,
+    HasPermissionDirective,
   ],
-  providers: [NgbModalConfig, NgbModal],
   templateUrl: './taxes.component.html',
   styleUrl: './taxes.component.scss',
-  encapsulation: ViewEncapsulation.None,
 })
 export class TaxesComponent implements OnInit {
-  @ViewChild('taxFormModal') taxFormModal!: TemplateRef<any>;
   @ViewChild('confirmModal') confirmModal!: ConfirmationModalComponent;
 
-  displayedColumns: string[] = ['TaxNo', 'TaxNameA', 'TaxNameE', 'TaxPerc', 'Actions'];
+  taxes: TaxDto[] = [];
+  filteredTaxes: TaxDto[] = [];
   accounts: ChartOfAccountDto[] = [];
-  dataSource = new MatTableDataSource<TaxDto>([]);
-  allData: TaxDto[] = [];
+  filterName = '';
 
-  pageSize = 10;
-  pageSizeOptions = [5, 10, 25, 50];
-  pageIndex = 0;
-  totalItems = 0;
-
+  currentTax: TaxDto = this.initForm();
   loading = false;
-  submitted = false;
-  isEditMode = false;
-  modalRef!: NgbModalRef;
-  searchTerm = '';
-  selectedId: number | null = null;
+  saving = false;
+  activeTab: 'form' | 'list' = 'form';
 
-  taxForm: TaxDto = this.emptyForm();
+  switchToForm(): void { this.activeTab = 'form'; }
+  switchToList(): void { this.activeTab = 'list'; }
 
   constructor(
     private taxService: TaxService,
+    private accService: ChartOfAccountsService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private modalService: NgbModal,
-    private modalConfig: NgbModalConfig,
     private reportService: ReportService,
-    private chartOfAccountsService: ChartOfAccountsService
-  ) {
-    this.modalConfig.backdrop = 'static';
-    this.modalConfig.keyboard = false;
-  }
+  ) {}
 
   ngOnInit(): void {
     this.loadData();
-    this.loadAccounts();
+    this.accService.getAll().subscribe(data => this.accounts = data);
   }
 
-  private emptyForm(): TaxDto {
+  private initForm(): TaxDto {
     return { TaxNo: 0, TaxNameA: '', TaxNameE: '', TaxPerc: null, Branched: 0, Belong: null, TaxAcc: null };
-  }
-
-  private loadAccounts(): void {
-    this.chartOfAccountsService.getAll().subscribe({
-      next: (data) => { this.accounts = data; },
-      error: () => {},
-    });
   }
 
   loadData(): void {
     this.loading = true;
     this.taxService.getAll().subscribe({
       next: (data) => {
-        this.allData = data;
-        this.totalItems = data.length;
-        this.applyFilter();
+        this.taxes = data;
+        this.applyFilters();
+        this.setNextNo();
         this.loading = false;
       },
-      error: () => { this.loading = false; },
+      error: () => { this.loading = false; }
     });
   }
 
-  openAddModal(): void {
-    this.isEditMode = false;
-    this.submitted = false;
-    const nextNo = this.allData.length > 0
-      ? Math.max(...this.allData.map(t => t.TaxNo)) + 1
-      : 1;
-    this.taxForm = { ...this.emptyForm(), TaxNo: nextNo };
-    this.modalRef = this.modalService.open(this.taxFormModal, {
-      centered: true, size: 'md', windowClass: 'form-modal-dialog animate__animated animate__fadeIn',
+  private setNextNo(): void {
+    const max = this.taxes.length > 0 ? Math.max(...this.taxes.map(t => t.TaxNo)) : 0;
+    this.currentTax.TaxNo = max + 1;
+  }
+
+  applyFilters(): void {
+    const term = this.filterName.toLowerCase();
+    this.filteredTaxes = this.taxes.filter(t =>
+      !term ||
+      t.TaxNo.toString().includes(term) ||
+      t.TaxNameA?.toLowerCase().includes(term) ||
+      t.TaxNameE?.toLowerCase().includes(term)
+    );
+  }
+
+  clearFilters(): void {
+    this.filterName = '';
+    this.applyFilters();
+  }
+
+  onNoChange(): void {
+    const no = +this.currentTax.TaxNo;
+    if (!no) return;
+    const existing = this.taxes.find(t => +t.TaxNo === no);
+    if (existing) this.currentTax = { ...existing };
+  }
+
+  onSelectRow(tax: TaxDto): void {
+    this.currentTax = { ...tax };
+    this.activeTab = 'form';   // open the selected record in the entry tab for editing
+  }
+
+  save(): void {
+    if (!this.validate()) return;
+    const isEdit = this.taxes.some(t => +t.TaxNo === +this.currentTax.TaxNo);
+    this.saving = true;
+    const req = isEdit
+      ? this.taxService.update(this.currentTax.TaxNo, this.currentTax)
+      : this.taxService.add(this.currentTax);
+    req.subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || this.translate.instant('General.SaveSuccess'));
+        this.loadData();
+        this.reset();
+        this.saving = false;
+      },
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || err.error?.Message || this.translate.instant('General.Error'));
+        this.saving = false;
+      }
     });
   }
 
-  openEditModal(row: TaxDto): void {
-    this.isEditMode = true;
-    this.submitted = false;
-    this.selectedId = row.TaxNo;
-    this.taxForm = { ...row };
-    this.modalRef = this.modalService.open(this.taxFormModal, {
-      centered: true, size: 'md', windowClass: 'form-modal-dialog animate__animated animate__fadeIn',
-    });
-  }
-
-  saveTax(): void {
-    this.submitted = true;
-    if (!this.taxForm.TaxNameA?.trim() || !this.taxForm.TaxNameE?.trim()) return;
-    if (!this.isEditMode && (!this.taxForm.TaxNo || this.taxForm.TaxNo <= 0)) return;
-
-    this.loading = true;
-
-    if (this.isEditMode && this.selectedId != null) {
-      this.taxService.update(this.selectedId, this.taxForm).subscribe({
-        next: () => {
-          this.toastr.success(this.translate.instant('Taxes.UpdateSuccess'));
-          this.modalRef?.close();
-          this.loadData();
-          this.loading = false;
-        },
-        error: () => { this.loading = false; },
-      });
-    } else {
-      this.taxService.add(this.taxForm).subscribe({
-        next: () => {
-          this.toastr.success(this.translate.instant('Taxes.AddSuccess'));
-          this.modalRef?.close();
-          this.loadData();
-          this.loading = false;
-        },
-        error: () => { this.loading = false; },
-      });
-    }
-  }
-
-  confirmDelete(row: TaxDto): void {
-    this.selectedId = row.TaxNo;
+  delete(): void {
+    if (!this.currentTax.TaxNo) return;
     this.confirmModal.show();
   }
 
-  deleteTax(): void {
-    if (this.selectedId == null) return;
-    this.loading = true;
-    this.taxService.delete(this.selectedId).subscribe({
-      next: () => {
-        this.toastr.success(this.translate.instant('Taxes.DeleteSuccess'));
+  confirmDelete(): void {
+    this.taxService.delete(this.currentTax.TaxNo).subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || this.translate.instant('General.DeleteSuccess'));
         this.loadData();
-        this.loading = false;
+        this.reset();
       },
-      error: () => { this.loading = false; },
-    });
-  }
-
-  onSearch(): void {
-    this.pageIndex = 0;
-    this.applyFilter();
-  }
-
-  private applyFilter(): void {
-    const term = this.searchTerm.toLowerCase();
-    const filtered = term
-      ? this.allData.filter(
-          (t) =>
-            t.TaxNameA?.toLowerCase().includes(term) ||
-            t.TaxNameE?.toLowerCase().includes(term) ||
-            t.TaxNo?.toString().includes(term)
-        )
-      : [...this.allData];
-
-    this.totalItems = filtered.length;
-    const start = this.pageIndex * this.pageSize;
-    this.dataSource.data = filtered.slice(start, start + this.pageSize);
-  }
-
-  onSortChange(sort: Sort): void {
-    if (!sort.direction) return;
-    this.allData.sort((a, b) => {
-      const asc = sort.direction === 'asc';
-      switch (sort.active) {
-        case 'TaxNo':      return this.compare(a.TaxNo, b.TaxNo, asc);
-        case 'TaxNameA':   return this.compare(a.TaxNameA, b.TaxNameA, asc);
-        case 'TaxNameE':   return this.compare(a.TaxNameE, b.TaxNameE, asc);
-        case 'TaxPerc':    return this.compare(a.TaxPerc, b.TaxPerc, asc);
-        default: return 0;
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || this.translate.instant('General.Error'));
       }
     });
-    this.pageIndex = 0;
-    this.applyFilter();
   }
 
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.applyFilter();
+  reset(): void {
+    this.currentTax = this.initForm();
+    this.setNextNo();
   }
 
-  private compare(a: any, b: any, asc: boolean): number {
-    return (a < b ? -1 : 1) * (asc ? 1 : -1);
+  validate(): boolean {
+    if (!this.currentTax.TaxNo || this.currentTax.TaxNo <= 0) {
+      this.toastr.warning(this.translate.instant('Taxes.TaxNoRequired'));
+      return false;
+    }
+    if (!this.currentTax.TaxNameA?.trim()) {
+      this.toastr.warning(this.translate.instant('Taxes.ArabicNameRequired'));
+      return false;
+    }
+    if (!this.currentTax.TaxNameE?.trim()) {
+      this.toastr.warning(this.translate.instant('Taxes.EnglishNameRequired'));
+      return false;
+    }
+    return true;
   }
 
-  printTable(): void {
-    const title = this.translate.instant('Taxes.Title');
+  accountSearchFn = (term: string, item: ChartOfAccountDto): boolean => {
+    const t = term.toLowerCase();
+    return String(item.no).includes(t) ||
+      (item.name?.toLowerCase().includes(t) ?? false) ||
+      (item.Ename?.toLowerCase().includes(t) ?? false);
+  };
+
+  print(): void {
+    const t = (k: string) => this.translate.instant(k);
     const cols = [
-      { label: this.translate.instant('Taxes.TaxNo'),       key: 'TaxNo' },
-      { label: this.translate.instant('Taxes.ArabicName'),  key: 'TaxNameA' },
-      { label: this.translate.instant('Taxes.EnglishName'), key: 'TaxNameE' },
-      { label: this.translate.instant('Taxes.TaxPerc'),     key: 'TaxPerc' },
+      { label: t('Taxes.TaxNo') },
+      { label: t('Taxes.ArabicName') },
+      { label: t('Taxes.EnglishName') },
+      { label: t('Taxes.TaxPerc') },
     ];
-    const rows = this.allData.map(r =>
-      cols.map(c => (r as any)[c.key] ?? '—').join('</td><td>')
-    ).map(r => `<tr><td>${r}</td></tr>`).join('');
-    
-    this.reportService.printReport(title, cols, rows);
+    const rows = this.filteredTaxes.map(tx =>
+      `<tr><td>${tx.TaxNo ?? '—'}</td><td>${tx.TaxNameA ?? '—'}</td><td>${tx.TaxNameE ?? '—'}</td><td>${tx.TaxPerc ?? '—'}</td></tr>`
+    ).join('');
+    this.reportService.printReport(t('Taxes.Title'), cols, rows);
   }
 }

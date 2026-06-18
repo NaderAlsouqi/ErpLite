@@ -40,6 +40,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { AccountStatmentComponent } from '../../Reports/account-statment/account-statment.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 
 // Define interfaces for Virtual Receipt Vouchers
@@ -140,7 +141,8 @@ export interface Bank {
         MatPaginatorModule,
         MatNativeDateModule,
         MatTab,
-        MatTabGroup
+        MatTabGroup,
+        HasPermissionDirective
   ],
     providers: [
     DatePipe,
@@ -787,6 +789,7 @@ export class VirtualReceiptVouchersComponent implements OnInit {
      */
     ChequesData: ChequeResponse[] = [];
     loadCheques(DocumentNumber: number,Trans_Num: number): void {
+      this.ChequesData = [];
       this.loading = true;
       this.receiptService.getCheques(DocumentNumber,Trans_Num).subscribe({
         next: (data) => {

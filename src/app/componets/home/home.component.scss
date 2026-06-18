@@ -1,0 +1,80 @@
+// Home page — styled to match the journal-voucher-report layout:
+//   • app-page-header at the top
+//   • content wrapped in `row hp-container > col-xl-12`
+//   • each logical section is its own `card custom-card` with a header
+//   • action grid replaces the legacy "group" tiles
+
+.hp-container {
+  padding: 1rem;
+}
+
+// ── Action grid (replaces the .home-groups / .group-cards markup) ───────
+.hp-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.hp-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 0.6rem;
+  border: 1px solid var(--default-border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--default-text-color);
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  min-height: 100px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -10px rgba(15, 23, 42, 0.25);
+    border-color: rgba(99, 102, 241, 0.4);
+  }
+
+  .hp-action-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  .hp-action-label {
+    font-size: 0.83rem;
+    font-weight: 500;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+}
+
+// Color accents on hover/icon — match the existing group palette.
+@mixin accent($color) {
+  .hp-action-icon { color: $color; }
+  &:hover { border-color: rgba($color, 0.5); box-shadow: 0 6px 18px -10px rgba($color, 0.4); }
+}
+.hp-action-card-primary   { @include accent(#6366f1); }
+.hp-action-card-success   { @include accent(#22c55e); }
+.hp-action-card-info      { @include accent(#0ea5e9); }
+.hp-action-card-warning   { @include accent(#f59e0b); }
+.hp-action-card-danger    { @include accent(#ef4444); }
+.hp-action-card-purple    { @include accent(#8b5cf6); }
+.hp-action-card-secondary { @include accent(#64748b); }
+
+// Optional left-border tint on the group's card header so each section
+// keeps a visual link to its color.
+@mixin group-header-tint($color) {
+  border-left: 4px solid $color;
+}
+.hp-group-header-primary   { @include group-header-tint(#6366f1); }
+.hp-group-header-success   { @include group-header-tint(#22c55e); }
+.hp-group-header-info      { @include group-header-tint(#0ea5e9); }
+.hp-group-header-warning   { @include group-header-tint(#f59e0b); }
+.hp-group-header-danger    { @include group-header-tint(#ef4444); }
+.hp-group-header-purple    { @include group-header-tint(#8b5cf6); }
+.hp-group-header-secondary { @include group-header-tint(#64748b); }
+
+::ng-deep [data-theme-mode="dark"] {
+  .hp-action-card { background: var(--bs-tertiary-bg); color: var(--default-text-color); }
+}

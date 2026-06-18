@@ -13,7 +13,8 @@
           <span *ngIf="deliveryName" class="ms-2 delivery-badge">{{ deliveryName }}</span>
         </div>
         <div>
-          <button class="btn btn-primary" 
+          <button class="btn btn-primary"
+                  *hasPermission="'VirtualInvoices.Transfer'"
                   [disabled]="(selectedTransactionNumbers.size === 0 || loading) && (!deliveryLimit)"
                   (click)="transferSelectedInvoices()">
             <i class="ti ti-exchange me-1"></i>
@@ -46,7 +47,7 @@
         
         <!-- Invoices table -->
         <div *ngIf="!loading" class="table-responsive">
-          <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="table table-bordered">
+          <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="table table-bordered table-hover mb-0">
             
             <!-- Checkbox Column -->
             <ng-container matColumnDef="select">

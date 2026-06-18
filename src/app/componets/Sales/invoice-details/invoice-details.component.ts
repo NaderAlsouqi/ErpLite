@@ -4,10 +4,12 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { InvoiceService } from '../../../shared/services/invoice.service'; 
 import { ReportService } from '../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { FormsModule } from '@angular/forms';
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 // Material Table imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -26,7 +28,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
     NgbAccordionModule,
     MatTableModule,
     MatSortModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    HasPermissionDirective
   ],
   providers: [DatePipe, ReportService, InvoiceService],
   templateUrl: './invoice-details.component.html',
@@ -50,6 +53,7 @@ export class InvoiceDetailsComponent implements OnInit {
     private invoiceService: InvoiceService,
     private translate: TranslateService,
     private reportService: ReportService,
+    private cs: CompanySettingsService,
     private location: Location,
     private toastr: ToastrService,
     private datePipe: DatePipe
@@ -98,11 +102,11 @@ export class InvoiceDetailsComponent implements OnInit {
           ItemName: item.ItemName,
           Quantity: item.Quantity,
           ItemDiscount: item.ItemDiscount,
-          ItemPrice: item.ItemPrice.toFixed(3),
-          ItemTotalPrice: item.ItemTotalPrice.toFixed(3),
+          ItemPrice: item.ItemPrice.toFixed(this.cs.billDecimals),
+          ItemTotalPrice: item.ItemTotalPrice.toFixed(this.cs.billDecimals),
           ItemTaxRate: item.ItemTaxRate + '%',
-          ItemTaxAmount: item.ItemTaxAmount.toFixed(3),
-          ItemTotalPriceAfterTax: item.ItemTotalPriceAfterTax.toFixed(3),
+          ItemTaxAmount: item.ItemTaxAmount.toFixed(this.cs.billDecimals),
+          ItemTotalPriceAfterTax: item.ItemTotalPriceAfterTax.toFixed(this.cs.billDecimals),
         }));
         
         this.dataSource.data = formattedItems;

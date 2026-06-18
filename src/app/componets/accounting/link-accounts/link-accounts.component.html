@@ -4,7 +4,7 @@
   [activeTitle]="'LinkAccounts.Title' | translate">
 </app-page-header>
 
-<div class="row">
+<div class="row la-container">
   <div class="col-xl-12">
     <div class="card custom-card">
 
@@ -14,11 +14,11 @@
           {{ 'LinkAccounts.Title' | translate }}
         </div>
         <div class="card-options">
-          <button class="btn btn-outline-primary me-2" (click)="printTable()" [disabled]="loading">
+          <button class="btn btn-outline-primary me-2" *hasPermission="'Comf.Print'" (click)="printTable()" [disabled]="loading">
             <i class="ti ti-printer me-1"></i>
             {{ 'General.Print' | translate }}
           </button>
-          <button class="btn btn-danger me-2" (click)="save()" [disabled]="saving || loading">
+          <button class="btn btn-danger me-2" *hasPermission="'Comf.LinkAccounts'" (click)="save()" [disabled]="saving || loading">
             <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
             <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
             {{ 'General.Save' | translate }}
@@ -38,8 +38,8 @@
         <ng-container *ngIf="!loading">
 
           <div class="la-form-wrapper">
-            <table class="la-table">
-              <thead>
+            <table class="table table-bordered table-hover la-table mb-0">
+              <thead class="table-primary">
                 <tr>
                   <th class="col-label">{{ 'LinkAccounts.AccountType' | translate }}</th>
                   <th class="col-picker">{{ 'LinkAccounts.AccountNumber' | translate }}</th>

@@ -1,0 +1,123 @@
+<app-page-header
+  [title]="'YearEndClosing.Title' | translate"
+  [title1]="'Nav.Accounting.Miscellaneous' | translate"
+  [activeTitle]="'YearEndClosing.Title' | translate">
+</app-page-header>
+
+<div class="row yec-container">
+  <div class="col-xl-9 col-xxl-7">
+    <div class="card custom-card">
+
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-calendar-stats me-2"></i>
+          {{ 'YearEndClosing.Title' | translate }}
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Year + P&L account -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-3">
+            <label class="form-label year-field" [class.year-off]="year !== currentYear">{{ 'YearEndClosing.Year' | translate }}</label>
+            <input type="number" min="1900" [max]="currentYear" class="form-control year-field"
+                   [class.year-off]="year !== currentYear" [(ngModel)]="year" [disabled]="busy" />
+          </div>
+          <div class="col-md-9">
+            <label class="form-label">{{ 'YearEndClosing.PnlAccount' | translate }}</label>
+            <ng-select
+              [items]="accounts" [(ngModel)]="pnlAcc" [searchFn]="accountSearchFn"
+              [loading]="lookupLoading" [clearable]="true" [disabled]="busy"
+              [placeholder]="'YearEndClosing.SelectAccount' | translate" appendTo="body" class="yec-select">
+              <ng-template ng-label-tmp let-item="item">{{ item.no }} — {{ isAr ? item.name : item.Ename }}</ng-template>
+              <ng-template ng-option-tmp let-item="item">{{ item.no }} — {{ isAr ? item.name : item.Ename }}</ng-template>
+            </ng-select>
+          </div>
+        </div>
+
+        <!-- Inventory closing -->
+        <div class="yec-inv">
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="closeInv" [(ngModel)]="closeInventory" [disabled]="busy" />
+            <label class="form-check-label fw-semibold text-danger" for="closeInv">
+              {{ 'YearEndClosing.CloseInventory' | translate }}
+            </label>
+          </div>
+
+          <div class="row g-3 align-items-end" [class.yec-disabled]="!closeInventory">
+            <!-- Opening inventory (credit) -->
+            <div class="col-12"><span class="yec-sub">{{ 'YearEndClosing.OpeningInv' | translate }}</span></div>
+            <div class="col-md-8">
+              <label class="form-label">{{ 'YearEndClosing.InvAccount' | translate }}</label>
+              <ng-select
+                [items]="accounts" [(ngModel)]="openingInvAcc" [searchFn]="accountSearchFn"
+                [clearable]="true" [disabled]="busy || !closeInventory"
+                [placeholder]="'YearEndClosing.SelectAccount' | translate" appendTo="body" class="yec-select">
+                <ng-template ng-label-tmp let-item="item">{{ item.no }} — {{ isAr ? item.name : item.Ename }}</ng-template>
+                <ng-template ng-option-tmp let-item="item">{{ item.no }} — {{ isAr ? item.name : item.Ename }}</ng-template>
+              </ng-select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ 'YearEndClosing.InvValue' | translate }}</label>
+              <input type="number" min="0" step="any" class="form-control" [(ngModel)]="openingInvValue" [disabled]="busy || !closeInventory" />
+            </div>
+
+            <!-- Closing inventory (debit) -->
+            <div class="col-12 mt-3"><span class="yec-sub">{{ 'YearEndClosing.ClosingInv' | translate }}</span></div>
+            <div class="col-md-8">
+              <label class="form-label">{{ 'YearEndClosing.InvAccount' | translate }}</label>
+              <ng-select
+                [items]="accounts" [(ngModel)]="closingInvAcc" [searchFn]="accountSearchFn"
+                [clearable]="true" [disabled]="busy || !closeInventory"
+                [placeholder]="'YearEndClosing.SelectAccount' | translate" appendTo="body" class="yec-select">
+                <ng-template ng-label-tmp let-item="item">{{ item.no }} — {{ isAr ? item.name : item.Ename }}</ng-template>
+                <ng-template ng-option-tmp let-item="item">{{ item.no }} — {{ isAr ? item.name : item.Ename }}</ng-template>
+              </ng-select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ 'YearEndClosing.InvValue' | translate }}</label>
+              <input type="number" min="0" step="any" class="form-control" [(ngModel)]="closingInvValue" [disabled]="busy || !closeInventory" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="yec-progress-wrap" *ngIf="busy || progress === 100">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="yec-progress-label">{{ (statusKey || 'YearEndClosing.Processing') | translate }}</span>
+            <span class="yec-progress-pct">{{ progress }}%</span>
+          </div>
+          <div class="progress yec-progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                 [style.width.%]="progress" role="progressbar"></div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-2 mt-4 flex-wrap">
+          <button *hasPermission="'YearEndClosing.Execute'" class="btn btn-primary" (click)="askExecute()" [disabled]="busy">
+            <span *ngIf="busy" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!busy" class="ti ti-checks me-1"></i>
+            {{ 'YearEndClosing.Execute' | translate }}
+          </button>
+          <button *hasPermission="'YearEndClosing.Delete'" class="btn btn-outline-danger" (click)="askDelete()" [disabled]="busy">
+            <i class="ti ti-trash me-1"></i>
+            {{ 'YearEndClosing.DeleteEntry' | translate }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal #confirmModal
+  [title]="confirmTitleKey | translate"
+  [message]="confirmMsgKey | translate"
+  [confirmButtonText]="'General.Confirm' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  [confirmButtonClass]="pending === 'delete' ? 'btn-danger' : 'btn-primary'"
+  (confirm)="onConfirm()"
+  (cancel)="onCancel()">
+</app-confirmation-modal>

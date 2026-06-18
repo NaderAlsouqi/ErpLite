@@ -1,0 +1,369 @@
+<app-page-header
+  [title]="'CheqTracking.Title' | translate"
+  [title1]="'Nav.Accounting.Cheques' | translate"
+  [activeTitle]="'Nav.Accounting.CheqTracking' | translate">
+</app-page-header>
+
+<div class="row ct-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- ── Tabs ────────────────────────────────────────────── -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <ul class="nav nav-tabs card-header-tabs mb-0">
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'form'"
+              (click)="switchTab('form')" href="javascript:void(0)">
+              <i class="ti ti-file-text me-1"></i>
+              {{ 'CheqTracking.VoucherEntry' | translate }}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'list'"
+              (click)="switchTab('list')" href="javascript:void(0)">
+              <i class="ti ti-list me-1"></i>
+              {{ 'CheqTracking.VouchersList' | translate }}
+            </a>
+          </li>
+        </ul>
+
+        <div *ngIf="activeTab === 'form'" class="d-flex gap-1">
+          <button class="btn btn-sm btn-outline-primary"
+            *hasPermission="'CheqTracking.Print'"
+            (click)="print()" [disabled]="!_loadedDocNo">
+            <i class="ti ti-printer me-1"></i>{{ 'CheqTracking.Print' | translate }}
+          </button>
+          <div class="vr mx-1"></div>
+          <button class="btn btn-sm btn-outline-secondary" (click)="goFirst()"
+            title="{{ 'CheqTracking.First' | translate }}">
+            <i class="ti ti-player-skip-back"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="goPrev()"
+            title="{{ 'CheqTracking.Prev' | translate }}">
+            <i class="ti ti-chevron-right"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="goNext()"
+            title="{{ 'CheqTracking.Next' | translate }}">
+            <i class="ti ti-chevron-left"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="goLast()"
+            title="{{ 'CheqTracking.Last' | translate }}">
+            <i class="ti ti-player-skip-forward"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ════════════════ FORM ════════════════ -->
+      <div *ngIf="activeTab === 'form'" class="card-body">
+
+        <!-- ── Row 1: Year / VType / DocNo / Branch ────────── -->
+        <div class="row g-3 mb-3">
+
+          <div class="col-md-2 year-field" [class.year-off]="myYear !== currentYear">
+            <label class="form-label">{{ 'CheqTracking.Year' | translate }}</label>
+            <input type="number" class="form-control"
+              [(ngModel)]="myYear"
+              min="1900" [max]="currentYear"
+              (change)="onYearChange()" />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">{{ 'CheqTracking.VType' | translate }}</label>
+            <ng-select
+              [items]="voucherSerials"
+              bindValue="VSerialNo"
+              [(ngModel)]="vType"
+              (change)="onVTypeChange()"
+              [searchable]="false"
+              [clearable]="false">
+              <ng-template ng-label-tmp let-s="item">{{ s.VSerialNo }} — {{ s.SName }}</ng-template>
+              <ng-template ng-option-tmp let-s="item">{{ s.VSerialNo }} — {{ s.SName }}</ng-template>
+            </ng-select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">{{ 'CheqTracking.DocNo' | translate }}</label>
+            <input type="number" min="1" [max]="maxDocNo + 1" class="form-control" [(ngModel)]="docNo"
+              (change)="onDocNoChange()" />
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">{{ 'CheqTracking.BrNo' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="brNo" readonly />
+          </div>
+
+        </div>
+
+        <!-- ── Row 2: Date / Currency / Rate ───────────────── -->
+        <div class="row g-3 mb-3">
+
+          <div class="col-md-3">
+            <label class="form-label">{{ 'CheqTracking.Date' | translate }}</label>
+            <input type="text" class="form-control"
+              mwlFlatpickr
+              [options]="dateOptions"
+              [(ngModel)]="date"
+              (flatpickrChange)="onDateChange($event)"
+              [disabled]="isPosted" />
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">{{ 'CheqTracking.Currency' | translate }}</label>
+            <ng-select
+              [items]="currencies"
+              bindValue="cur_no"
+              [(ngModel)]="curNo"
+              (change)="onCurrencyChange()"
+              [searchable]="true"
+              [clearable]="false"
+              [disabled]="isPosted">
+              <ng-template ng-label-tmp let-c="item">{{ c.cur }}</ng-template>
+              <ng-template ng-option-tmp let-c="item">{{ c.cur }}</ng-template>
+            </ng-select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">{{ 'CheqTracking.Rate' | translate }}</label>
+            <input type="number" class="form-control"
+              [(ngModel)]="curRate" step="0.0001" [disabled]="isPosted" />
+          </div>
+
+        </div>
+
+        <!-- ── Row 3: Period filter (احضار) ────────────────── -->
+        <div class="row g-3 mb-4 align-items-end">
+
+          <div class="col-md-3">
+            <label class="form-label">{{ 'CheqTracking.PeriodFrom' | translate }}</label>
+            <input type="text" class="form-control"
+              mwlFlatpickr
+              [options]="periodFromOptions"
+              [(ngModel)]="periodFrom"
+              (flatpickrChange)="onPeriodFromChange($event)" />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">{{ 'CheqTracking.PeriodTo' | translate }}</label>
+            <input type="text" class="form-control"
+              mwlFlatpickr
+              [options]="periodToOptions"
+              [(ngModel)]="periodTo"
+              (flatpickrChange)="onPeriodToChange($event)" />
+          </div>
+
+          <div class="col-md-2">
+            <button class="btn btn-outline-primary w-100" (click)="fetchCheques()" [disabled]="isPosted">
+              <i class="ti ti-search me-1"></i>{{ 'CheqTracking.Fetch' | translate }}
+            </button>
+          </div>
+
+          <div class="col-md-auto ms-auto d-flex align-items-end text-muted small">
+            {{ 'CheqTracking.Selected' | translate }}:
+            <strong class="ms-1">{{ selectedCount }}</strong>
+          </div>
+
+        </div>
+
+        <!-- ── Cheques grid ───────────────────────────────── -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="mb-0 fw-semibold">
+            <i class="ti ti-checks me-1 text-primary"></i>
+            {{ 'CheqTracking.ChequesGrid' | translate }}
+          </h6>
+        </div>
+
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered table-hover ct-table mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th style="width:60px" class="text-center">
+                  <input type="checkbox"
+                    [checked]="allSelected"
+                    (change)="toggleAll($any($event.target).checked)" />
+                  {{ 'CheqTracking.IsSelected' | translate }}
+                </th>
+                <th>{{ 'CheqTracking.CheqNum'  | translate }}</th>
+                <th>{{ 'CheqTracking.Date1'    | translate }}</th>
+                <th class="text-end">{{ 'CheqTracking.Amt' | translate }}</th>
+                <th>{{ 'CheqTracking.Ben'      | translate }}</th>
+                <th>{{ 'CheqTracking.BankAcc'  | translate }}</th>
+                <th>{{ 'CheqTracking.Acc2'     | translate }}</th>
+                <th style="width:60px" class="text-center">{{ 'General.Delete' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let line of lines; let i = index"
+                  [class.table-success]="line.isSelected">
+                <td class="text-center">
+                  <input type="checkbox"
+                    [(ngModel)]="line.isSelected"
+                    [ngModelOptions]="{standalone:true}" />
+                </td>
+                <td>{{ line.cheqNum }}</td>
+                <td>{{ line.date1 }}</td>
+                <td class="text-end">{{ line.amt | number: numFmt }}</td>
+                <td>{{ line.ben }}</td>
+                <td>{{ line.bankAcc }}</td>
+                <td>{{ line.acc2 }}{{ line.acc2Name ? ' — ' + line.acc2Name : '' }}</td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-danger" (click)="removeLine(i)"
+                    [disabled]="isPosted">
+                    <i class="ti ti-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="lines.length === 0">
+                <td colspan="8" class="text-center text-muted py-4">
+                  <i class="ti ti-folder-open fs-2 d-block mb-2"></i>
+                  {{ 'CheqTracking.NoData' | translate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ── Action buttons ─────────────────────────────── -->
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-primary"
+            *hasPermission="'CheqTracking.Create'"
+            (click)="save()" [disabled]="isPosted">
+            <i class="ti ti-device-floppy me-1"></i>{{ 'CheqTracking.Save' | translate }}
+          </button>
+          <button class="btn btn-outline-danger ms-auto"
+            *hasPermission="'CheqTracking.Delete'"
+            (click)="confirmDelete()"
+            [disabled]="!_loadedDocNo || isPosted">
+            <i class="ti ti-trash me-1"></i>{{ 'CheqTracking.Delete' | translate }}
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ════════════════ LIST ════════════════ -->
+      <div *ngIf="activeTab === 'list'" class="card-body">
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-2 year-field" [class.year-off]="myYear !== currentYear">
+            <label class="form-label small">{{ 'CheqTracking.Year' | translate }}</label>
+            <input type="number" class="form-control form-control-sm"
+              [(ngModel)]="myYear" min="1900" [max]="currentYear" (change)="onYearChange()" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small">{{ 'CheqTracking.VType' | translate }}</label>
+            <ng-select [items]="voucherSerials" bindValue="VSerialNo" [(ngModel)]="vType"
+              (change)="loadList()" [searchable]="true" [clearable]="false">
+              <ng-template ng-label-tmp let-s="item">{{ s.VSerialNo }} — {{ s.SName }}</ng-template>
+              <ng-template ng-option-tmp let-s="item">{{ s.VSerialNo }} — {{ s.SName }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button class="btn btn-primary" (click)="loadList()">
+              <i class="ti ti-refresh fs-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover ct-table mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th>{{ 'CheqTracking.DocNo'    | translate }}</th>
+                <th>{{ 'CheqTracking.Date'      | translate }}</th>
+                <th>{{ 'CheqTracking.LineCount' | translate }}</th>
+                <th class="text-end">{{ 'CheqTracking.Total' | translate }}</th>
+                <th class="text-center" style="width:90px">{{ 'General.Actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let row of listItems">
+                <tr class="cursor-pointer" (click)="toggleRowExpand(row)">
+                  <td class="fw-bold">
+                    <i class="ti small me-1 text-muted"
+                      [class.ti-chevron-down]="isRowExpanded(row)"
+                      [class.ti-chevron-right]="!isRowExpanded(row)"></i>
+                    {{ row.DocNo }}
+                  </td>
+                  <td>{{ row.Date | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ row.LineCount }}</td>
+                  <td class="text-end">{{ row.Total | number: numFmt }}</td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary"
+                      (click)="openFromList(row); $event.stopPropagation()">
+                      <i class="ti ti-eye me-1"></i>{{ 'General.View' | translate }}
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="isRowExpanded(row)" class="bg-light">
+                  <td colspan="5" class="p-0 border-top-0">
+                    <div *ngIf="isRowLoading(row)" class="d-flex justify-content-center py-3">
+                      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    </div>
+                    <table *ngIf="!isRowLoading(row)"
+                      class="table table-sm table-bordered table-hover ct-table mb-0">
+                      <thead class="table-primary">
+                        <tr>
+                          <th>{{ 'CheqTracking.CheqNum' | translate }}</th>
+                          <th>{{ 'CheqTracking.Date1'   | translate }}</th>
+                          <th class="text-end">{{ 'CheqTracking.Amt' | translate }}</th>
+                          <th>{{ 'CheqTracking.Ben'     | translate }}</th>
+                          <th>{{ 'CheqTracking.BankAcc' | translate }}</th>
+                          <th>{{ 'CheqTracking.Acc2'    | translate }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let line of getExpandedLines(row)">
+                          <td>{{ line.CheqNum }}</td>
+                          <td>{{ line.Date1 | date:'dd/MM/yyyy' }}</td>
+                          <td class="text-end">{{ line.Amt | number: numFmt }}</td>
+                          <td>{{ line.Ben }}</td>
+                          <td>{{ line.BankAcc }}</td>
+                          <td>{{ line.Acc2 }}{{ line.Acc2Name ? ' — ' + line.Acc2Name : '' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr *ngIf="listItems.length === 0">
+                <td colspan="5" class="text-center text-muted py-4">
+                  <i class="ti ti-folder-open fs-2 d-block mb-2"></i>
+                  {{ 'General.NoRecordsFound' | translate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <mat-paginator
+          [length]="listTotal"
+          [pageSize]="listPageSize"
+          [pageSizeOptions]="[10, 20, 50]"
+          [pageIndex]="listPage - 1"
+          (page)="onListPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete confirm modal ──────────────────────────────── -->
+<ng-template #deleteConfirmModal>
+  <div class="modal-header">
+    <h5 class="modal-title">{{ 'General.ConfirmDelete' | translate }}</h5>
+    <button type="button" class="btn-close" (click)="modalRef?.close()"></button>
+  </div>
+  <div class="modal-body">
+    <p>{{ 'CheqTracking.ConfirmDeleteMsg' | translate }}</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline-secondary" (click)="modalRef?.close()">
+      {{ 'General.Cancel' | translate }}
+    </button>
+    <button class="btn btn-danger" (click)="executeDelete()">
+      {{ 'General.Delete' | translate }}
+    </button>
+  </div>
+</ng-template>

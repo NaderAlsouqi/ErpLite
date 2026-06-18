@@ -1,0 +1,55 @@
+.tb-container { padding: 1rem; }
+
+.tb-filter-box {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #f8fafc;
+}
+
+.table-section {
+  .table-responsive {
+    max-height: 60vh;
+    overflow: auto;
+
+    &::-webkit-scrollbar       { width: 10px; height: 10px; }
+    &::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    &::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; border: 2px solid #f1f5f9; }
+    &::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #f1f5f9;
+  }
+
+  thead.table-primary > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    white-space: nowrap;
+    background-color: #cfe2ff !important;
+    background-clip: padding-box;
+  }
+
+  table {
+    min-width: max-content;
+    th, td { font-size: 0.82rem; white-space: nowrap; }
+    /* Bold parent-account rows (level=1 or branch<>0) — matches the VB6
+       `Vspreview.vs2.Font.Bold = True` branch in setdata. */
+    tbody > tr.fw-bold > td {
+      font-weight: 700;
+      background-color: #f1f5f9;
+    }
+
+    /* Bold totals row */
+    tfoot > tr > td {
+      font-weight: 700;
+    }
+  }
+}
+
+.tb-report-title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 0 1rem;
+  line-height: 1.6;
+}

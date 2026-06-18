@@ -1,0 +1,236 @@
+<app-page-header
+  [title]="'BalanceSheet.Title' | translate"
+  [title1]="'Nav.Accounting.GLReports' | translate"
+  [activeTitle]="'BalanceSheet.Title' | translate">
+</app-page-header>
+
+<div class="row bs-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">{{ 'BalanceSheet.Title' | translate }}</div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Filters Row 1 ────────────────────────────── -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-2">
+            <label class="form-label">{{ 'BalanceSheet.BegDate' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="begDate" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'BalanceSheet.AsOfDate' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="asOfDate" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'BalanceSheet.Level' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="level" min="1" max="9" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'BalanceSheet.StockAcc' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="stockAccNo"
+                   placeholder="{{ 'BalanceSheet.StockAccPlaceholder' | translate }}" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-3">
+            <div class="form-check mt-4">
+              <input class="form-check-input" type="checkbox" id="chkExclClosingBs"
+                     [(ngModel)]="excludeClosing" (change)="onFilterChange()" />
+              <label class="form-check-label" for="chkExclClosingBs">
+                {{ 'BalanceSheet.ExcludeClosing' | translate }}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Stock grid (بضاعة آخر المدة) ────────────── -->
+        <div class="card border mb-4">
+          <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2 py-2">
+            <strong>{{ 'BalanceSheet.EndingStockGrid' | translate }}</strong>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary"
+                      (click)="loadStockGrid()" [disabled]="gridLoading || !stockAccNo">
+                <i class="ti ti-download me-1"></i>{{ 'BalanceSheet.LoadGrid' | translate }}
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-primary"
+                      (click)="addStockRow()">
+                <i class="ti ti-plus me-1"></i>{{ 'BalanceSheet.AddRow' | translate }}
+              </button>
+              <button type="button" class="btn btn-sm btn-primary"
+                      (click)="saveStockGrid()" [disabled]="gridSaving || stockGrid.length === 0">
+                <i class="ti ti-device-floppy me-1"></i>{{ 'BalanceSheet.SaveGrid' | translate }}
+              </button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <table class="table table-sm table-bordered table-hover mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th style="width: 22%">{{ 'BalanceSheet.AccNo' | translate }}</th>
+                  <th>{{ 'BalanceSheet.AccName' | translate }}</th>
+                  <th class="text-end" style="width: 22%">{{ 'BalanceSheet.Amount' | translate }}</th>
+                  <th style="width: 60px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="stockGrid.length === 0">
+                  <td colspan="4" class="text-center text-muted py-3">
+                    {{ 'BalanceSheet.GridEmptyHint' | translate }}
+                  </td>
+                </tr>
+                <tr *ngFor="let r of stockGrid; let i = index">
+                  <td>
+                    <input type="number" class="form-control form-control-sm"
+                           [(ngModel)]="r.AccNo" (change)="onStockAccChange(r); onFilterChange()" />
+                  </td>
+                  <td class="align-middle">{{ r.AccName || '—' }}</td>
+                  <td>
+                    <input type="number" class="form-control form-control-sm text-end"
+                           [(ngModel)]="r.Value" (change)="onFilterChange()" />
+                  </td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            (click)="removeStockRow(i)">
+                      <i class="ti ti-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot *ngIf="stockGrid.length > 0" class="table-light fw-bold">
+                <tr>
+                  <td colspan="2" class="text-end">{{ 'General.Total' | translate }}</td>
+                  <td class="text-end">{{ endingStock | number:'1.3-3' }}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- ── Results ───────────────────────────────────── -->
+        <ng-container *ngIf="!loading && fetched && result">
+          <div class="bs-print-area">
+            <div class="bs-report-title">
+              {{ 'BalanceSheet.Title' | translate }}<br>
+              <small>{{ 'BalanceSheet.AsOf' | translate }} {{ asOfDate }}</small><br>
+              <small class="text-muted">
+                {{ 'BalanceSheet.StkMethodFlag' | translate }}:
+                <strong>{{ result.StkMethodRaw || '—' }}</strong>
+                ({{ (result.StkMethod ? 'BalanceSheet.Perpetual' : 'BalanceSheet.Periodic') | translate }})
+              </small>
+            </div>
+
+            <div class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>{{ 'BalanceSheet.AccNo' | translate }}</th>
+                      <th>{{ 'BalanceSheet.AccName' | translate }}</th>
+                      <th class="text-end">{{ 'BalanceSheet.Debit' | translate }}</th>
+                      <th class="text-end">{{ 'BalanceSheet.Credit' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                    <!-- ── Assets ── -->
+                    <tr class="section-row"><td colspan="4">{{ 'BalanceSheet.Assets' | translate }}</td></tr>
+                    <ng-container *ngFor="let r of result.Assets">
+                      <tr [class.fw-bold]="isHeaderRow(r)">
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                        </td>
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ isAr ? r.AccName : r.AccEName }}</a>
+                        </td>
+                        <td class="text-end">{{ r.DebitValue  > 0 ? (r.DebitValue  | number:'1.3-3') : '' }}</td>
+                        <td class="text-end">{{ r.CreditValue > 0 ? (r.CreditValue | number:'1.3-3') : '' }}</td>
+                      </tr>
+                    </ng-container>
+                    <tr *ngIf="!result.StkMethod">
+                      <td colspan="3">{{ 'BalanceSheet.EndingStockValue' | translate }}</td>
+                      <td class="text-end">{{ result.EndingStock | number:'1.3-3' }}</td>
+                    </tr>
+                    <tr class="subtotal-row">
+                      <td colspan="3">{{ 'BalanceSheet.AssetsTotal' | translate }}</td>
+                      <td class="text-end">{{ result.AssetsTotal | number:'1.3-3' }}</td>
+                    </tr>
+
+                    <!-- ── Liabilities ── -->
+                    <tr class="section-row"><td colspan="4">{{ 'BalanceSheet.Liabilities' | translate }}</td></tr>
+                    <ng-container *ngFor="let r of result.Liabilities">
+                      <tr [class.fw-bold]="isHeaderRow(r)">
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                        </td>
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ isAr ? r.AccName : r.AccEName }}</a>
+                        </td>
+                        <td class="text-end">{{ r.DebitValue  > 0 ? (r.DebitValue  | number:'1.3-3') : '' }}</td>
+                        <td class="text-end">{{ r.CreditValue > 0 ? (r.CreditValue | number:'1.3-3') : '' }}</td>
+                      </tr>
+                    </ng-container>
+
+                    <!-- ── Equity ── -->
+                    <tr class="section-row"><td colspan="4">{{ 'BalanceSheet.Equity' | translate }}</td></tr>
+                    <ng-container *ngFor="let r of result.Equity">
+                      <tr [class.fw-bold]="isHeaderRow(r)">
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                        </td>
+                        <td>
+                          <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                             [queryParams]="{ focus: r.AccNo }">{{ isAr ? r.AccName : r.AccEName }}</a>
+                        </td>
+                        <td class="text-end">{{ r.DebitValue  > 0 ? (r.DebitValue  | number:'1.3-3') : '' }}</td>
+                        <td class="text-end">{{ r.CreditValue > 0 ? (r.CreditValue | number:'1.3-3') : '' }}</td>
+                      </tr>
+                    </ng-container>
+                    <tr>
+                      <td colspan="3">{{ 'BalanceSheet.NetIncome' | translate }}</td>
+                      <td class="text-end">{{ result.NetIncome | number:'1.3-3' }}</td>
+                    </tr>
+                    <tr class="subtotal-row">
+                      <td colspan="3">{{ 'BalanceSheet.TotalEquity' | translate }}</td>
+                      <td class="text-end">{{ result.TotalEquity | number:'1.3-3' }}</td>
+                    </tr>
+
+                    <!-- Grand Total -->
+                    <tr class="net-row">
+                      <td colspan="3">{{ 'BalanceSheet.GrandTotal' | translate }}</td>
+                      <td class="text-end">{{ result.GrandTotal | number:'1.3-3' }}</td>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

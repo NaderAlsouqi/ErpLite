@@ -1,0 +1,14 @@
+ReceiptVoucher	قائمة السندات
+JournalVoucher	قائمة القيود
+CheckPayment	قائمة السندات
+CashPayment	قائمة السندات
+OutgoingCheq1	قائمة المستندات
+ChequeDeposit	قائمة المستندات
+ChequeCollection	قائمة المستندات
+ChequeReturn	قائمة المستندات
+IncomingCheq1	قائمة المستندات
+ChequeWithdrawal	قائمة المستندات
+ChequeEndorsement	قائمة المستندات
+CheqTracking	قائمة المستندات
+ServBill	قائمة المستندات
+ReDepositRet	قائمة المستندات

@@ -5,6 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ServiceInvoiceService as InvoiceService } from '../../../../shared/services/service-invoice.service';
 import { ReportService } from '../../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from "../../../../shared/common/sharedmodule";
 
@@ -67,6 +68,7 @@ export class ServiceTransferedRefundsComponent implements OnInit {
   constructor(
     private invoiceService: InvoiceService,
     private reportService: ReportService,
+    private cs: CompanySettingsService,
     private authService: AuthService,
     private translate: TranslateService,
     private toastr: ToastrService,
@@ -115,7 +117,7 @@ export class ServiceTransferedRefundsComponent implements OnInit {
           InvoiceNumber: refund.InvoiceNumber ?? refund.invoiceNumber ?? '',
           CustomerName: refund.CustomerName ?? refund.customerName ?? '',
           FinancialYear: Math.floor(Number(refund.FinancialYear ?? refund.financialYear)).toString(),
-          InvoiceAmount: parseFloat(refund.InvoiceAmount ?? refund.invoiceAmount ?? 0).toFixed(3),
+          InvoiceAmount: parseFloat(refund.InvoiceAmount ?? refund.invoiceAmount ?? 0).toFixed(this.cs.billDecimals),
           RIsTransfered: !!(refund.rIsTransfered ?? refund.RIsTransfered),
           RQRCode: refund.rQRCode ?? refund.RQRCode ?? null,
         }));

@@ -1,0 +1,123 @@
+/* Dashboard 2 — reuses same layout classes as dashboard 1 */
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+
+  .dashboard-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--default-text-color, #333);
+    margin: 0;
+  }
+
+  .dashboard-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
+    margin: 0.2rem 0 0;
+  }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 991px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 575px) { grid-template-columns: 1fr; }
+}
+
+.kpi-card {
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.25rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid var(--default-border, #e9ecef);
+  transition: box-shadow 0.2s;
+
+  &:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+}
+
+.kpi-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.5rem;
+
+  .kpi-avg &   { background: rgba(108, 92, 231, 0.12); color: #6c5ce7; }
+  .kpi-tax &   { background: rgba(0, 184, 148, 0.12);  color: #00b894; }
+  .kpi-week &  { background: rgba(253, 121, 168, 0.12); color: #fd79a8; }
+  .kpi-month & { background: rgba(253, 203, 110, 0.14); color: #e17055; }
+}
+
+.kpi-body {
+  .kpi-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--default-text-color, #333);
+    line-height: 1.2;
+  }
+  .kpi-label {
+    font-size: 0.78rem;
+    color: var(--text-muted, #888);
+    margin-top: 0.2rem;
+  }
+}
+
+.charts-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 767px) { flex-direction: column; }
+}
+
+.chart-card {
+  background: #fff;
+  border: 1px solid var(--default-border, #e9ecef);
+  border-radius: 0.75rem;
+  overflow: hidden;
+
+  &.chart-full { flex: 1; min-width: 0; }
+}
+
+.chart-card-header {
+  padding: 1rem 1.25rem 0.5rem;
+  border-bottom: 1px solid var(--default-border, #f0f0f0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .chart-card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--default-text-color, #333);
+    margin: 0;
+  }
+}
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-inline-end: 4px;
+}
+
+.chart-card-body { padding: 0.75rem 0.5rem; }

@@ -1,0 +1,210 @@
+<app-page-header
+  [title]="'AgingAnalysis.Title' | translate"
+  [title1]="'Nav.Accounting.GLReports' | translate"
+  [activeTitle]="'AgingAnalysis.Title' | translate">
+</app-page-header>
+
+<div class="row ag-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">{{ 'AgingAnalysis.Title' | translate }}</div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading || !selectedAcc">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Filter Row 1: Account + Salesman ──────────── -->
+        <div class="row g-3 align-items-end mb-3">
+
+          <div class="col-md-5">
+            <label class="form-label">{{ 'AgingAnalysis.AccountNo' | translate }}</label>
+            <ng-select
+              [items]="branchedAccounts"
+              [(ngModel)]="selectedAcc"
+              [searchFn]="accountSearchFn"
+              [loading]="lookupLoading"
+              [clearable]="true"
+              (change)="onFilterChange()"
+              [placeholder]="'AgingAnalysis.SelectAccount' | translate"
+              appendTo="body">
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.no }} — {{ isAr ? item.name : item.Ename }}
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                {{ item.no }} — {{ isAr ? item.name : item.Ename }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">{{ 'AgingAnalysis.Salesman' | translate }}</label>
+            <ng-select
+              [items]="salesmen"
+              [(ngModel)]="selectedSalesman"
+              [searchFn]="salesmanSearchFn"
+              [clearable]="true"
+              (change)="onFilterChange()"
+              [placeholder]="'AgingAnalysis.AllSalesmen' | translate"
+              appendTo="body">
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.Man }} — {{ isAr ? item.Name : item.MEName }}
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                {{ item.Man }} — {{ isAr ? item.Name : item.MEName }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">{{ 'AgingAnalysis.Area' | translate }}</label>
+            <ng-select
+              [items]="areas"
+              [(ngModel)]="selectedArea"
+              [searchFn]="areaSearchFn"
+              [clearable]="true"
+              (change)="onFilterChange()"
+              [placeholder]="'AgingAnalysis.AllAreas' | translate"
+              appendTo="body">
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.Id }} — {{ isAr ? item.Name : item.EName }}
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                {{ item.Id }} — {{ isAr ? item.Name : item.EName }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+        </div>
+
+        <!-- ── Filter Row 2: Date + Sort ─────────────────── -->
+        <div class="row g-3 align-items-end mb-4">
+
+          <div class="col-md-3">
+            <label class="form-label">{{ 'AgingAnalysis.AsOfDate' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="asOfDate" (change)="onFilterChange()" />
+          </div>
+
+          <div class="col-md-9">
+            <label class="form-label d-block">{{ 'AgingAnalysis.SortBy' | translate }}</label>
+            <div class="d-flex gap-3 flex-wrap">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="sortNo" name="sortGroup"
+                       [(ngModel)]="sortBy" [value]="1" (change)="onFilterChange()" />
+                <label class="form-check-label" for="sortNo">{{ 'AgingAnalysis.SortByNo' | translate }}</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="sortName" name="sortGroup"
+                       [(ngModel)]="sortBy" [value]="2" (change)="onFilterChange()" />
+                <label class="form-check-label" for="sortName">{{ 'AgingAnalysis.SortByName' | translate }}</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="sortSMan" name="sortGroup"
+                       [(ngModel)]="sortBy" [value]="3" (change)="onFilterChange()" />
+                <label class="form-check-label" for="sortSMan">{{ 'AgingAnalysis.SortBySalesman' | translate }}</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="sortPay" name="sortGroup"
+                       [(ngModel)]="sortBy" [value]="4" (change)="onFilterChange()" />
+                <label class="form-check-label" for="sortPay">{{ 'AgingAnalysis.SortByPayType' | translate }}</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="sortBal" name="sortGroup"
+                       [(ngModel)]="sortBy" [value]="5" (change)="onFilterChange()" />
+                <label class="form-check-label" for="sortBal">{{ 'AgingAnalysis.SortByBalance' | translate }}</label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched">
+          <div class="ag-print-area">
+            <div class="ag-report-title">
+              {{ 'AgingAnalysis.Title' | translate }}<br>
+              <small>{{ isAr ? selectedAcc?.name : selectedAcc?.Ename }}</small><br>
+              <small>{{ 'AgingAnalysis.AsOfDate' | translate }}: {{ asOfDate }}</small>
+            </div>
+
+            <div *ngIf="rows.length === 0" class="alert alert-info text-center">
+              {{ 'General.NoData' | translate }}
+            </div>
+
+            <div *ngIf="rows.length > 0" class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>{{ 'AgingAnalysis.AccNo' | translate }}</th>
+                      <th>{{ 'AgingAnalysis.AccName' | translate }}</th>
+                      <th>{{ 'AgingAnalysis.SalesmanShort' | translate }}</th>
+                      <th>{{ 'AgingAnalysis.Tel' | translate }}</th>
+                      <th class="text-end">{{ 'AgingAnalysis.Balance' | translate }}</th>
+                      <th class="text-end">{{ 'AgingAnalysis.Bucket1_30' | translate }}</th>
+                      <th class="text-end">{{ 'AgingAnalysis.Bucket31_60' | translate }}</th>
+                      <th class="text-end">{{ 'AgingAnalysis.Bucket61_90' | translate }}</th>
+                      <th class="text-end">{{ 'AgingAnalysis.Bucket91_120' | translate }}</th>
+                      <th class="text-end">{{ 'AgingAnalysis.BucketOver120' | translate }}</th>
+                      <th class="text-end">{{ 'AgingAnalysis.UncollectedCheques' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let r of rows">
+                      <td>
+                        <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                           [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                      </td>
+                      <td>
+                        <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                           [queryParams]="{ focus: r.AccNo }">{{ isAr ? r.AccName : r.AccEName }}</a>
+                      </td>
+                      <td>{{ isAr ? r.SalesManName : r.SalesManEName }}</td>
+                      <td>{{ r.Tel }}</td>
+                      <td class="text-end">{{ r.Balance            | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ r.Bucket1_30         | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ r.Bucket31_60        | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ r.Bucket61_90        | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ r.Bucket91_120       | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ r.BucketOver120      | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ r.UncollectedCheques | number:'1.3-3' }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot class="fw-bold table-light">
+                    <tr>
+                      <td colspan="4">{{ 'General.Total' | translate }}</td>
+                      <td class="text-end">{{ totBalance | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ tot1_30    | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ tot31_60   | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ tot61_90   | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ tot91_120  | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ totOver120 | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ totCheques | number:'1.3-3' }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

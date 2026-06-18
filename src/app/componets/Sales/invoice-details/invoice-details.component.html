@@ -13,7 +13,7 @@
           {{ 'InvoiceDetails.invoiceDetails' | translate }} - #{{ invoiceHeader.SellerInvoiceNumber }}
         </div>
         <div>
-          <button class="btn btn-outline-primary btn-sm me-2" (click)="printInvoice()">
+          <button class="btn btn-outline-primary btn-sm me-2" *hasPermission="'Invoices.Print'" (click)="printInvoice()">
             <i class="ti ti-printer me-1"></i>
             {{ 'General.Print' | translate }}
           </button>
@@ -127,8 +127,8 @@
             <div class="col-12">
               <h5 class="section-title mb-3">{{ 'InvoiceDetails.Items' | translate }}</h5>
               <div class="table-responsive">
-                <table class="table text-nowrap table-bordered">
-                  <thead>
+                <table class="table text-nowrap table-bordered table-hover mb-0">
+                  <thead class="table-primary">
                     <tr>
                       <th>{{ 'InvoiceDetails.ItemNumber' | translate }}</th>
                       <th>{{ 'InvoiceDetails.ItemName' | translate }}</th>

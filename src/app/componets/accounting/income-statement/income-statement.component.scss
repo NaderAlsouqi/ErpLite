@@ -1,0 +1,56 @@
+.is-container { padding: 1rem; }
+
+.table-section {
+  .table-responsive {
+    max-height: 65vh;
+    overflow: auto;
+
+    &::-webkit-scrollbar       { width: 10px; height: 10px; }
+    &::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    &::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; border: 2px solid #f1f5f9; }
+    &::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #f1f5f9;
+  }
+
+  thead.table-primary > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    white-space: nowrap;
+    background-color: #cfe2ff !important;
+    background-clip: padding-box;
+  }
+
+  table {
+    min-width: 600px;
+    th, td { font-size: 0.85rem; }
+
+    tbody > tr.section-row > td {
+      background-color: #cfe2ff;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+    tbody > tr.subtotal-row > td {
+      background-color: #eef4ff;
+      font-weight: 700;
+    }
+    tbody > tr.net-row > td {
+      background-color: #dbeafe;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    tbody > tr.fw-bold > td {
+      font-weight: 700;
+      background-color: #f8fafc;
+    }
+  }
+}
+
+.is-report-title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.05rem;
+  padding: 0.5rem 0 1rem;
+  line-height: 1.6;
+}

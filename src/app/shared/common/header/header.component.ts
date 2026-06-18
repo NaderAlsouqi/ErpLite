@@ -479,7 +479,7 @@ export class HeaderComponent implements OnInit {
   }
 
   setDefaultLanguage() {
-    const lang = localStorage.getItem('language') || 'en';
+    const lang = localStorage.getItem('language') || 'ar';
     this.changeLanguage(lang);
   }
   

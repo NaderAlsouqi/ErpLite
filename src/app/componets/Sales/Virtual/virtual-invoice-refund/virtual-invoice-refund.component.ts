@@ -20,6 +20,7 @@ import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } f
 
 // NgSelect import
 import { NgSelectModule } from '@ng-select/ng-select';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 // Customer interface
 export interface Customer {
@@ -67,7 +68,8 @@ export const MY_DATE_FORMATS = {
     MatCheckboxModule,
     ConfirmationModalComponent,
     MatNativeDateModule,
-    NgSelectModule
+    NgSelectModule,
+    HasPermissionDirective
   ],
       providers: [
         DatePipe,

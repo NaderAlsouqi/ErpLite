@@ -159,8 +159,8 @@
 
           <!-- Items Table Section -->
           <div class="table-responsive">
-            <table class="table table-bordered table-striped table-sm">
-              <thead class="table-light">
+            <table class="table table-bordered table-hover table-sm mb-0">
+              <thead class="table-primary">
                 <tr>
                   <th>{{ 'AddInvoicePage.ItemNumber' | translate }}</th>
                   <th>{{ 'AddInvoicePage.ItemName' | translate }}</th>
@@ -263,14 +263,16 @@
             </div>
           </div>
           <div class="col-md-4 d-flex align-items-center justify-content-end">
-            <button class="btn btn-lg btn-primary" (click)="save()" *ngIf="!Quotation">
-              <i class="ti ti-device-floppy me-1"></i>
-              {{ 'AddInvoicePage.SaveInvoice' | translate }}
-            </button>
-            <button class="btn btn-lg btn-primary" (click)="SaveQuotation()" *ngIf="Quotation">
-              <i class="ti ti-device-floppy me-1"></i>
-              {{ 'VirtualInvoicePage.SaveQuotation' | translate }}
-            </button>
+            <ng-container *hasPermission="'Invoices.Create'">
+              <button class="btn btn-lg btn-primary" (click)="save()" *ngIf="!Quotation">
+                <i class="ti ti-device-floppy me-1"></i>
+                {{ 'AddInvoicePage.SaveInvoice' | translate }}
+              </button>
+              <button class="btn btn-lg btn-primary" (click)="SaveQuotation()" *ngIf="Quotation">
+                <i class="ti ti-device-floppy me-1"></i>
+                {{ 'VirtualInvoicePage.SaveQuotation' | translate }}
+              </button>
+            </ng-container>
           </div>
         </div>
       </div>

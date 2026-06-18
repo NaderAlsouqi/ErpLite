@@ -107,7 +107,7 @@
 
           <div class="table-responsive">
             <table class="accounts-table">
-              <thead>
+              <thead class="table-primary">
                 <tr>
                   <th class="col-no">{{ 'ChartOfAccounts.No' | translate }}</th>
                   <th class="col-name">{{ 'ChartOfAccounts.ArabicName' | translate }}</th>
@@ -127,12 +127,14 @@
 
                   <!-- ── Existing row ──────────────────────────────────── -->
                   <tr *ngIf="item.kind === 'existing'" class="account-row"
+                    [attr.id]="'acc-row-' + item.node!.data.no"
                     [class.row-parent]="item.node!.hasChildren && !editingRows[item.node!.data.no]"
                     [class.row-leaf]="!item.node!.hasChildren && !editingRows[item.node!.data.no]"
                     [class.row-with-balance]="(item.node!.data.bb ?? 0) !== 0 && !editingRows[item.node!.data.no]"
                     [class.row-expanded]="item.node!.expanded"
                     [class.row-stopped]="item.node!.data.Stopped && !editingRows[item.node!.data.no]"
                     [class.row-editing]="editingRows[item.node!.data.no]"
+                    [class.row-highlighted]="highlightedNo === item.node!.data.no"
                     [attr.data-level]="item.node!.data.level ?? 0">
 
                     <!-- Account Number -->
@@ -280,7 +282,7 @@
                   <tr *ngIf="item.kind === 'new'" class="account-row row-new" [attr.data-tempid]="item.row!._tempId">
 
                     <td class="col-no">
-                      <input type="number" step="1" class="form-control form-control-sm inline-input"
+                      <input type="number" step="1" min="1" class="form-control form-control-sm inline-input"
                         [(ngModel)]="item.row!.no"
                         [class.is-invalid]="submitted && (!item.row!.no || item.row!.no <= 0)"
                         [placeholder]="'ChartOfAccounts.EnterNo' | translate" />

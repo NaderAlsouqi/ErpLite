@@ -1,0 +1,153 @@
+<app-page-header
+  [title]="'MissingVouchers.Title' | translate"
+  [title1]="'Nav.Accounting.Miscellaneous' | translate"
+  [activeTitle]="'MissingVouchers.Title' | translate">
+</app-page-header>
+
+<div class="row mv-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-file-alert me-2"></i>
+          {{ 'MissingVouchers.Title' | translate }}
+        </div>
+        <div class="d-flex gap-2">
+          <button *hasPermission="'MissingVouchers.Print'" class="btn btn-outline-primary" (click)="print()"
+                  [disabled]="loading || !fetched || (view === 'missing' ? rows.length === 0 : unbalancedRows.length === 0)">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-outline-warning" (click)="checkUnbalanced()" [disabled]="loading">
+            <i class="ti ti-scale-outline me-1"></i>{{ 'MissingVouchers.UnbalancedBtn' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Filters -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-4">
+            <label class="form-label">{{ 'MissingVouchers.DocType' | translate }}</label>
+            <select class="form-select" [(ngModel)]="docType" (change)="refreshMax()">
+              <option *ngFor="let dt of docTypes" [ngValue]="dt">{{ typeLabel(dt) }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label year-field" [class.year-off]="year !== currentYear">{{ 'MissingVouchers.Year' | translate }}</label>
+            <input type="number" min="1" class="form-control year-field" [class.year-off]="year !== currentYear" [(ngModel)]="year"
+                   (keypress)="onlyDigits($event)" (change)="refreshMax()" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'MissingVouchers.Serial' | translate }}</label>
+            <input type="number" min="1" class="form-control" [(ngModel)]="serial"
+                   (keypress)="onlyDigits($event)" (change)="refreshMax()" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">
+              {{ 'MissingVouchers.DocFrom' | translate }}
+              <span *ngIf="maxLoading" class="spinner-border spinner-border-sm ms-1"></span>
+            </label>
+            <input type="number" min="1" class="form-control" [(ngModel)]="docFrom"
+                   (keypress)="onlyDigits($event)" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">
+              {{ 'MissingVouchers.DocTo' | translate }}
+              <span *ngIf="maxLoading" class="spinner-border spinner-border-sm ms-1"></span>
+            </label>
+            <input type="number" min="1" class="form-control" [(ngModel)]="docTo"
+                   (keypress)="onlyDigits($event)" (change)="onFilterChange()" />
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Results: Missing vouchers -->
+        <ng-container *ngIf="!loading && fetched && view === 'missing'">
+          <div class="mv-print-area">
+            <div class="mv-report-title">
+              {{ 'MissingVouchers.Title' | translate }} — {{ typeLabel(shownType) }}<br>
+              <small>{{ 'MissingVouchers.Year' | translate }} {{ year }} · {{ docFrom }} — {{ docTo }} · {{ 'MissingVouchers.Count' | translate }}: {{ rows.length }}</small>
+            </div>
+
+            <div *ngIf="rows.length === 0" class="alert alert-success text-center">
+              {{ 'MissingVouchers.NoneMissing' | translate }}
+            </div>
+
+            <div *ngIf="capped" class="alert alert-warning">
+              <i class="ti ti-alert-triangle me-1"></i>
+              {{ 'MissingVouchers.Capped' | translate: { cap: resultCap } }}
+            </div>
+
+            <div *ngIf="rows.length > 0" class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 mv-table">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>{{ 'MissingVouchers.DocType' | translate }}</th>
+                      <th class="text-center">{{ 'MissingVouchers.DocNo' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let r of rows">
+                      <td>{{ typeLabel(shownType) }}</td>
+                      <td class="text-center mv-mono">{{ r.DocNum }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Results: Unbalanced transactions -->
+        <ng-container *ngIf="!loading && fetched && view === 'unbalanced'">
+          <div class="mv-print-area">
+            <div class="mv-report-title">
+              {{ 'MissingVouchers.UnbalancedTitle' | translate }}<br>
+              <small>{{ 'MissingVouchers.Count' | translate }}: {{ unbalancedRows.length }}</small>
+            </div>
+
+            <div *ngIf="unbalancedRows.length === 0" class="alert alert-success text-center">
+              {{ 'MissingVouchers.NoneUnbalanced' | translate }}
+            </div>
+
+            <div *ngIf="unbalancedRows.length > 0" class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 mv-table">
+                  <thead class="table-primary">
+                    <tr>
+                      <th class="text-center">{{ 'MissingVouchers.DocNo' | translate }}</th>
+                      <th>{{ 'MissingVouchers.DocType' | translate }}</th>
+                      <th class="text-center">{{ 'MissingVouchers.Date' | translate }}</th>
+                      <th class="text-end">{{ 'MissingVouchers.Diff' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let r of unbalancedRows">
+                      <td class="text-center mv-mono">{{ r.DocNum }}</td>
+                      <td>{{ unbalTypeName(r) }}</td>
+                      <td class="text-center">{{ r.Date }}</td>
+                      <td class="text-end text-danger">{{ r.Diff | number:'1.2-6' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

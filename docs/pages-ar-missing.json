@@ -1,0 +1,6 @@
+[
+  { "section": "المحاسبة · الإدارة", "route": "/accounting/admin/permissions", "title": "الصلاحيات", "desc": "مصفوفة المستخدم × الصلاحية مجمّعة حسب الوحدة. منح/سحب صلاحيات دقيقة؛ محميّة بصلاحية Admin.ManagePermissions." },
+  { "section": "المحاسبة · الإدارة", "route": "/accounting/system/company-info", "title": "معلومات الشركة", "desc": "بيانات الشركة والخانات العشرية والهوية المستخدمة في كل أنحاء النظام." },
+  { "section": "المبيعات", "route": "/sales/service/invoice", "title": "فواتير الخدمات", "desc": "قائمة فواتير الخدمات." },
+  { "section": "المبيعات", "route": "/sales/virtual/invoices", "title": "الفواتير الافتراضية", "desc": "قائمة الفواتير الافتراضية." }
+]

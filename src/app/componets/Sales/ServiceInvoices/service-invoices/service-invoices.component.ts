@@ -16,12 +16,14 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { SelectionModel } from '@angular/cdk/collections';
 import { ReportService } from '../../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 
 import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 
 // NgSelect import
 import { NgSelectModule } from '@ng-select/ng-select';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 interface ServiceInvoiceData {
   InvoiceDate: string;
@@ -73,7 +75,8 @@ export const MY_DATE_FORMATS = {
     NgSelectModule,
     MatNativeDateModule,
     NgSelectModule,
-    ConfirmationModalComponent
+    ConfirmationModalComponent,
+    HasPermissionDirective
   ],
       providers: [
         DatePipe,
@@ -131,6 +134,7 @@ export class ServiceInvoicesComponent implements OnInit {
     private translate: TranslateService,
     private toastr: ToastrService,
     private reportService: ReportService,
+    private cs: CompanySettingsService,
     private dateAdapter: DateAdapter<Date>,
     private router: Router
   ) {
@@ -200,7 +204,7 @@ export class ServiceInvoicesComponent implements OnInit {
           TransactionNumber: invoice.TransactionNumber,
           CustomerName: invoice.CustomerName,
           FinancialYear: Math.floor(Number(invoice.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(this.cs.billDecimals),
           IsTransferred: invoice.IsTransferred
         }));
         

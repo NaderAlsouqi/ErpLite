@@ -28,8 +28,17 @@ export class AuthService {
     this.checkTokenValidity();
   }
 
+  /**
+   * The storage that currently holds the session: sessionStorage when the user
+   * logged in WITHOUT "remember me" (cleared on browser close), otherwise
+   * localStorage (persistent).
+   */
+  private get authStorage(): Storage {
+    return sessionStorage.getItem('token') !== null ? sessionStorage : localStorage;
+  }
+
   private getUserFromStorage(): User | null {
-    const user = localStorage.getItem('user');
+    const user = localStorage.getItem('user') ?? sessionStorage.getItem('user');
     if (!user) return null;
     
     const parsedUser = JSON.parse(user);
@@ -55,7 +64,7 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem('token') ?? sessionStorage.getItem('token');
   }
 
   private isTokenExpired(token: string): boolean {
@@ -80,35 +89,60 @@ export class AuthService {
     }
   }
 
-  login(loginRequest: LoginRequest): Observable<LoginResponse> {
+  /** Persist a successful login response into the chosen storage. */
+  private storeSession(response: LoginResponse, storage: Storage, demo: boolean): void {
+    this.clearLocalStorage();
+    localStorage.setItem('Quotation', 'false');
+    storage.setItem('token', response.Token);
+
+    const user: User = {
+      ID: response.ID,
+      IsReseller: response.IsReseller,
+      TaxType: response.TaxType,
+      DeliveryName: response.DeliveryName,
+      DeliveryID: response.DeliveryID || 0,
+      CustomerAccounts: response.CustomerAccounts,
+      SystemType: response.SystemType,
+      DatabaseName: response.DatabaseName,
+      Roles: response.Roles || [],
+      Permissions: response.Permissions || []
+    };
+    storage.setItem('user', JSON.stringify(user));
+    if (demo) sessionStorage.setItem('demoMode', '1');
+
+    this.currentUserSubject.next(user);
+  }
+
+  login(loginRequest: LoginRequest, rememberMe: boolean = true): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/Login`, loginRequest)
       .pipe(
         tap(response => {
           if (response.Token) {
-            localStorage.setItem('Quotation', 'false');
-            localStorage.setItem('token', response.Token);
-            
-            // Create user object from response
-            const user: User = {
-              ID: response.ID,
-              IsReseller: response.IsReseller,
-              TaxType: response.TaxType,
-              DeliveryName: response.DeliveryName,
-              DeliveryID: response.DeliveryID|| 0,
-              CustomerAccounts: response.CustomerAccounts,
-              SystemType: response.SystemType,
-              DatabaseName: response.DatabaseName,
-              Roles: response.Roles || [], // Store roles from response
-              Permissions: response.Permissions || [] // Permission keys
-            };
-            
-            localStorage.setItem('user', JSON.stringify(user));
-  
-            
-            this.currentUserSubject.next(user);
+            // "Remember me" → persistent localStorage; otherwise session-only.
+            this.storeSession(response, rememberMe ? localStorage : sessionStorage, false);
           }
         })
       );
+  }
+
+  /**
+   * Demo sign-in for the public iframe preview. Sends NO credentials — the server
+   * issues a short-lived token for the dedicated, read-only demo account. The demo
+   * session is kept in sessionStorage only (ephemeral, never persisted to localStorage).
+   */
+  demoLogin(): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/DemoLogin`, {})
+      .pipe(
+        tap(response => {
+          if (response.Token) {
+            this.storeSession(response, sessionStorage, true);
+          }
+        })
+      );
+  }
+
+  get isDemoMode(): boolean {
+    return sessionStorage.getItem('demoMode') === '1';
   }
 
   // Check if user has a specific role
@@ -159,34 +193,14 @@ export class AuthService {
     const user = this.currentUserValue;
     if (!user) return;
     user.Permissions = permissions || [];
-    localStorage.setItem('user', JSON.stringify(user));
+    this.authStorage.setItem('user', JSON.stringify(user));
     this.currentUserSubject.next(user);
   }
 
   // Get homepage based on user role
   getHomepageByRole(): string {
-    const roles = this.getUserRoles();
-    
-    // Redirect based on priority of roles
-    if (roles.includes('Admin')) {
-      return '/sales/invoice';
-    } else if (roles.includes('Manager')) {
-      return '/sales/invoice';
-    } else if (roles.includes('Sales') || roles.includes('CashLink') ||  roles.includes('CashLinkLimit') ) {
-      return '/sales/invoice';
-    } else if (roles.includes('VirtualSales') || roles.includes('VirtualCashLink') ||  roles.includes('VirtualCashLinkLimit') ) {
-      return '/sales/virtual/add-invoice';
-    } else if (roles.includes('DeliveryDriver')) {
-      return '/sales/transfered-invoices';
-    }
-      else if (roles.includes('ServiceInvoices')) {
-        return '/sales/service/invoice';
-    } else if (roles.includes('Accountant')) {
-      return '/accounting/receipt-vouchers';
-    }
-    
-    // Default landing page if no role matches
-    return '/sales/invoice';
+    // Home 2 is the default landing page for all users after login.
+    return '/home2';
   }
 
   logout(): void {
@@ -215,5 +229,8 @@ export class AuthService {
   private clearLocalStorage(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('demoMode');
   }
 }

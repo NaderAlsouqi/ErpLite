@@ -14,6 +14,7 @@
         </div>
          <div class="card-options">
            <button [routerLink]="hasRole?['/sales/add-invoice'] :['/sales/virtual/add-invoice']"
+          *hasPermission="'Invoices.Create'"
           (click)="SetQuotation(true)"
           class="btn btn-outline-primary mr-1">            
             <i class="ti ti-plus me-1"></i>
@@ -46,7 +47,7 @@
         
         <!-- Invoices table -->
         <div *ngIf="!loading" class="table-responsive">
-          <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="table table-bordered">
+          <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="table table-bordered table-hover mb-0">
             
             <!-- Invoice Date Column -->
             <ng-container matColumnDef="InvoiceDate">
@@ -97,7 +98,7 @@
               <!--  <button class="btn btn-sm btn-primary me-1" (click)="viewInvoice(element.TransactionNumber)" title="222{{ 'VirtualTransferredInvoicesPage.ViewInvoice' | translate }}">
                   <i class="ti ti-eye"></i>
                 </button>-->
-                <button class="btn btn-sm btn-info" (click)="printInvoice(element.TransactionNumber, element.InvoiceNumber)" title="{{ 'VirtualTransferredInvoicesPage.PrintInvoice' | translate }}">
+                <button class="btn btn-sm btn-info" *hasPermission="'Invoices.Print'" (click)="printInvoice(element.TransactionNumber, element.InvoiceNumber)" title="{{ 'VirtualTransferredInvoicesPage.PrintInvoice' | translate }}">
                   <i class="ti ti-printer"></i>
                 </button>
               </td>

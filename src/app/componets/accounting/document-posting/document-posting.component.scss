@@ -1,0 +1,65 @@
+.dp-container {
+  padding: 1rem;
+}
+
+.dp-filter-box {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #f8fafc;
+
+  &-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+}
+
+.dp-input {
+  font-size: 0.875rem;
+}
+
+.dp-table {
+  th, td {
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+}
+
+.dp-bottom-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.dp-bottom-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dp-count-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dp-count-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e40af;
+  min-width: 2rem;
+  text-align: center;
+}
+
+.dp-post-btn {
+  margin-inline-start: auto;
+  min-width: 160px;
+}

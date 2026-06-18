@@ -10,6 +10,7 @@ import { ComfLinkAccountsDto, ComfService } from '../../../shared/services/comf.
 import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/services/chart-of-accounts.service';
 import { ReportService } from '../../../shared/services/report.service';
 import { forkJoin } from 'rxjs';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 interface AccountRow {
   key: keyof ComfLinkAccountsDto;
@@ -27,6 +28,7 @@ interface AccountRow {
     RouterModule,
     SharedModule,
     NgSelectModule,
+    HasPermissionDirective,
   ],
   templateUrl: './link-accounts.component.html',
   styleUrl: './link-accounts.component.scss',

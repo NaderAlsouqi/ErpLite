@@ -1,0 +1,119 @@
+<app-page-header
+  [title]="'ChequesToBeneficiary.Title' | translate"
+  [title1]="'Nav.Accounting.GLReports' | translate"
+  [activeTitle]="'ChequesToBeneficiary.Title' | translate">
+</app-page-header>
+
+<div class="row cb-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-user-dollar me-2"></i>
+          {{ 'ChequesToBeneficiary.Title' | translate }}
+        </div>
+        <div class="d-flex gap-2">
+          <button *hasPermission="'ChequesToBeneficiary.Print'" class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched || rows.length === 0">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Filters -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-5">
+            <label class="form-label">{{ 'ChequesToBeneficiary.Beneficiary' | translate }}</label>
+            <ng-select
+              [items]="beneficiaries" [(ngModel)]="beneficiary" [addTag]="true"
+              [loading]="lookupLoading" [clearable]="true" (change)="onFilterChange()"
+              [placeholder]="'ChequesToBeneficiary.Beneficiary' | translate" appendTo="body" class="cb-select">
+            </ng-select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'General.DateFrom' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'General.DateTo' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="dateTo" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label d-block">{{ 'ChequesToBeneficiary.SortBy' | translate }}</label>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="cbSort" id="cbDate" value="DATE" [(ngModel)]="sortBy" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="cbDate">{{ 'ChequesToBeneficiary.DateCol' | translate }}</label>
+              <input type="radio" class="btn-check" name="cbSort" id="cbAmt" value="AMOUNT" [(ngModel)]="sortBy" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="cbAmt">{{ 'ChequesToBeneficiary.Amount' | translate }}</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched">
+          <div class="cb-print-area">
+            <div class="cb-report-title">
+              {{ 'ChequesToBeneficiary.Title' | translate }} — {{ shownBeneficiary }}<br>
+              <small>{{ dateFrom }} — {{ dateTo }} · {{ 'ChequesToBeneficiary.Count' | translate }}: {{ rows.length }}</small>
+            </div>
+
+            <div *ngIf="rows.length === 0" class="alert alert-info text-center">{{ 'General.NoData' | translate }}</div>
+
+            <div *ngIf="rows.length > 0" class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 cb-table">
+                  <thead class="table-primary">
+                    <tr>
+                      <th class="text-center">{{ 'ChequesToBeneficiary.ChequeNo' | translate }}</th>
+                      <th class="text-center">{{ 'ChequesToBeneficiary.ChequeDate' | translate }}</th>
+                      <th class="text-end">{{ 'ChequesToBeneficiary.Amount' | translate }}</th>
+                      <th>{{ 'ChequesToBeneficiary.Currency' | translate }}</th>
+                      <th class="text-end">{{ 'ChequesToBeneficiary.Rate' | translate }}</th>
+                      <th class="text-center">{{ 'ChequesToBeneficiary.AccNo' | translate }}</th>
+                      <th class="text-center">{{ 'ChequesToBeneficiary.DocNo' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let r of rows">
+                      <td class="text-center cb-mono">{{ r.ChequeNum }}</td>
+                      <td class="text-center">{{ r.Date1 }}</td>
+                      <td class="text-end">{{ r.Amount | number:'1.3-3' }}</td>
+                      <td>{{ isAr ? r.CurName : (r.CurEName || r.CurName) }}</td>
+                      <td class="text-end">{{ r.Rate }}</td>
+                      <td class="text-center">
+                        <a *ngIf="r.AccNo" class="rec-link cb-mono" [routerLink]="['/accounting/gl/accounts-list']"
+                           [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
+                        <span *ngIf="!r.AccNo">{{ r.AccNo }}</span>
+                      </td>
+                      <td class="text-center cb-mono">{{ r.DocNum }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot class="fw-bold table-light">
+                    <tr>
+                      <td colspan="2" class="text-center">{{ 'ChequesToBeneficiary.LocalTotal' | translate }}</td>
+                      <td class="text-end">{{ totalLocal | number:'1.3-3' }}</td>
+                      <td colspan="4"></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

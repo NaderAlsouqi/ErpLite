@@ -113,6 +113,7 @@
             <!-- Action -->
             <div class="tam-actions">
               <button class="btn btn-danger tam-btn"
+                *hasPermission="'Accf.Edit'"
                 (click)="transfer()"
                 [disabled]="transferring || !fromAccountNo || !toAccountNo">
                 <span *ngIf="transferring" class="spinner-border spinner-border-sm me-1" role="status"></span>

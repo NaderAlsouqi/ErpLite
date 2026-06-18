@@ -20,6 +20,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 // Define custom date formats
 export const MY_DATE_FORMATS = {
@@ -49,7 +50,8 @@ export const MY_DATE_FORMATS = {
     NgSelectModule,
     MatDatepickerModule,
     MatInputModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    HasPermissionDirective
   ],
   providers: [
     DatePipe,

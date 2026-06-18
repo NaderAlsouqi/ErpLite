@@ -9,6 +9,32 @@ export interface ComfDto {
   bbd?: string | null;
 }
 
+export interface CompanyInfoDto {
+  name?: string | null;
+  eName?: string | null;
+  address?: string | null;
+  tel?: string | null;
+  fax?: string | null;
+  bbd?: string | null;
+  cur?: string | null;
+  taxNum?: string | null;
+  decimals: number;
+  compYear: number;
+  compNo: number;
+  billDecimals: number;
+  compName?: string | null;
+  billTaxType: number;
+  autoSireal: boolean;
+  alowItem: boolean;
+  alowDateMoreThanToday: boolean;
+  alowMultiCCnter: boolean;
+  allowTax: boolean;
+  allowCostCloseM: boolean;
+  allowAutoSerialInvf: boolean;
+  hiddenCurrency: boolean;
+  enableAccfAuto: boolean;
+}
+
 export interface ComfLinkAccountsDto {
   acc_debit?: number | null;
   acc_credit?: number | null;
@@ -67,5 +93,13 @@ export class ComfService {
 
   upsertVenf(dto: VenfDto): Observable<any> {
     return this.http.post(`${this.apiUrl}/UpsertVenf`, dto);
+  }
+
+  getCompanyInfo(): Observable<CompanyInfoDto> {
+    return this.http.get<CompanyInfoDto>(`${this.apiUrl}/GetCompanyInfo`);
+  }
+
+  saveCompanyInfo(dto: CompanyInfoDto): Observable<any> {
+    return this.http.put(`${this.apiUrl}/SaveCompanyInfo`, dto);
   }
 }

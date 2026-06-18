@@ -14,7 +14,7 @@
           {{ 'VirtualRefundDetailsPage.RefundHeader' | translate }}
         </div>
         <div>
-          <button class="btn btn-outline-primary btn-sm me-2" (click)="printRefund()">
+          <button class="btn btn-outline-primary btn-sm me-2" *hasPermission="'VirtualInvoices.Print'" (click)="printRefund()">
             <i class="ti ti-printer me-1"></i>
             {{ 'General.Print' | translate }}
           </button>
@@ -118,8 +118,8 @@
       </div>
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-bordered">
-            <thead>
+          <table class="table table-bordered table-hover mb-0">
+            <thead class="table-primary">
               <tr>
                 <th>{{ 'VirtualRefundDetailsPage.ItemNumber' | translate }}</th>
                 <th>{{ 'VirtualRefundDetailsPage.ItemName' | translate }}</th>

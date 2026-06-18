@@ -1,0 +1,109 @@
+<app-page-header
+  [title]="'MonthlyBalances.Title' | translate"
+  [title1]="'Nav.Accounting.GLReports' | translate"
+  [activeTitle]="'MonthlyBalances.Title' | translate">
+</app-page-header>
+
+<div class="row mb-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-calendar-stats me-2"></i>
+          {{ 'MonthlyBalances.Title' | translate }}
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched || rows.length === 0">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading || !selectedAcc">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Filters ─────────────────────────────────────── -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-5">
+            <label class="form-label">{{ 'MonthlyBalances.Account' | translate }}</label>
+            <ng-select
+              [items]="accounts"
+              [(ngModel)]="selectedAcc"
+              [searchFn]="accountSearchFn"
+              [loading]="lookupLoading"
+              [clearable]="true"
+              [placeholder]="'MonthlyBalances.SelectAccount' | translate"
+              (change)="onFilterChange()"
+              appendTo="body">
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.no }} — {{ isAr ? item.name : item.Ename }}
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                {{ item.no }} — {{ isAr ? item.name : item.Ename }}
+              </ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-2 year-field" [class.year-off]="year !== currentYear">
+            <label class="form-label">{{ 'MonthlyBalances.Year' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="year" min="1900" max="2100" (change)="onFilterChange()" />
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched && result">
+          <div class="mb-print-area">
+            <div class="mb-report-title">
+              {{ 'MonthlyBalances.Title' | translate }} — {{ year }}<br>
+              <small>{{ result.AccNo }} — {{ isAr ? result.AccName : (result.AccEName || result.AccName) }}</small>
+            </div>
+
+            <div class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 mb-table">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>{{ 'MonthlyBalances.Month' | translate }}</th>
+                      <th class="text-end">{{ 'MonthlyBalances.DebitTrans' | translate }}</th>
+                      <th class="text-end">{{ 'MonthlyBalances.CreditTrans' | translate }}</th>
+                      <th class="text-end">{{ 'MonthlyBalances.DebitBalance' | translate }}</th>
+                      <th class="text-end">{{ 'MonthlyBalances.CreditBalance' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let r of rows" [class.mb-beg]="r.isBeg">
+                      <td>{{ r.label }}</td>
+                      <td class="text-end">{{ !r.isBeg && r.debit  ? (r.debit  | number:'1.3-3') : '' }}</td>
+                      <td class="text-end">{{ !r.isBeg && r.credit ? (r.credit | number:'1.3-3') : '' }}</td>
+                      <td class="text-end">{{ r.balDebit  ? (r.balDebit  | number:'1.3-3') : '' }}</td>
+                      <td class="text-end">{{ r.balCredit ? (r.balCredit | number:'1.3-3') : '' }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot class="fw-bold table-light">
+                    <tr>
+                      <td>{{ 'General.Total' | translate }}</td>
+                      <td class="text-end">{{ totalDebitTrans  | number:'1.3-3' }}</td>
+                      <td class="text-end">{{ totalCreditTrans | number:'1.3-3' }}</td>
+                      <td colspan="2"></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

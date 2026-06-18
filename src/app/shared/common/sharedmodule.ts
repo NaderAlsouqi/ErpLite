@@ -29,7 +29,8 @@ import { TranslateModule } from '@ngx-translate/core';
     ],
     exports: [
         PageHeaderComponent,
-        SidebarComponent, SwitcherComponent, HeaderComponent, FooterComponent, CustomHeaderComponent, TapToTopComponent
+        SidebarComponent, SwitcherComponent, HeaderComponent, FooterComponent, CustomHeaderComponent, TapToTopComponent,
+        RouterModule
     ],
     imports: [
         CommonModule,
@@ -44,3 +45,5 @@ import { TranslateModule } from '@ngx-translate/core';
     ]
 })
 export class SharedModule { }
+
+

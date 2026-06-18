@@ -39,6 +39,31 @@
                         </div>
                     </div>
                     <div class="">
+                        <p class="switcher-style-head">App Theme:</p>
+                        <div class="row switcher-style gx-0">
+                            <div class="col-6">
+                                <div class="form-check switch-select">
+                                    <label class="form-check-label" for="switcher-theme-classic">
+                                        Classic
+                                    </label>
+                                    <input class="form-check-input" type="radio" name="app-theme"
+                                        id="switcher-theme-classic" (click)="updateAppTheme('classic')"
+                                        [checked]="(localdata['appTheme'] || 'classic') === 'classic'">
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check switch-select">
+                                    <label class="form-check-label" for="switcher-theme-editorial">
+                                        Editorial
+                                    </label>
+                                    <input class="form-check-input" type="radio" name="app-theme"
+                                        id="switcher-theme-editorial" (click)="updateAppTheme('editorial')"
+                                        [checked]="localdata['appTheme'] === 'editorial'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="">
                         <p class="switcher-style-head">Directions:</p>
                         <div class="row switcher-style gx-0">
                             <div class="col-4">

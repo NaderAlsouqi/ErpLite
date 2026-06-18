@@ -9,8 +9,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   
-  // Skip token check for login request and non-API requests (assets, i18n, etc.)
-  if (req.url.includes('/Auth/Login') || !req.url.startsWith('http')) {
+  // Skip token check for login / demo-login requests and non-API requests (assets, i18n, etc.)
+  if (req.url.includes('/Auth/Login') || req.url.includes('/Auth/DemoLogin') || !req.url.startsWith('http')) {
     return next(req);
   }
 

@@ -1,0 +1,90 @@
+@if (visible) {
+  <!-- Floating action button -->
+  <button class="chat-fab" (click)="toggle()" [attr.aria-label]="'Chat.Title' | translate">
+    @if (isOpen) { <i class="ti ti-x"></i> } @else { <i class="ti ti-message-circle-2"></i> }
+    @if (!isOpen && unreadTotal > 0) { <span class="chat-badge">{{ unreadTotal }}</span> }
+  </button>
+
+  @if (isOpen) {
+    <div class="chat-panel">
+      <!-- Header -->
+      <div class="chat-header">
+        @if (isAdmin && view === 'thread') {
+          <button class="chat-iconbtn" (click)="backToList()" [attr.aria-label]="'Chat.Back' | translate">
+            <i class="ti ti-arrow-right"></i>
+          </button>
+        }
+        <div class="chat-title">
+          @if (isAdmin) {
+            @if (view === 'list') { {{ 'Chat.Inbox' | translate }} }
+            @else {
+              <span>{{ activeConv?.UserName || ('Chat.Customer' | translate) }}</span>
+              @if (activeConv?.TenantDb) { <span class="chat-presence">{{ activeConv?.TenantDb }}</span> }
+            }
+          } @else {
+            <span>{{ 'Chat.Support' | translate }}</span>
+            <span class="chat-presence" [class.online]="supportOnline">
+              <span class="dot"></span>{{ (supportOnline ? 'Chat.Online' : 'Chat.Offline') | translate }}
+            </span>
+          }
+        </div>
+        <button class="chat-iconbtn" (click)="toggle()" [attr.aria-label]="'General.Close' | translate">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+
+      <!-- Admin: conversation list -->
+      @if (isAdmin && view === 'list') {
+        <div class="chat-body chat-list">
+          @if (conversations.length === 0) {
+            <div class="chat-empty">{{ 'Chat.NoConversations' | translate }}</div>
+          }
+          @for (c of conversations; track trackConv($index, c)) {
+            <button class="chat-conv" (click)="openConversation(c)">
+              <div class="chat-conv-top">
+                <span class="chat-conv-name">
+                  {{ c.UserName || ('Chat.Customer' | translate) }}
+                  @if (c.TenantDb) { <span class="chat-conv-tenant">{{ c.TenantDb }}</span> }
+                </span>
+                @if (c.UnreadByAdmin > 0) { <span class="chat-badge sm">{{ c.UnreadByAdmin }}</span> }
+              </div>
+              <div class="chat-conv-last">{{ c.LastMessageText }}</div>
+              @if (!c.AssignedAdminId) {
+                <span class="chat-tag">{{ 'Chat.Unassigned' | translate }}</span>
+              } @else {
+                <span class="chat-tag assigned">{{ c.AssignedAdminName }}</span>
+              }
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Thread (user always; admin when a conversation is open) -->
+      @if (!isAdmin || view === 'thread') {
+        <div class="chat-body chat-thread" #scrollBody>
+          @if (messages.length === 0) {
+            <div class="chat-empty">{{ (isAdmin ? 'Chat.NoMessages' : 'Chat.StartHint') | translate }}</div>
+          }
+          @for (m of messages; track trackMsg($index, m)) {
+            <div class="chat-msg" [class.mine]="isMine(m)">
+              <div class="chat-bubble">
+                @if (isAdmin && !isMine(m)) { <span class="chat-sender">{{ m.SenderName }}</span> }
+                <span class="chat-text">{{ m.Body }}</span>
+                <span class="chat-time">{{ m.SentAt | date:'shortTime' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="chat-input">
+          <input type="text" [(ngModel)]="draft" (keyup.enter)="send()"
+                 [placeholder]="'Chat.Placeholder' | translate" [disabled]="sending" />
+          <button class="chat-send" (click)="send()" [disabled]="sending || !draft.trim()"
+                  [attr.aria-label]="'Chat.Send' | translate">
+            <i class="ti ti-send"></i>
+          </button>
+        </div>
+      }
+    </div>
+  }
+}

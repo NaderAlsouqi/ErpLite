@@ -1,0 +1,108 @@
+:host {
+  display: block;
+}
+
+// ── Table ─────────────────────────────────────────────────────
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.cr-table {
+  min-width: 980px;
+  font-size: 0.875rem;
+
+  th { white-space: nowrap; }
+  td { padding: 0.4rem 0.5rem; vertical-align: middle; }
+}
+
+// ── Column widths ─────────────────────────────────────────────
+
+.col-cheqnum  { width: 160px; min-width: 140px; }
+.col-amt      { width: 110px; min-width: 90px;  }
+.col-draw     { min-width: 130px; }
+.col-vhrno    { width: 90px;  min-width: 80px;  }
+.col-date1    { width: 110px; min-width: 100px; }
+.col-custacc  { min-width: 160px; }
+.col-banknum  { width: 80px;  min-width: 70px;  }
+.col-bank     { min-width: 130px; }
+.col-del      { width: 60px;  }
+
+// ── Inline inputs ─────────────────────────────────────────────
+
+.inline-input {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  width: 100%;
+  height: 32px;
+}
+
+// ── Inline ng-select ──────────────────────────────────────────
+
+.inline-select {
+  font-size: 0.8rem;
+
+  .ng-select-container {
+    min-height: 32px !important;
+    height: 32px !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    cursor: pointer;
+  }
+
+  &.ng-select-focused .ng-select-container,
+  &.ng-select-opened .ng-select-container {
+    border-color: var(--primary-color, #6366f1) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+  }
+
+  .ng-value-container {
+    padding: 0 0.5rem !important;
+    align-items: center;
+
+    .ng-value       { font-size: 0.8rem; color: #1e293b; font-weight: 500; }
+    .ng-placeholder { font-size: 0.78rem; color: #94a3b8; }
+    .ng-input > input { font-size: 0.8rem; color: #1e293b; }
+  }
+
+  .ng-arrow-wrapper { width: 20px; padding-right: 4px; }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────
+
+[data-theme-mode="dark"] {
+  .cr-container {
+    .form-label     { color: var(--default-text-color) !important; }
+    .form-control   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+    .form-control::placeholder { color: var(--text-muted) !important; }
+
+    .table                        { background: transparent !important; }
+    .table thead tr               { background: var(--default-background) !important; }
+    .table thead.table-primary th,
+    .table thead tr.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th { border-color: var(--default-border) !important; }
+    .table tbody tr:hover { background: var(--list-hover-focus-bg) !important; }
+    .text-muted { color: var(--text-muted) !important; }
+
+    .inline-input { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+    .inline-input::placeholder { color: var(--text-muted) !important; }
+
+    .inline-select .ng-select-container { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+    .inline-select .ng-value             { color: var(--default-text-color) !important; }
+    .inline-select .ng-placeholder       { color: var(--text-muted) !important; }
+    .inline-select .ng-input > input     { color: var(--default-text-color) !important; }
+  }
+
+  .modal-header { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
+  .modal-title  { color: var(--default-text-color) !important; }
+  .modal-body   { background: var(--custom-white) !important; }
+  .modal-footer { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
+}

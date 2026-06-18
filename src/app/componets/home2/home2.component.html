@@ -1,0 +1,196 @@
+<app-page-header
+  [title]="'Home2.Title' | translate"
+  [activeTitle]="'Home2.Subtitle' | translate">
+</app-page-header>
+
+<div class="row h2-container">
+  <div class="col-xl-12">
+
+    <!-- ── Filters (date range + currency + posted) — auto-apply & remembered ── -->
+    <div class="card custom-card mb-3 h2-filter-card">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-6 col-md-3">
+            <label class="form-label">{{ 'JvReport.DateFrom' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">{{ 'JvReport.DateTo' | translate }}</label>
+            <input type="date" class="form-control" [(ngModel)]="dateTo" (change)="onFilterChange()" />
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">{{ 'AccDetailedStatement.Currency' | translate }}</label>
+            <ng-select [items]="currencies" bindValue="cur_no" [(ngModel)]="curNo" [searchFn]="currencySearchFn"
+              [clearable]="true" (change)="onFilterChange()" [placeholder]="'Home2.AllCurrencies' | translate" appendTo="body">
+              <ng-template ng-label-tmp let-item="item">{{ item.cur_no }} — {{ isAr ? item.cur : (item.ename || item.cur) }}</ng-template>
+              <ng-template ng-option-tmp let-item="item">{{ item.cur_no }} — {{ isAr ? item.cur : (item.ename || item.cur) }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">{{ 'JvReport.PostStatus' | translate }}</label>
+            <select class="form-select" [(ngModel)]="postStatus" (change)="onFilterChange()">
+              <option *ngFor="let o of POST_OPTIONS" [ngValue]="o.value">{{ o.label | translate }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Overview "توزيع القيمة حسب نوع السند" — hidden per request ─────────── -->
+    <ng-container *ngIf="false">
+    <div class="card custom-card mb-3 h2-pie-card" *ngIf="overview as ov">
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-chart-pie me-2"></i>{{ 'Home2.AmountByType' | translate }}
+          <span class="badge h2-year-badge ms-2 bg-light text-dark border">{{ year }}</span>
+        </div>
+        <div class="h2-switch btn-group btn-group-sm" role="group">
+          <button *ngFor="let ct of CHART_TYPES" type="button" class="btn"
+                  [class.active]="ov.kind === ct.value" (click)="setOverviewType(ct.value)"
+                  [title]="ct.labelKey | translate">
+            <i [class]="ct.icon"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div *ngIf="loading" class="d-flex justify-content-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <ng-container *ngIf="!loading">
+          <!-- Sample data grid (the data behind the chart) -->
+          <div class="table-responsive h2-data-grid">
+            <table class="table table-bordered table-hover table-sm mb-3">
+              <thead class="table-primary">
+                <tr>
+                  <th>{{ 'Home2.VoucherType' | translate }}</th>
+                  <th class="text-end">{{ 'Home2.TotalAmount' | translate }}</th>
+                  <th class="text-end">{{ 'Home2.Share' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of ov.rows">
+                  <td><span class="h2-swatch" [style.background]="r.color"></span>{{ r.label }}</td>
+                  <td class="text-end">{{ r.amount | number:'1.0-0' }}</td>
+                  <td class="text-end">{{ r.pct | number:'1.0-1' }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="h2-pie-wrap">
+            <apx-chart *ngIf="ov.show"
+              [series]="ov.series" [chart]="ov.chart" [xaxis]="ov.xaxis" [yaxis]="ov.yaxis"
+              [labels]="ov.labels" [colors]="ov.colors" [legend]="ov.legend"
+              [dataLabels]="ov.dataLabels" [tooltip]="ov.tooltip" [stroke]="ov.stroke"
+              [plotOptions]="ov.plotOptions" [fill]="ov.fill" [grid]="ov.grid" [responsive]="ov.responsive">
+            </apx-chart>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    </ng-container>
+
+    <!-- ── Voucher analytics (one card + chart per voucher type) ─────────────── -->
+    <div class="row g-3 mb-3">
+      <div class="col-xl-6" *ngFor="let c of cards">
+        <div class="card custom-card h-100 h2-voucher-card" [style.border-top]="'3px solid ' + c.color">
+          <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="card-title mb-0">
+              <i [class]="c.icon + ' me-2'" [style.color]="c.color"></i>{{ c.titleKey | translate }}
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <div class="h2-switch btn-group btn-group-sm" role="group">
+                <button *ngFor="let ct of CHART_TYPES" type="button" class="btn"
+                        [class.active]="c.kind === ct.value" (click)="setCardType(c, ct.value)"
+                        [title]="ct.labelKey | translate">
+                  <i [class]="ct.icon"></i>
+                </button>
+              </div>
+              <span class="badge h2-year-badge" [style.background]="c.color + '1f'" [style.color]="c.color">{{ year }}</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- KPIs -->
+            <div class="h2-kpis">
+              <div class="h2-kpi">
+                <span class="h2-kpi-val">{{ c.totalCount | number }}</span>
+                <span class="h2-kpi-lbl">{{ 'Home2.TotalCount' | translate }}</span>
+              </div>
+              <div class="h2-kpi">
+                <span class="h2-kpi-val" [style.color]="c.color">{{ c.totalAmount | number:'1.0-0' }}</span>
+                <span class="h2-kpi-lbl">{{ 'Home2.TotalAmount' | translate }}</span>
+              </div>
+              <div class="h2-kpi">
+                <span class="h2-kpi-val">{{ c.latestCount | number }}</span>
+                <span class="h2-kpi-lbl">{{ 'Home2.LatestCount' | translate }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="loading" class="d-flex justify-content-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+            </div>
+
+            <ng-container *ngIf="!loading">
+              <!-- Sample data grid (the data behind the chart) -->
+              <div class="table-responsive h2-data-grid">
+                <table class="table table-bordered table-hover table-sm mb-2">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>{{ 'Home2.Month' | translate }}</th>
+                      <th *ngFor="let m of c.months" class="text-center">{{ m }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="h2-rowlbl">{{ 'Home2.Amount' | translate }}</td>
+                      <td *ngFor="let a of c.amounts" class="text-end">{{ a ? (a | number:'1.0-0') : '—' }}</td>
+                    </tr>
+                    <tr>
+                      <td class="h2-rowlbl">{{ 'Home2.Count' | translate }}</td>
+                      <td *ngFor="let n of c.counts" class="text-center">{{ n || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Monthly amount — chart type chosen by the user -->
+              <apx-chart *ngIf="c.show"
+                [series]="c.series" [chart]="c.chart" [xaxis]="c.xaxis" [yaxis]="c.yaxis"
+                [labels]="c.labels" [colors]="c.colors" [dataLabels]="c.dataLabels" [stroke]="c.stroke"
+                [plotOptions]="c.plotOptions" [markers]="c.markers" [tooltip]="c.tooltip"
+                [legend]="c.legend" [fill]="c.fill" [grid]="c.grid" [responsive]="c.responsive">
+              </apx-chart>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Page shortcuts (same as Home) ─────────────────────────────────────── -->
+    <div *ngFor="let group of groups" class="card custom-card mb-3">
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"
+           [ngClass]="'hp-group-header-' + group.color">
+        <div class="card-title mb-0">
+          <i [class]="group.icon + ' me-2'"></i>
+          {{ group.titleKey | translate }}
+        </div>
+        <span class="badge bg-light text-dark border">{{ group.cards.length }}</span>
+      </div>
+      <div class="card-body">
+        <div class="hp-action-grid">
+          <button
+            *ngFor="let card of group.cards"
+            class="hp-action-card"
+            [ngClass]="'hp-action-card-' + card.color"
+            (click)="navigate(card.path)">
+            <i [class]="card.icon + ' hp-action-icon'"></i>
+            <span class="hp-action-label">{{ card.labelKey | translate }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

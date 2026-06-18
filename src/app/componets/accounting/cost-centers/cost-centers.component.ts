@@ -1,17 +1,14 @@
-import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { NgbModal, NgbModalConfig, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatSortModule, Sort } from '@angular/material/sort';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { CostCenterDto, CostCenterService } from '../../../shared/services/cost-center.service';
-import { ReportService } from '../../../shared/services/report.service';
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { ReportService } from '../../../shared/services/report.service';
 
 @Component({
   selector: 'app-cost-centers',
@@ -20,58 +17,73 @@ import { ConfirmationModalComponent } from '../../../shared/common/confirmation-
     CommonModule,
     FormsModule,
     TranslateModule,
-    RouterModule,
     SharedModule,
-    NgbModule,
-    MatTableModule,
-    MatSortModule,
-    MatPaginatorModule,
     ConfirmationModalComponent,
+    HasPermissionDirective,
   ],
-  providers: [NgbModalConfig, NgbModal],
   templateUrl: './cost-centers.component.html',
   styleUrl: './cost-centers.component.scss',
-  encapsulation: ViewEncapsulation.None,
 })
 export class CostCentersComponent implements OnInit {
-  @ViewChild('costCenterFormModal') costCenterFormModal!: TemplateRef<any>;
   @ViewChild('confirmModal') confirmModal!: ConfirmationModalComponent;
 
-  displayedColumns: string[] = ['CcntrNo', 'CcAname', 'Ccename', 'level', 'belong', 'Actions'];
-  dataSource = new MatTableDataSource<CostCenterDto>([]);
-  allData: CostCenterDto[] = [];
+  costCenters: CostCenterDto[] = [];
+  filteredCostCenters: CostCenterDto[] = [];
+  filterName = '';
 
-  pageSize = 10;
-  pageSizeOptions = [5, 10, 25, 50];
-  pageIndex = 0;
-  totalItems = 0;
-
+  currentCC: CostCenterDto = this.initForm();
   loading = false;
-  submitted = false;
-  isEditMode = false;
-  modalRef!: NgbModalRef;
-  searchTerm = '';
-  selectedId: number | null = null;
+  saving = false;
+  activeTab: 'form' | 'list' = 'form';
 
-  costCenterForm: CostCenterDto = this.emptyForm();
+  switchToForm(): void { this.activeTab = 'form'; }
+  switchToList(): void { this.activeTab = 'list'; }
+
+  // ── Deep-link focus (e.g. from the Cost-Center Account Balances report) ──
+  highlightedNo: number | null = null;
+  private pendingFocus: number | null = null;
 
   constructor(
-    private costCenterService: CostCenterService,
+    private ccService: CostCenterService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private modalService: NgbModal,
-    private modalConfig: NgbModalConfig,
-    private reportService: ReportService
-  ) {
-    this.modalConfig.backdrop = 'static';
-    this.modalConfig.keyboard = false;
-  }
+    private reportService: ReportService,
+    private route: ActivatedRoute,
+    private el: ElementRef,
+  ) {}
 
   ngOnInit(): void {
+    const focusParam = this.route.snapshot.queryParamMap.get('focus');
+    const focusNo = focusParam != null ? Number(focusParam) : NaN;
+    if (!isNaN(focusNo) && focusNo > 0) this.pendingFocus = focusNo;
+
     this.loadData();
   }
 
-  private emptyForm(): CostCenterDto {
+  /**
+   * Select a cost center, scroll to its row, and briefly highlight it.
+   * Called when arriving with ?focus=<ccntrNo>.
+   */
+  private focusCostCenter(no: number): void {
+    const target = this.costCenters.find(c => +c.CcntrNo === no);
+    if (!target) {
+      this.toastr.warning(this.translate.instant('CostCenters.NotFound') + ' ' + no);
+      return;
+    }
+    this.filterName = '';
+    this.applyFilters();
+    this.currentCC = { ...target };
+
+    this.activeTab = 'list';   // show the table so the focused row is visible
+    this.highlightedNo = no;
+    setTimeout(() => {
+      const row = this.el.nativeElement.querySelector(`#cc-row-${no}`);
+      row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+    setTimeout(() => { this.highlightedNo = null; }, 4500);
+  }
+
+  private initForm(): CostCenterDto {
     return {
       CcntrNo: 0, CcAname: '', Ccename: '',
       belong: 0, branch: 0, bb: 0, level: 1,
@@ -80,166 +92,128 @@ export class CostCentersComponent implements OnInit {
     };
   }
 
-  private getNextCcntrNo(): number {
-    return this.allData.reduce((m, cc) => Math.max(m, cc.CcntrNo ?? 0), 0) + 1;
-  }
-
-  private getNextAccOrder(): string {
-    const orders = this.allData
-      .map(cc => cc.accorder?.trim().toUpperCase())
-      .filter((o): o is string => !!o && /^[A-Z]{2}$/.test(o));
-    if (orders.length === 0) return 'AA';
-    orders.sort();
-    const last = orders[orders.length - 1];
-    const c1 = last.charCodeAt(0), c2 = last.charCodeAt(1);
-    if (c2 < 90) return String.fromCharCode(c1) + String.fromCharCode(c2 + 1);
-    if (c1 < 90) return String.fromCharCode(c1 + 1) + 'A';
-    return 'AA';
-  }
-
   loadData(): void {
     this.loading = true;
-    this.costCenterService.getAll().subscribe({
+    this.ccService.getAll().subscribe({
       next: (data) => {
-        this.allData = data;
-        this.totalItems = data.length;
-        this.applyFilter();
+        this.costCenters = data;
+        this.applyFilters();
+        this.setNextNo();
         this.loading = false;
+        if (this.pendingFocus != null) {
+          const no = this.pendingFocus;
+          this.pendingFocus = null;
+          this.focusCostCenter(no);
+        }
       },
-      error: () => { this.loading = false; },
+      error: () => { this.loading = false; }
     });
   }
 
-  openAddModal(): void {
-    this.isEditMode = false;
-    this.submitted = false;
-    this.costCenterForm = this.emptyForm();
-    this.costCenterForm.CcntrNo  = this.getNextCcntrNo();
-    this.costCenterForm.accorder = this.getNextAccOrder();
-    this.modalRef = this.modalService.open(this.costCenterFormModal, {
-      centered: true, size: 'lg', windowClass: 'form-modal-dialog animate__animated animate__fadeIn',
+  private setNextNo(): void {
+    const max = this.costCenters.length > 0 ? Math.max(...this.costCenters.map(c => c.CcntrNo ?? 0)) : 0;
+    this.currentCC.CcntrNo = max + 1;
+  }
+
+  applyFilters(): void {
+    const term = this.filterName.toLowerCase();
+    this.filteredCostCenters = this.costCenters.filter(c =>
+      !term ||
+      (c.CcntrNo ?? 0).toString().includes(term) ||
+      c.CcAname?.toLowerCase().includes(term) ||
+      c.Ccename?.toLowerCase().includes(term)
+    );
+  }
+
+  clearFilters(): void {
+    this.filterName = '';
+    this.applyFilters();
+  }
+
+  onNoChange(): void {
+    const no = +this.currentCC.CcntrNo;
+    if (!no) return;
+    const existing = this.costCenters.find(c => +c.CcntrNo === no);
+    if (existing) this.currentCC = { ...existing };
+  }
+
+  onSelectRow(cc: CostCenterDto): void {
+    this.currentCC = { ...cc };
+    this.activeTab = 'form';   // open the selected record in the entry tab for editing
+  }
+
+  save(): void {
+    if (!this.validate()) return;
+    const isEdit = this.costCenters.some(c => +c.CcntrNo === +this.currentCC.CcntrNo);
+    this.saving = true;
+    const req = isEdit
+      ? this.ccService.update(this.currentCC.CcntrNo, this.currentCC)
+      : this.ccService.add(this.currentCC);
+    req.subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || this.translate.instant('General.SaveSuccess'));
+        this.loadData();
+        this.reset();
+        this.saving = false;
+      },
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || err.error?.Message || this.translate.instant('General.Error'));
+        this.saving = false;
+      }
     });
   }
 
-  openEditModal(row: CostCenterDto): void {
-    this.isEditMode = true;
-    this.submitted = false;
-    this.selectedId = row.CcntrNo;
-    this.costCenterForm = { ...row };
-    this.modalRef = this.modalService.open(this.costCenterFormModal, {
-      centered: true, size: 'lg', windowClass: 'form-modal-dialog animate__animated animate__fadeIn',
-    });
-  }
-
-  saveCostCenter(): void {
-    this.submitted = true;
-    if (!this.costCenterForm.CcAname?.trim() || !this.costCenterForm.Ccename?.trim()) return;
-
-    this.loading = true;
-
-    if (this.isEditMode && this.selectedId != null) {
-      this.costCenterService.update(this.selectedId, this.costCenterForm).subscribe({
-        next: () => {
-          this.toastr.success(this.translate.instant('CostCenters.UpdateSuccess'));
-          this.modalRef?.close();
-          this.loadData();
-          this.loading = false;
-        },
-        error: () => { this.loading = false; },
-      });
-    } else {
-      this.costCenterService.add(this.costCenterForm).subscribe({
-        next: () => {
-          this.toastr.success(this.translate.instant('CostCenters.AddSuccess'));
-          this.modalRef?.close();
-          this.loadData();
-          this.loading = false;
-        },
-        error: () => { this.loading = false; },
-      });
-    }
-  }
-
-  confirmDelete(row: CostCenterDto): void {
-    this.selectedId = row.CcntrNo;
+  delete(): void {
+    if (!this.currentCC.CcntrNo) return;
     this.confirmModal.show();
   }
 
-  deleteCostCenter(): void {
-    if (this.selectedId == null) return;
-    this.loading = true;
-    this.costCenterService.delete(this.selectedId).subscribe({
-      next: () => {
-        this.toastr.success(this.translate.instant('CostCenters.DeleteSuccess'));
-        this.confirmModal.hide();
+  confirmDelete(): void {
+    this.ccService.delete(this.currentCC.CcntrNo).subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || this.translate.instant('General.DeleteSuccess'));
         this.loadData();
-        this.loading = false;
+        this.reset();
       },
-      error: () => { this.loading = false; },
-    });
-  }
-
-  onSearch(): void {
-    this.pageIndex = 0;
-    this.applyFilter();
-  }
-
-  private applyFilter(): void {
-    const term = this.searchTerm.toLowerCase();
-    const filtered = term
-      ? this.allData.filter(
-          (c) =>
-            c.CcAname?.toLowerCase().includes(term) ||
-            c.Ccename?.toLowerCase().includes(term) ||
-            c.CcntrNo?.toString().includes(term)
-        )
-      : [...this.allData];
-
-    this.totalItems = filtered.length;
-    const start = this.pageIndex * this.pageSize;
-    this.dataSource.data = filtered.slice(start, start + this.pageSize);
-  }
-
-  onSortChange(sort: Sort): void {
-    if (!sort.direction) return;
-    this.allData.sort((a, b) => {
-      const asc = sort.direction === 'asc';
-      switch (sort.active) {
-        case 'CcntrNo':  return this.compare(a.CcntrNo, b.CcntrNo, asc);
-        case 'CcAname':  return this.compare(a.CcAname, b.CcAname, asc);
-        case 'Ccename':  return this.compare(a.Ccename, b.Ccename, asc);
-        case 'level':    return this.compare(a.level, b.level, asc);
-        case 'belong':   return this.compare(a.belong, b.belong, asc);
-        default: return 0;
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || this.translate.instant('General.Error'));
       }
     });
-    this.pageIndex = 0;
-    this.applyFilter();
   }
 
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.applyFilter();
+  reset(): void {
+    this.currentCC = this.initForm();
+    this.setNextNo();
   }
 
-  private compare(a: any, b: any, asc: boolean): number {
-    return (a < b ? -1 : 1) * (asc ? 1 : -1);
+  validate(): boolean {
+    if (!this.currentCC.CcntrNo || this.currentCC.CcntrNo <= 0) {
+      this.toastr.warning(this.translate.instant('CostCenters.CcntrNoRequired'));
+      return false;
+    }
+    if (!this.currentCC.CcAname?.trim()) {
+      this.toastr.warning(this.translate.instant('CostCenters.ArabicNameRequired'));
+      return false;
+    }
+    if (!this.currentCC.Ccename?.trim()) {
+      this.toastr.warning(this.translate.instant('CostCenters.EnglishNameRequired'));
+      return false;
+    }
+    return true;
   }
 
-  printTable(): void {
-    const title = this.translate.instant('CostCenters.Title');
+  print(): void {
+    const t = (k: string) => this.translate.instant(k);
     const cols = [
-      { label: this.translate.instant('CostCenters.CcntrNo'),     key: 'CcntrNo' },
-      { label: this.translate.instant('CostCenters.ArabicName'),  key: 'CcAname' },
-      { label: this.translate.instant('CostCenters.EnglishName'), key: 'Ccename' },
-      { label: this.translate.instant('CostCenters.Level'),       key: 'level' },
-      { label: this.translate.instant('CostCenters.Belong'),      key: 'belong' },
+      { label: t('CostCenters.CcntrNo') },
+      { label: t('CostCenters.ArabicName') },
+      { label: t('CostCenters.EnglishName') },
+      { label: t('CostCenters.Level') },
+      { label: t('CostCenters.Belong') },
     ];
-    const rows = this.allData.map(r =>
-      cols.map(c => (r as any)[c.key] ?? '—').join('</td><td>')
-    ).map(r => `<tr><td>${r}</td></tr>`).join('');
-    
-    this.reportService.printReport(title, cols, rows);
+    const rows = this.filteredCostCenters.map(c =>
+      `<tr><td>${c.CcntrNo ?? '—'}</td><td>${c.CcAname ?? '—'}</td><td>${c.Ccename ?? '—'}</td><td>${c.level ?? '—'}</td><td>${c.belong ?? '—'}</td></tr>`
+    ).join('');
+    this.reportService.printReport(t('CostCenters.Title'), cols, rows);
   }
 }

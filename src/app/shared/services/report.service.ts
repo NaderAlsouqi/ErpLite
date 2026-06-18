@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { formatDate } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from './auth.service';
+import { CompanySettingsService } from './company-settings.service';
 
 // Customer interface
 export interface Customer {
@@ -52,7 +53,8 @@ export class ReportService {
     private http: HttpClient,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private authService: AuthService
+    private authService: AuthService,
+    private companySettings: CompanySettingsService,
   ) { }
 
   /**
@@ -440,7 +442,7 @@ export class ReportService {
   /**
    * Print a standardized report with company logo
    */
-  printReport(title: string, cols: { label: string }[], rows: string): void {
+  printReport(title: string, cols: { label: string }[], rows: string, filtersHtml = '', footerHtml = ''): void {
     this.getCompanyLogoBase64().subscribe(logoBase64 => {
       const win = window.open('', '_blank');
       if (!win) return;
@@ -455,7 +457,12 @@ export class ReportService {
       const createdBy = this.authService.currentUserValue?.DeliveryName || 'User';
       const createdByLabel = this.translate.instant('Reports.CreatedBy');
       const createdAtLabel = this.translate.instant('Reports.CreatedAt');
-      const companyName = this.authService.currentUserValue?.DeliveryName || 'ErpLite';
+      const companyName = isRtl
+        ? (this.companySettings.companyName || this.companySettings.companyEName)
+        : (this.companySettings.companyEName || this.companySettings.companyName);
+      const address  = this.companySettings.address;
+      const taxNum   = this.companySettings.taxNum;
+      const tel      = this.companySettings.tel;
 
       win.document.write(`
         <!DOCTYPE html>
@@ -465,19 +472,28 @@ export class ReportService {
           <title>${title}</title>
           <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: ${direction}; padding: 30px; margin: 0; color: #334155; }
-            .print-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; }
-            .header-left { display: flex; align-items: center; }
+            .print-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; direction: ltr; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; }
+            .header-left { text-align: left; }
+            .header-center { text-align: center; }
+            .header-right { display: flex; align-items: center; justify-content: flex-end; }
             .print-header img { height: 50px; width: auto; object-fit: contain; }
-            .print-header .company-name { margin: 0 15px; font-size: 18px; font-weight: 700; color: #1e293b; }
             .print-header h2 { margin: 0; font-size: 20px; color: #1e293b; font-weight: 700; }
+            .co-name { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 2px; }
+            .co-detail { font-size: 11px; color: #334155; margin-top: 2px; }
             table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-            th, td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: ${textAlign}; }
-            th { background-color: #f1f5f9; font-weight: 600; color: #334155; text-transform: uppercase; font-size: 10px; letter-spacing: 0.025em; }
-            tr:nth-child(even) { background-color: #f8fafc; }
+            th, td { border: 1px solid #9ec5fe; padding: 6px 10px; text-align: ${textAlign}; }
+            thead tr { background-color: #cfe2ff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            th { font-weight: 600; color: #084298; font-size: 12px; }
+            tbody tr:nth-child(even) { background-color: #f8fafc; }
+            tbody tr:hover { background-color: #e9f0fd; }
+            .print-filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 16px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; background: #f8fafc; font-size: 11px; }
+            .print-filters .filter-item { display: flex; gap: 4px; }
+            .print-filters .filter-label { font-weight: 600; color: #475569; white-space: nowrap; }
+            .print-filters .filter-value { color: #1e293b; }
             .print-footer { margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; font-size: 11px; color: #64748b; }
             @media print {
               body { padding: 15px; }
-              th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; }
+              thead tr { background-color: #cfe2ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
               .print-footer { position: fixed; bottom: 0; width: 100%; left: 0; background: white; padding: 10px 20px; }
             }
           </style>
@@ -485,11 +501,19 @@ export class ReportService {
         <body>
           <div class="print-header">
             <div class="header-left">
-              <img id="print-logo" src="${logoBase64 || ''}" alt="Logo" style="${!logoBase64 ? 'display:none' : ''}" />
-              <span class="company-name">${companyName}</span>
+              <div class="co-name">${companyName}</div>
+              ${address ? `<div class="co-detail">${address}</div>` : ''}
+              ${taxNum  ? `<div class="co-detail">${isRtl ? 'الرقم الضريبي' : 'Tax No'}: ${taxNum}</div>` : ''}
+              ${tel     ? `<div class="co-detail">${isRtl ? 'التليفون' : 'Tel'}: ${tel}</div>` : ''}
             </div>
-            <h2>${title}</h2>
+            <div class="header-center">
+              <h2>${title}</h2>
+            </div>
+            <div class="header-right">
+              <img id="print-logo" src="${logoBase64 || ''}" alt="Logo" style="${!logoBase64 ? 'display:none' : ''}" />
+            </div>
           </div>
+          ${filtersHtml ? `<div class="print-filters">${filtersHtml}</div>` : ''}
           <table>
             <thead>
               <tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr>
@@ -498,6 +522,7 @@ export class ReportService {
               ${rows}
             </tbody>
           </table>
+          ${footerHtml ? `<div style="margin-top:16px;border-top:2px solid #334155;padding-top:12px;font-size:12px;direction:${direction}">${footerHtml}</div>` : ''}
           <div class="print-footer">
             <div><strong>${createdByLabel}:</strong> ${createdBy}</div>
             <div><strong>${createdAtLabel}:</strong> ${createdAt}</div>

@@ -14,9 +14,10 @@
             {{ 'ServiceInvoicesPage.AddInvoice' | translate }}
           </button>
           <div style="margin-right: 10px;"></div>-->
-          <button 
-            class="btn btn-outline-primary"         
-            (click)="PrintVirtualInvoices(this.allData)"   
+          <button
+            class="btn btn-outline-primary"
+            *hasPermission="'ServiceInvoices.Print'"
+            (click)="PrintVirtualInvoices(this.allData)"
             [disabled]="this.allData.length === 0">
             <i class="ti ti-printer me-1"></i>
             {{ 'General.Print' | translate }}
@@ -141,7 +142,7 @@
         
         <!-- Invoices table -->
         <div *ngIf="!loading" class="table-responsive">
-          <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="table table-bordered table-hover">
+          <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="table table-bordered table-hover mb-0">
             
             <!-- Invoice Date Column -->
             <ng-container matColumnDef="InvoiceDate">
@@ -201,17 +202,19 @@
                 {{ 'ServiceInvoicesPage.Action' | translate }}
               </th>
               <td mat-cell *matCellDef="let element" class="text-center">
-                <button class="btn btn-sm btn-primary me-1" (click)="viewInvoice(element.TransactionNumber)" 
+                <button class="btn btn-sm btn-primary me-1" (click)="viewInvoice(element.TransactionNumber)"
                     title="{{ 'ServiceInvoicesPage.ViewInvoice' | translate }}">
                   <i class="ti ti-eye"></i>
                 </button>
                 <!-- Only show delete button for non-transferred invoices -->
-                <button *ngIf="!element.IsTransferred" class="btn btn-sm btn-danger" 
-                    (click)="confirmDeleteInvoice(element)" 
-                    title="{{ 'ServiceInvoicesPage.DeleteInvoice' | translate }}">
-                  <i class="ti ti-trash"></i>
-                </button>              
-                <button class="btn btn-sm btn-info" (click)="printInvoice(element.TransactionNumber, element.InvoiceNumber)" title="{{ 'VirtualTransferredInvoicesPage.PrintInvoice' | translate }}">
+                <ng-container *hasPermission="'ServiceInvoices.Delete'">
+                  <button *ngIf="!element.IsTransferred" class="btn btn-sm btn-danger"
+                      (click)="confirmDeleteInvoice(element)"
+                      title="{{ 'ServiceInvoicesPage.DeleteInvoice' | translate }}">
+                    <i class="ti ti-trash"></i>
+                  </button>
+                </ng-container>
+                <button *hasPermission="'ServiceInvoices.Print'" class="btn btn-sm btn-info" (click)="printInvoice(element.TransactionNumber, element.InvoiceNumber)" title="{{ 'VirtualTransferredInvoicesPage.PrintInvoice' | translate }}">
                   <i class="ti ti-printer"></i>
                 </button>
               </td>

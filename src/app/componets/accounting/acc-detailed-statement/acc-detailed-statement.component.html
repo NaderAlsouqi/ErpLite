@@ -1,0 +1,510 @@
+<app-page-header
+  [title]="'AccDetailedStatement.Title' | translate"
+  [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'AccDetailedStatement.Title' | translate">
+</app-page-header>
+
+<div class="row ads-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- ── Card header ─────────────────────────────────────────────── -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-file-description me-2"></i>
+          {{ 'AccDetailedStatement.Title' | translate }}
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" (click)="search()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-search me-1"></i>
+            {{ 'General.Search' | translate }}
+          </button>
+          <button class="btn btn-outline-primary" (click)="print()" [disabled]="!hasResults">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-outline-secondary" (click)="clearFilters()">
+            <i class="ti ti-refresh me-1"></i>{{ 'General.Clear' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Filters ──────────────────────────────────────────────────── -->
+      <div class="card-body border-bottom pb-3">
+
+        <!-- Row 1 – currency + checkboxes (mirrors VB6 top strip) -->
+        <div class="ads-top-strip d-flex align-items-center gap-4 flex-wrap mb-3">
+
+          <!-- العملة -->
+          <div class="d-flex align-items-center gap-2">
+            <label class="form-label mb-0 fw-semibold">{{ 'AccDetailedStatement.Currency' | translate }}</label>
+            <div style="width:230px">
+              <ng-select
+                [items]="currencies"
+                bindValue="cur_no"
+                [(ngModel)]="curNo"
+                (change)="onFilterChange()"
+                [searchFn]="currencySearchFn"
+                [clearable]="false"
+                appendTo="body">
+                <ng-template ng-label-tmp let-c="item">
+                  {{ c.cur_no }} — {{ isAr ? c.cur : (c.ename || c.cur) }}
+                </ng-template>
+                <ng-template ng-option-tmp let-c="item">
+                  {{ c.cur_no }} — {{ isAr ? c.cur : (c.ename || c.cur) }}
+                </ng-template>
+              </ng-select>
+            </div>
+          </div>
+
+          <div class="vr d-none d-md-block" style="height:36px"></div>
+
+          <!-- اظهار الشيكات -->
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="chkEquiv"
+              [(ngModel)]="showEquivAmt" (change)="onFilterChange()">
+            <label class="form-check-label" for="chkEquiv">
+              {{ 'AccDetailedStatement.ShowEquivAmt' | translate }}
+            </label>
+          </div>
+
+          <!-- تفصيلي حسب المواد -->
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="chkItems"
+              [(ngModel)]="showItemDetails" (change)="onFilterChange()">
+            <label class="form-check-label" for="chkItems">
+              {{ 'AccDetailedStatement.ShowItemDetails' | translate }}
+            </label>
+          </div>
+
+          <!-- طباعة التفاصيل -->
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="chkPrint"
+              [(ngModel)]="printDetails" (change)="onFilterChange()">
+            <label class="form-check-label" for="chkPrint">
+              {{ 'AccDetailedStatement.PrintDetails' | translate }}
+            </label>
+          </div>
+
+        </div>
+
+        <!-- Row 2 – account range + dates + post status + order by -->
+        <div class="row g-3 align-items-end">
+
+          <!-- Account from -->
+          <div class="col-md-4">
+            <label class="form-label">
+              {{ 'AccDetailedStatement.AccFrom' | translate }}
+              <span class="text-danger">*</span>
+            </label>
+            <ng-select
+              [items]="accounts"
+              bindValue="no"
+              [(ngModel)]="accNoFrom"
+              (change)="onFilterChange()"
+              [searchFn]="accountSearchFn"
+              [clearable]="true"
+              [placeholder]="'AccDetailedStatement.SelectAcc' | translate"
+              appendTo="body">
+              <ng-template ng-label-tmp let-a="item">
+                {{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}
+              </ng-template>
+              <ng-template ng-option-tmp let-a="item">
+                {{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <!-- Account to -->
+          <div class="col-md-4">
+            <label class="form-label">{{ 'AccDetailedStatement.AccTo' | translate }}</label>
+            <ng-select
+              [items]="accounts"
+              bindValue="no"
+              [(ngModel)]="accNoTo"
+              (change)="onFilterChange()"
+              [searchFn]="accountSearchFn"
+              [clearable]="true"
+              [placeholder]="'JvReport.All' | translate"
+              appendTo="body">
+              <ng-template ng-label-tmp let-a="item">
+                {{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}
+              </ng-template>
+              <ng-template ng-option-tmp let-a="item">
+                {{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <!-- Date from -->
+          <div class="col-md-2">
+            <label class="form-label">{{ 'JvReport.DateFrom' | translate }}</label>
+            <input class="form-control" type="text" [(ngModel)]="dateFrom"
+              (change)="onFilterChange()"
+              mwlFlatpickr [altInput]="true"
+              [altFormat]="'d/m/Y'" dateFormat="Y-m-d" [options]="dateOptions">
+          </div>
+
+          <!-- Date to -->
+          <div class="col-md-2">
+            <label class="form-label">{{ 'JvReport.DateTo' | translate }}</label>
+            <input class="form-control" type="text" [(ngModel)]="dateTo"
+              (change)="onFilterChange()"
+              mwlFlatpickr [altInput]="true"
+              [altFormat]="'d/m/Y'" dateFormat="Y-m-d" [options]="dateOptions">
+          </div>
+
+          <!-- Post status box -->
+          <div class="col-md-3">
+            <div class="ads-filter-box">
+              <div class="ads-filter-box-title">{{ 'AccDetailedStatement.Movements' | translate }}</div>
+              <div class="d-flex gap-4 flex-wrap">
+                <div *ngFor="let o of postStatusOptions" class="form-check">
+                  <input class="form-check-input" type="radio"
+                    [id]="'ps_' + o.value"
+                    name="postStatus"
+                    [(ngModel)]="postStatus"
+                    (change)="onFilterChange()"
+                    [value]="o.value">
+                  <label class="form-check-label" [for]="'ps_' + o.value">
+                    {{ o.label | translate }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order by box -->
+          <div class="col-md-3">
+            <div class="ads-filter-box">
+              <div class="ads-filter-box-title">{{ 'AccDetailedStatement.SortBy' | translate }}</div>
+              <div class="d-flex gap-4 flex-wrap">
+                <div *ngFor="let o of orderByOptions" class="form-check">
+                  <input class="form-check-input" type="radio"
+                    [id]="'ob_' + o.value"
+                    name="orderBy"
+                    [(ngModel)]="orderBy"
+                    (change)="onFilterChange()"
+                    [value]="o.value">
+                  <label class="form-check-label" [for]="'ob_' + o.value">
+                    {{ o.label | translate }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Results ──────────────────────────────────────────────────── -->
+      <div class="card-body p-0">
+
+        <!-- Empty / prompt state -->
+        <div *ngIf="!loading && !hasResults" class="text-center py-5 text-muted">
+          <i class="ti ti-file-search d-block" style="font-size:2.5rem"></i>
+          <p class="mt-2 mb-0">{{ 'JvReport.SearchPrompt' | translate }}</p>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && hasResults">
+
+          <!-- Summary bar -->
+          <div class="ads-summary px-3 py-2 border-bottom d-flex gap-4 flex-wrap">
+            <span class="small">
+              <span class="text-muted me-1">{{ 'AccDetailedStatement.Currency' | translate }}:</span>
+              <strong>{{ curNo }} — {{ selectedCurLabel }}</strong>
+            </span>
+            <span class="small">
+              <span class="text-muted me-1">{{ 'AccDetailedStatement.Accounts' | translate }}:</span>
+              <strong>{{ groups.length }}</strong>
+            </span>
+            <span class="small">
+              <span class="text-muted me-1">{{ 'JournalVoucher.Debit' | translate }}:</span>
+              <strong class="text-success">{{ grandDebit | number:numFmt }}</strong>
+            </span>
+            <span class="small">
+              <span class="text-muted me-1">{{ 'JournalVoucher.Credit' | translate }}:</span>
+              <strong class="text-danger">{{ grandCredit | number:numFmt }}</strong>
+            </span>
+            <span class="small">
+              <span class="text-muted me-1">{{ 'AccDetailedStatement.FinalBalance' | translate }}:</span>
+              <strong [class.text-success]="grandFinalBal >= 0" [class.text-danger]="grandFinalBal < 0">
+                {{ (grandFinalBal < 0 ? -grandFinalBal : grandFinalBal) | number:numFmt }}
+                {{ grandFinalBal >= 0 ? ('AccDetailedStatement.Debit' | translate) : ('AccDetailedStatement.Credit' | translate) }}
+              </strong>
+            </span>
+          </div>
+
+          <!-- Per-account table -->
+          <ng-container *ngFor="let g of groups">
+
+            <!-- Account header -->
+            <div class="ads-acc-header px-3 py-2 d-flex justify-content-between align-items-center">
+              <span class="fw-bold">
+                <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
+                   [queryParams]="{ focus: g.accNo }">{{ g.accNo }} — {{ isAr ? g.accName : (g.accEName || g.accName) }}</a>
+              </span>
+              <span class="small text-muted">
+                {{ 'AccDetailedStatement.BegBal' | translate }}:
+                <strong [class.text-success]="g.begBal >= 0" [class.text-danger]="g.begBal < 0">
+                  {{ (g.begBal < 0 ? -g.begBal : g.begBal) | number:numFmt }}
+                  {{ g.begBal >= 0 ? ('AccDetailedStatement.Debit' | translate) : ('AccDetailedStatement.Credit' | translate) }}
+                </strong>
+              </span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover ads-table mb-0">
+                <thead class="table-primary">
+                  <tr>
+                    <th class="col-docnum">{{ 'AccDetailedStatement.DocNum'     | translate }}</th>
+                    <th class="col-serial">{{ 'AccDetailedStatement.SerialName' | translate }}</th>
+                    <th class="col-date">{{ 'JournalVoucher.Date'               | translate }}</th>
+                    <th class="col-des">{{ 'JournalVoucher.Description'          | translate }}</th>
+                    <th class="col-amt">{{ 'AccDetailedStatement.BegBal'        | translate }}</th>
+                    <th class="col-amt">{{ 'JournalVoucher.Debit'               | translate }}</th>
+                    <th class="col-amt">{{ 'JournalVoucher.Credit'              | translate }}</th>
+                    <th class="col-bal">{{ 'AccDetailedStatement.Balance'       | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+
+                  <!-- No transactions -->
+                  <tr *ngIf="g.lines.length === 0">
+                    <td colspan="8" class="text-center text-muted py-3 fst-italic small">
+                      {{ 'AccDetailedStatement.NoTransactions' | translate }}
+                    </td>
+                  </tr>
+
+                  <!-- Transaction rows -->
+                  <ng-container *ngFor="let line of g.lines; let i = index">
+                    <tr>
+                      <td class="col-docnum text-center fw-semibold">
+                        <a *ngIf="line.DocNum" class="rec-link" [routerLink]="['/accounting/vouchers/journal']"
+                           [queryParams]="{ docNum: line.DocNum, year: vYear(line.Date), vType: line.VType, docType: line.DocType }">{{ line.DocNum }}</a>
+                      </td>
+                      <td class="col-serial small">{{ line.SerialName }}</td>
+                      <td class="col-date">{{ line.Date }}</td>
+                      <td class="col-des">{{ line.Des }}</td>
+                      <td class="col-amt text-end fw-semibold"
+                          [class.text-success]="g.begBal >= 0"
+                          [class.text-danger]="g.begBal < 0">
+                        <ng-container *ngIf="i === 0">
+                          {{ (g.begBal < 0 ? -g.begBal : g.begBal) | number:numFmt }}
+                          {{ g.begBal >= 0 ? ('AccDetailedStatement.Debit' | translate) : ('AccDetailedStatement.Credit' | translate) }}
+                        </ng-container>
+                      </td>
+                      <td class="col-amt text-end text-success fw-semibold">
+                        {{ line.Debit  > 0 ? (line.Debit  | number:numFmt) : '' }}
+                      </td>
+                      <td class="col-amt text-end text-danger fw-semibold">
+                        {{ line.Credit > 0 ? (line.Credit | number:numFmt) : '' }}
+                      </td>
+                      <td class="col-bal text-end fw-semibold"
+                          [class.text-success]="runningBalance(g, i) >= 0"
+                          [class.text-danger]="runningBalance(g, i) < 0">
+                        {{ (runningBalance(g,i) < 0 ? -runningBalance(g,i) : runningBalance(g,i)) | number:numFmt }}
+                        {{ runningBalance(g,i) >= 0 ? ('AccDetailedStatement.Debit' | translate) : ('AccDetailedStatement.Credit' | translate) }}
+                      </td>
+                    </tr>
+                    <!-- تفصيلي حسب المواد – item details sub-table -->
+                    <tr *ngIf="showItemDetails && line.Items && line.Items.length > 0" class="ads-items-row">
+                      <td colspan="8" class="p-0">
+                        <table class="table table-sm table-bordered table-hover ads-items-table mb-0">
+                          <thead class="table-primary">
+                            <tr>
+                              <th>{{ 'AccDetailedStatement.ItemCode'  | translate }}</th>
+                              <th>{{ 'AccDetailedStatement.ItemName'  | translate }}</th>
+                              <th class="text-end">{{ 'AccDetailedStatement.Qty'   | translate }}</th>
+                              <th class="text-end">{{ 'AccDetailedStatement.Bonus' | translate }}</th>
+                              <th class="text-end">{{ 'AccDetailedStatement.Price' | translate }}</th>
+                              <th class="text-end">{{ 'AccDetailedStatement.Disc'  | translate }}</th>
+                              <th class="text-end">{{ 'AccDetailedStatement.Tax'   | translate }}</th>
+                              <th class="text-end">{{ 'AccDetailedStatement.ItemTotal' | translate }}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let item of line.Items">
+                              <td class="small fw-semibold">{{ item.ItemCode }}</td>
+                              <td class="small">{{ item.ItemName }}</td>
+                              <td class="text-end small">{{ item.Qty   | number:numFmt }}</td>
+                              <td class="text-end small">{{ item.Bonus | number:numFmt }}</td>
+                              <td class="text-end small">{{ item.Price | number:numFmt }}</td>
+                              <td class="text-end small">{{ item.Disc  | number:numFmt }}</td>
+                              <td class="text-end small">{{ item.Tax   | number:numFmt }}</td>
+                              <td class="text-end small fw-semibold">{{ item.Total | number:numFmt }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </ng-container>
+
+                  <!-- Per-account subtotal -->
+                  <tr class="ads-subtotal">
+                    <td colspan="4" class="text-end fw-semibold small">
+                      {{ 'JvReport.Subtotal' | translate }}
+                    </td>
+                    <td class="text-end fw-semibold"
+                        [class.text-success]="g.begBal >= 0"
+                        [class.text-danger]="g.begBal < 0">
+                      {{ (g.begBal < 0 ? -g.begBal : g.begBal) | number:numFmt }}
+                      {{ g.begBal >= 0 ? ('AccDetailedStatement.Debit' | translate) : ('AccDetailedStatement.Credit' | translate) }}
+                    </td>
+                    <td class="text-end fw-semibold text-success">{{ g.totalDebit  | number:numFmt }}</td>
+                    <td class="text-end fw-semibold text-danger">{{ g.totalCredit | number:numFmt }}</td>
+                    <td class="text-end fw-bold"
+                        [class.text-success]="g.finalBal >= 0"
+                        [class.text-danger]="g.finalBal < 0">
+                      {{ (g.finalBal < 0 ? -g.finalBal : g.finalBal) | number:numFmt }}
+                      {{ g.finalBal >= 0 ? ('AccDetailedStatement.Debit' | translate) : ('AccDetailedStatement.Credit' | translate) }}
+                    </td>
+                  </tr>
+
+                  <!-- اظهار الشيكات – individual cheque rows -->
+                  <tr *ngIf="showEquivAmt && g.checks && g.checks.length > 0" class="ads-checks-row">
+                    <td colspan="8" class="p-0">
+                      <div class="ads-checks-header px-3 py-1">
+                        <i class="ti ti-writing me-1"></i>
+                        {{ 'AccDetailedStatement.ChecksTitle' | translate }}
+                      </div>
+                      <table class="table table-sm table-bordered table-hover ads-checks-table mb-0">
+                        <thead class="table-primary">
+                          <tr>
+                            <th>{{ 'AccDetailedStatement.CheqNum'       | translate }}</th>
+                            <th>{{ 'AccDetailedStatement.CheqDate'      | translate }}</th>
+                            <th>{{ 'AccDetailedStatement.BankName'      | translate }}</th>
+                            <th class="text-end">{{ 'AccDetailedStatement.CheqAmt' | translate }}</th>
+                            <th>{{ 'AccDetailedStatement.Draw'          | translate }}</th>
+                            <th>{{ 'AccDetailedStatement.CollectDate'   | translate }}</th>
+                            <th>{{ 'AccDetailedStatement.CollectDocNum' | translate }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let chk of g.checks">
+                            <td class="small fw-semibold">{{ chk.CheqNum }}</td>
+                            <td class="small">{{ chk.CheqDate }}</td>
+                            <td class="small">{{ chk.BankName }}</td>
+                            <td class="text-end small fw-semibold">{{ chk.Amt | number:numFmt }}</td>
+                            <td class="small">{{ chk.Draw }}</td>
+                            <td class="small">{{ chk.CollectDate }}</td>
+                            <td class="small">{{ chk.DocNum }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+
+            <!-- طباعة التفاصيل – aging analysis + cheques summary -->
+            <div *ngIf="printDetails" class="ads-aging-section">
+
+              <!-- Aging table -->
+              <div class="ads-aging-title px-3 py-1">
+                <i class="ti ti-calendar-stats me-1"></i>
+                {{ 'AccDetailedStatement.AgingTitle' | translate }}
+              </div>
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered table-hover ads-aging-table mb-0">
+                  <thead class="table-primary">
+                    <tr>
+                      <th class="text-end">{{ 'AccDetailedStatement.Aging0_30'    | translate }}</th>
+                      <th class="text-end">{{ 'AccDetailedStatement.Aging31_60'   | translate }}</th>
+                      <th class="text-end">{{ 'AccDetailedStatement.Aging61_90'   | translate }}</th>
+                      <th class="text-end">{{ 'AccDetailedStatement.Aging91_120'  | translate }}</th>
+                      <th class="text-end">{{ 'AccDetailedStatement.AgingOver120' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-end fw-semibold">{{ g.aging.b0_30    > 0 ? (g.aging.b0_30    | number:numFmt) : '' }}</td>
+                      <td class="text-end fw-semibold">{{ g.aging.b31_60   > 0 ? (g.aging.b31_60   | number:numFmt) : '' }}</td>
+                      <td class="text-end fw-semibold">{{ g.aging.b61_90   > 0 ? (g.aging.b61_90   | number:numFmt) : '' }}</td>
+                      <td class="text-end fw-semibold">{{ g.aging.b91_120  > 0 ? (g.aging.b91_120  | number:numFmt) : '' }}</td>
+                      <td class="text-end fw-semibold">{{ g.aging.bOver120 > 0 ? (g.aging.bOver120 | number:numFmt) : '' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Cheques summary -->
+              <div class="ads-cheq-summary px-3 py-2 d-flex gap-4 flex-wrap small">
+                <span>
+                  {{ 'AccDetailedStatement.CollectedCheques' | translate }}:
+                  <strong class="text-success">{{ g.collectedCheqAmt | number:numFmt }}</strong>
+                </span>
+                <span>
+                  {{ 'AccDetailedStatement.DeferredCheques' | translate }}:
+                  <strong>{{ g.deferredCheqAmt | number:numFmt }}</strong>
+                </span>
+              </div>
+
+            </div>
+
+          </ng-container>
+
+          <!-- Grand total -->
+          <div class="ads-grand-total px-3 py-2 d-flex justify-content-end gap-4 flex-wrap">
+            <span class="fw-bold">{{ 'JvReport.GrandTotal' | translate }}</span>
+            <span>
+              {{ 'AccDetailedStatement.BegBal' | translate }}:
+              <strong [class.text-success]="grandBegBal >= 0" [class.text-danger]="grandBegBal < 0">
+                {{ (grandBegBal < 0 ? -grandBegBal : grandBegBal) | number:numFmt }}
+                {{ grandBegBal >= 0 ? ('AccDetailedStatement.Debit' | translate) : ('AccDetailedStatement.Credit' | translate) }}
+              </strong>
+            </span>
+            <span>
+              {{ 'JournalVoucher.Debit' | translate }}:
+              <strong class="text-success">{{ grandDebit | number:numFmt }}</strong>
+            </span>
+            <span>
+              {{ 'JournalVoucher.Credit' | translate }}:
+              <strong class="text-danger">{{ grandCredit | number:numFmt }}</strong>
+            </span>
+            <span>
+              {{ 'AccDetailedStatement.FinalBalance' | translate }}:
+              <strong [class.text-success]="grandFinalBal >= 0" [class.text-danger]="grandFinalBal < 0">
+                {{ (grandFinalBal < 0 ? -grandFinalBal : grandFinalBal) | number:numFmt }}
+                {{ grandFinalBal >= 0 ? ('AccDetailedStatement.Debit' | translate) : ('AccDetailedStatement.Credit' | translate) }}
+              </strong>
+            </span>
+          </div>
+
+          <!-- Report footer -->
+          <div class="ads-report-footer px-3 pb-3">
+
+            <!-- Cheque totals -->
+            <div class="ads-footer-cheques">
+              <span>
+                {{ 'AccDetailedStatement.DeferredCheques' | translate }}:
+                <strong>{{ grandDeferredCheqAmt | number:numFmt }}</strong>
+              </span>
+              <span>
+                {{ 'AccDetailedStatement.CollectedCheques' | translate }}:
+                <strong class="text-success">{{ grandCollectedCheqAmt | number:numFmt }}</strong>
+              </span>
+            </div>
+
+            <!-- Required balance in words -->
+            <div class="ads-footer-balance">
+              <span class="ads-footer-label">{{ 'AccDetailedStatement.RequiredBalance' | translate }}</span>
+              <span class="ads-footer-words">{{ balanceInWords }}</span>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="ads-footer-disclaimer">
+              {{ 'AccDetailedStatement.StatementDisclaimer' | translate }}
+            </div>
+
+          </div>
+
+        </ng-container>
+
+      </div><!-- /card-body results -->
+    </div><!-- /card -->
+  </div>
+</div>

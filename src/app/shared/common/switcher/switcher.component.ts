@@ -110,6 +110,9 @@ export class SwitcherComponent {
   updateBgImage(backgroundImage: string) {
     this.appStateService.updateState({ backgroundImage, });
   }
+  updateAppTheme(appTheme: string) {
+    this.appStateService.updateState({ appTheme });
+  }
 
 
   //primary theme change

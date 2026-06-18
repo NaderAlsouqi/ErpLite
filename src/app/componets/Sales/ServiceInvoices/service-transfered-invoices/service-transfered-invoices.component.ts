@@ -5,6 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ServiceInvoiceService, ServiceInvoiceMainData } from '../../../../shared/services/service-invoice.service';
 import { ReportService } from '../../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from "../../../../shared/common/sharedmodule";
 
@@ -61,6 +62,7 @@ export class ServiceTransferedInvoicesComponent implements OnInit {
   constructor(
     private serviceInvoiceService: ServiceInvoiceService,
     private reportService: ReportService,
+    private cs: CompanySettingsService,
     private translate: TranslateService,
     private toastr: ToastrService,
     private router: Router
@@ -112,7 +114,7 @@ export class ServiceTransferedInvoicesComponent implements OnInit {
           TransactionNumber: invoice.TransactionNumber,
           CustomerName: invoice.CustomerName,
           FinancialYear: Math.floor(Number(invoice.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(this.cs.billDecimals),
         }));
         
         // Store all data

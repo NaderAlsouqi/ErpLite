@@ -9,6 +9,7 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { NgbModal, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReportService } from '../../../../shared/services/report.service';
 import { Location } from '@angular/common';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-service-invoice-details',
@@ -19,7 +20,8 @@ import { Location } from '@angular/common';
     TranslateModule,
     SharedModule,
     MatTableModule,
-    NgbModule
+    NgbModule,
+    HasPermissionDirective
     ],
   templateUrl: './service-invoice-details.component.html',
   styleUrl: './service-invoice-details.component.scss'

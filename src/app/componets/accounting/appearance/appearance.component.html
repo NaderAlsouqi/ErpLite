@@ -1,0 +1,105 @@
+<app-page-header
+  [title]="'Appearance.Title' | translate"
+  [title1]="'Nav.Settings.Title' | translate"
+  [activeTitle]="'Appearance.Title' | translate">
+</app-page-header>
+
+<div class="row g-3">
+  <!-- App Theme -->
+  <div class="col-xl-6">
+    <div class="card custom-card h-100">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="ti ti-palette me-1"></i>
+          {{ 'Appearance.AppTheme' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">{{ 'Appearance.AppThemeHint' | translate }}</p>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="theme-card" [class.active]="appTheme === 'classic'" (click)="setAppTheme('classic')">
+              <div class="theme-preview classic">
+                <div class="tp-header"></div>
+                <div class="tp-row"></div>
+                <div class="tp-row short"></div>
+                <div class="tp-row"></div>
+              </div>
+              <div class="theme-meta">
+                <span class="theme-name">{{ 'Appearance.Classic' | translate }}</span>
+                <span class="theme-check">
+                  <i class="ti" [class.ti-circle-check-filled]="appTheme === 'classic'" [class.ti-circle]="appTheme !== 'classic'"></i>
+                </span>
+              </div>
+            </label>
+          </div>
+          <div class="col-md-6">
+            <label class="theme-card" [class.active]="appTheme === 'editorial'" (click)="setAppTheme('editorial')">
+              <div class="theme-preview editorial">
+                <div class="tp-header"></div>
+                <div class="tp-row"></div>
+                <div class="tp-row short"></div>
+                <div class="tp-row"></div>
+              </div>
+              <div class="theme-meta">
+                <span class="theme-name">{{ 'Appearance.Editorial' | translate }}</span>
+                <span class="theme-check">
+                  <i class="ti" [class.ti-circle-check-filled]="appTheme === 'editorial'" [class.ti-circle]="appTheme !== 'editorial'"></i>
+                </span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Color Mode -->
+  <div class="col-xl-6">
+    <div class="card custom-card h-100">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="ti ti-contrast me-1"></i>
+          {{ 'Appearance.ColorMode' | translate }}
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">{{ 'Appearance.ColorModeHint' | translate }}</p>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="theme-card" [class.active]="colorMode === 'light'" (click)="setColorMode('light')">
+              <div class="theme-preview light-mode">
+                <div class="tp-header"></div>
+                <div class="tp-row"></div>
+                <div class="tp-row short"></div>
+                <div class="tp-row"></div>
+              </div>
+              <div class="theme-meta">
+                <span class="theme-name"><i class="ti ti-sun me-1"></i>{{ 'Appearance.Light' | translate }}</span>
+                <span class="theme-check">
+                  <i class="ti" [class.ti-circle-check-filled]="colorMode === 'light'" [class.ti-circle]="colorMode !== 'light'"></i>
+                </span>
+              </div>
+            </label>
+          </div>
+          <div class="col-md-6">
+            <label class="theme-card" [class.active]="colorMode === 'dark'" (click)="setColorMode('dark')">
+              <div class="theme-preview dark-mode">
+                <div class="tp-header"></div>
+                <div class="tp-row"></div>
+                <div class="tp-row short"></div>
+                <div class="tp-row"></div>
+              </div>
+              <div class="theme-meta">
+                <span class="theme-name"><i class="ti ti-moon me-1"></i>{{ 'Appearance.Dark' | translate }}</span>
+                <span class="theme-check">
+                  <i class="ti" [class.ti-circle-check-filled]="colorMode === 'dark'" [class.ti-circle]="colorMode !== 'dark'"></i>
+                </span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

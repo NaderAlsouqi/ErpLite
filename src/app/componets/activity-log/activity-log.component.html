@@ -1,0 +1,206 @@
+<app-page-header
+  [title]="'ActivityLog.Title' | translate"
+  [title1]="'Nav.Settings.HeadTitle' | translate"
+  [activeTitle]="'ActivityLog.Title' | translate">
+</app-page-header>
+
+<div class="row activity-log-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="card-title">{{ 'ActivityLog.Title' | translate }}</div>
+        <div class="card-options">
+          <button class="btn btn-outline-primary" (click)="print()">
+            <i class="ti ti-printer me-1"></i>
+            {{ 'General.Print' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Filters -->
+        <div class="al-filters mb-3">
+
+          <div class="al-filters-header">
+            <span class="al-filters-icon"><i class="ti ti-adjustments-horizontal"></i></span>
+            <span class="al-filters-title">{{ 'General.Filters' | translate }}</span>
+          </div>
+
+          <div class="row g-3 align-items-end">
+
+            <div class="col-md-2">
+              <label class="form-label">
+                <i class="ti ti-user label-icon label-icon--user"></i>
+                {{ 'ActivityLog.Username' | translate }}
+              </label>
+              <input type="text" class="form-control al-input"
+                [(ngModel)]="filter.Username"
+                [placeholder]="'ActivityLog.UsernamePlaceholder' | translate" />
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">
+                <i class="ti ti-layout-grid label-icon label-icon--module"></i>
+                {{ 'ActivityLog.Module' | translate }}
+              </label>
+              <ng-select
+                [items]="modules"
+                [(ngModel)]="filter.Module"
+                [placeholder]="'General.All' | translate"
+                [clearable]="true"
+                class="def-select">
+              </ng-select>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">
+                <i class="ti ti-bolt label-icon label-icon--action"></i>
+                {{ 'ActivityLog.Action' | translate }}
+              </label>
+              <ng-select
+                [items]="ACTIONS"
+                [(ngModel)]="filter.Action"
+                [placeholder]="'General.All' | translate"
+                [clearable]="true"
+                class="def-select">
+              </ng-select>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">
+                <i class="ti ti-circle-check label-icon label-icon--status"></i>
+                {{ 'ActivityLog.Status' | translate }}
+              </label>
+              <ng-select
+                [items]="STATUS_OPTIONS"
+                bindLabel="label"
+                bindValue="value"
+                [(ngModel)]="filter.IsSuccess"
+                [placeholder]="'General.All' | translate"
+                [clearable]="true"
+                class="def-select">
+              </ng-select>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">
+                <i class="ti ti-calendar-event label-icon label-icon--date"></i>
+                {{ 'General.DateFrom' | translate }}
+              </label>
+              <input type="date" class="form-control al-input" [(ngModel)]="filter.DateFrom" />
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">
+                <i class="ti ti-calendar-event label-icon label-icon--date"></i>
+                {{ 'General.DateTo' | translate }}
+              </label>
+              <input type="date" class="form-control al-input" [(ngModel)]="filter.DateTo" />
+            </div>
+
+            <div class="col-12 al-filter-actions">
+              <button class="btn btn-primary" (click)="applyFilter()">
+                <i class="ti ti-search"></i>
+                {{ 'General.Search' | translate }}
+              </button>
+              <button class="btn al-btn-clear" (click)="clearFilter()">
+                <i class="ti ti-refresh"></i>
+                {{ 'General.Clear' | translate }}
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="!loading" class="al-table-wrapper">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th class="col-date">{{ 'ActivityLog.LoggedAt' | translate }}</th>
+                  <th class="col-user">{{ 'ActivityLog.Username' | translate }}</th>
+                  <th class="col-action">{{ 'ActivityLog.Action' | translate }}</th>
+                  <th class="col-module">{{ 'ActivityLog.Module' | translate }}</th>
+                  <th class="col-details">{{ 'ActivityLog.Details' | translate }}</th>
+                  <th class="col-ip">{{ 'ActivityLog.IPAddress' | translate }}</th>
+                  <th class="col-status text-center">{{ 'ActivityLog.Status' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of rows" class="al-row" [class.al-row-fail]="!row.IsSuccess">
+                  <td class="col-date text-nowrap">{{ row.LoggedAt | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                  <td class="col-user">{{ row.Username }}</td>
+                  <td class="col-action">
+                    <span class="action-badge"
+                      [class.action-add]="row.Action === 'Add'"
+                      [class.action-update]="row.Action === 'Update'"
+                      [class.action-delete]="row.Action === 'Delete'"
+                      [class.action-auth]="row.Action === 'Login' || row.Action === 'Logout'"
+                      [class.action-other]="!['Add','Update','Delete','Login','Logout'].includes(row.Action)">
+                      {{ row.Action }}
+                    </span>
+                  </td>
+                  <td class="col-module">{{ row.Module }}</td>
+                  <td class="col-details">
+                    <span *ngIf="row.Details" class="details-op" [title]="row.Details">
+                      {{ row.Details }}
+                    </span>
+                    <div *ngIf="row.NewValues" class="details-values details-new" [title]="row.NewValues">
+                      <span class="values-label">{{ 'ActivityLog.New' | translate }}</span>
+                      <span class="values-content">{{ row.NewValues }}</span>
+                    </div>
+                    <div *ngIf="row.OldValues" class="details-values details-old" [title]="row.OldValues">
+                      <span class="values-label">{{ 'ActivityLog.Old' | translate }}</span>
+                      <span class="values-content">{{ row.OldValues }}</span>
+                    </div>
+                    <span *ngIf="!row.Details && !row.NewValues && !row.OldValues && !row.ErrorDetails" class="text-muted">—</span>
+                    <div *ngIf="row.ErrorDetails" class="error-details" [title]="row.ErrorDetails">
+                      <i class="ti ti-alert-circle"></i>
+                      <span>{{ row.ErrorDetails }}</span>
+                    </div>
+                  </td>
+                  <td class="col-ip">{{ row.IPAddress ?? '—' }}</td>
+                  <td class="col-status text-center">
+                    <span class="status-badge"
+                      [class.status-success]="row.IsSuccess"
+                      [class.status-fail]="!row.IsSuccess">
+                      {{ (row.IsSuccess ? 'ActivityLog.Success' : 'ActivityLog.Failed') | translate }}
+                    </span>
+                  </td>
+                </tr>
+
+                <tr *ngIf="rows.length === 0">
+                  <td colspan="7" class="text-center py-4 text-muted">
+                    <i class="ti ti-inbox fs-2 d-block mb-2"></i>
+                    {{ 'General.NoRecordsFound' | translate }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <mat-paginator
+            [pageSizeOptions]="pageSizeOptions"
+            [pageSize]="pageSize"
+            [pageIndex]="pageIndex"
+            [length]="totalItems"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

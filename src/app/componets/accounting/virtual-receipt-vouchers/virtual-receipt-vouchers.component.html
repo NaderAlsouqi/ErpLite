@@ -237,24 +237,27 @@
         <!-- Submit Buttons -->
         <div class="row mt-4">
           <div class="col-12 d-flex gap-2 justify-content-end">
-          <button 
+          <button
                 type="button"
-                class="btn btn-primary" 
+                class="btn btn-primary"
+                *hasPermission="'Receipts.Create'"
                 (click)="AddCash()"
                 [disabled]="(!receiptForm.customerAccountNumber || !receiptForm.debtAccountNumber || !receiptForm.cashAmount)">
                 <i class="ti ti-plus me-1"></i>
                 {{ 'ReceiptVoucher.AddCash' | translate }}
            </button>
-           <button 
+           <button
                 type="button"
-                class="btn btn-primary" 
+                class="btn btn-primary"
+                *hasPermission="'Receipts.Create'"
                 (click)="openCheckModal(checkModal)"
                 [disabled]="(!receiptForm.customerAccountNumber ||  !receiptForm.ChequedebtAccountNumber)">
                 <i class="ti ti-plus me-1"></i>
                 {{ 'ReceiptVoucher.AddCheque' | translate }}
            </button>
-            <button 
-              class="btn btn-primary" 
+            <button
+              class="btn btn-primary"
+              *hasPermission="'Receipts.Create'"
               (click)="submitReceipt()"
               [disabled]="!receiptForm.cashAmount&&cheques.length==0">
               <i class="ti ti-device-floppy me-1"></i>
@@ -275,7 +278,7 @@
 
 
 <mat-tab-group>
-  <mat-tab label="نقدي">
+  <mat-tab [label]="'ReceiptVoucher.Cash' | translate">
               <div  style="align-items: center;" *ngIf="cashReceiptVouchers==null">لا يوجد دفعات نقدية</div>
           <div *ngIf="!loading && cashReceiptVouchers!=null" class="row mt-4">
           <div class="col-12">
@@ -285,8 +288,8 @@
               </div>
               <div class="card-body">
                 <div class="table-responsive">
-                  <table class="table text-nowrap table-bordered">
-                    <thead>
+                  <table class="table text-nowrap table-bordered table-hover mb-0">
+                    <thead class="table-primary">
                       <tr>
                         <th scope="col">{{ 'ReceiptVoucher.AccountNo' | translate }}</th>
                         <th scope="col">{{ 'ReceiptVoucher.AccountName' | translate }}</th>
@@ -319,7 +322,9 @@
                         </td>
                         <td>
                           <div class="hstack gap-2 flex-wrap">
-                            <button class="btn btn-icon btn-sm btn-danger-light" (click)="deleteCashReceiptCheck()" 
+                            <button class="btn btn-icon btn-sm btn-danger-light"
+                               *hasPermission="'Receipts.Delete'"
+                               (click)="deleteCashReceiptCheck()"
                                ngbTooltip="{{ 'General.Delete' | translate }}">
                                <i class="ri-delete-bin-5-line"></i>
                             </button>
@@ -335,7 +340,7 @@
         </div>  
 
   </mat-tab>
-  <mat-tab label="شيكات"> 
+  <mat-tab [label]="'ReceiptVoucher.Cheques' | translate"> 
           <div  style="align-items: center;" *ngIf="cheques.length==0">لا يوجد دفعات شيك</div>
           <div *ngIf="!loading && cheques.length > 0" class="row mt-4">
           <div class="col-12">
@@ -345,8 +350,8 @@
               </div>
               <div class="card-body">
                 <div class="table-responsive">
-                  <table class="table text-nowrap table-bordered">
-                    <thead>
+                  <table class="table text-nowrap table-bordered table-hover mb-0">
+                    <thead class="table-primary">
                       <tr>
                         <th scope="col">{{ 'ReceiptVoucher.ChequeNumber' | translate }}</th>
                         <th scope="col">{{ 'ReceiptVoucher.ChequeDate' | translate }}</th>
@@ -391,7 +396,9 @@
                         </td>
                         <td>
                           <div class="hstack gap-2 flex-wrap">
-                            <button class="btn btn-icon btn-sm btn-danger-light" (click)="deleteCheque(i)" 
+                            <button class="btn btn-icon btn-sm btn-danger-light"
+                               *hasPermission="'Receipts.Delete'"
+                               (click)="deleteCheque(i)"
                                ngbTooltip="{{ 'General.Delete' | translate }}">
                                <i class="ri-delete-bin-5-line"></i>
                             </button>
@@ -522,7 +529,7 @@
         
         <!-- Results table -->
         <div *ngIf="accountStatementData.length > 0" class="table-responsive">
-          <table mat-table [dataSource]="dataSourceReceiptVouchers" matSort (matSortChange)="onSortChange($event)" class="table table-bordered">
+          <table mat-table [dataSource]="dataSourceReceiptVouchers" matSort (matSortChange)="onSortChange($event)" class="table table-bordered table-hover mb-0">
             <!-- Date Column with adjusted format -->
             <ng-container matColumnDef="Date">
               <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ 'AccountStatement.Date' | translate }} </th>
@@ -567,7 +574,9 @@
                    (click)="openChequesModal(ChequesModal,row.DocumentNumber,row.Trans_Num)">
                   <i class="ti ti-list"></i>
                 </button>
-                <button class="btn btn-sm btn-info"  title="{{ 'AccountStatement.PrintReceiptVoucher' | translate }}"
+                <button class="btn btn-sm btn-info"
+                  *hasPermission="'Receipts.Print'"
+                  title="{{ 'AccountStatement.PrintReceiptVoucher' | translate }}"
                   (click)="PrintReceiptVoucherPDF(row.Trans_Num)">
                   <i class="ti ti-printer"></i>
                 </button>
@@ -663,9 +672,10 @@
     <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">
       <i class="ti ti-x me-1"></i>{{ 'General.Cancel' | translate }}
     </button>
-    <button 
-      type="button" 
-      class="btn btn-primary" 
+    <button
+      type="button"
+      class="btn btn-primary"
+      *hasPermission="['Receipts.Create', 'Receipts.Edit']"
       (click)="addCheck()"
       [disabled]="!newCheque.ChequeNumber || !newCheque.ChequeAmount || !selectedBank">
       <i class="ti ti-plus me-1"></i>{{ 'General.Add' | translate }}
@@ -738,7 +748,7 @@
 
         <!-- Results table -->
         <div *ngIf="ChequesData.length > 0" class="table-responsive">
-          <table mat-table [dataSource]="ChequesData"  class="table table-bordered">
+          <table mat-table [dataSource]="ChequesData"  class="table table-bordered table-hover mb-0">
 
             <!-- Document Number Column -->
             <ng-container matColumnDef="ChequeNumber">

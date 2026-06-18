@@ -1,0 +1,92 @@
+// ── Form internals ────────────────────────────────────────────
+.cp-container {
+  .section-header {
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+
+    &.debit-header  { background: rgba(59, 130, 246, 0.08); color: #2563eb; }
+    &.credit-header { background: rgba(239, 68, 68, 0.08);  color: #dc2626; }
+  }
+
+  .lines-table {
+    font-size: 0.82rem;
+    th { white-space: nowrap; }
+
+    .ng-select-inline {
+      .ng-select-container { min-height: 28px !important; height: 28px !important; }
+      .ng-value-label       { font-size: 0.82rem; }
+    }
+    .opt-no   { font-weight: 600; margin-inline-end: 0.4rem; }
+    .opt-name { color: var(--text-muted); }
+  }
+
+  .balance-bar {
+    padding: 0.45rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+
+    &.balanced   { background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16,185,129,.3); }
+    &.unbalanced { background: rgba(239, 68, 68, 0.1);   color: #b91c1c; border: 1px solid rgba(239,68,68,.3); }
+  }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .cp-container {
+    .section-header {
+      &.debit-header  { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+      &.credit-header { background: rgba(239, 68, 68, 0.15);  color: #fca5a5; }
+    }
+    .balance-bar {
+      &.balanced   { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16,185,129,.4); }
+      &.unbalanced { background: rgba(239, 68, 68, 0.15);  color: #fca5a5; border-color: rgba(239,68,68,.4); }
+    }
+    label { color: var(--default-text-color) !important; }
+    .form-control {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+    }
+    .table                        { background: transparent !important; }
+    .table thead.table-primary th { background: var(--default-background) !important; color: var(--text-muted) !important; border-color: var(--default-border) !important; }
+    .table td, .table th          { border-color: var(--default-border) !important; color: var(--default-text-color) !important; }
+    .table tbody tr               { background: transparent !important; }
+    .table tbody tr:hover         { background: var(--list-hover-focus-bg) !important; }
+  }
+}
+
+/* ── View voucher (عرض السند) popup ─────────────────────────── */
+.voucher-view-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1065;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4rem 1rem 1rem;
+  overflow-y: auto;
+}
+
+.voucher-view-dialog {
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 820px;
+
+  .modal-header,
+  .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+  .modal-body {
+    padding: 1rem;
+  }
+}

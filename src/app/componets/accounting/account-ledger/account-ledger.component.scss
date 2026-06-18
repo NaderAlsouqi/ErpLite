@@ -1,0 +1,247 @@
+:host {
+  display: block;
+}
+
+.aldg-container { padding: 1rem; }
+
+// ── Card header ───────────────────────────────────────────────────────────────
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title { margin-bottom: 0; }
+
+// ── Report title banner ─────────────────────────────────────────────────────────
+.aldg-report-title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.05rem;
+  padding: 0.5rem 0 1rem;
+  line-height: 1.6;
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+.table-section {
+  .table-responsive {
+    max-height: 65vh;
+    overflow: auto;
+
+    &::-webkit-scrollbar       { width: 10px; height: 10px; }
+    &::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    &::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; border: 2px solid #f1f5f9; }
+    &::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #f1f5f9;
+  }
+
+  thead.table-primary > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    white-space: nowrap;
+    // Match the theme's table-primary tint (primary @ 10%), kept opaque for the
+    // sticky header by compositing the tint over a solid white base.
+    background-color: #fff !important;
+    background-image: linear-gradient(rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.1)) !important;
+    background-clip: padding-box;
+  }
+}
+
+.aldg-table {
+  min-width: 920px;
+  font-size: 0.875rem;
+
+  th { white-space: nowrap; }
+
+  td {
+    padding: 0.5rem 0.875rem;
+    vertical-align: middle;
+  }
+
+  // Description cell — allow wrapping, keep it from dominating the row
+  .aldg-des { max-width: 280px; white-space: normal; word-break: break-word; }
+
+  // Cost-center group header row — primary tint, matching table-primary
+  tbody > tr.aldg-group-row > td {
+    background-color: rgba(var(--primary-rgb), 0.18);
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  // Per-group subtotal row — lighter primary tint
+  tbody > tr.aldg-subtotal-row > td {
+    background-color: rgba(var(--primary-rgb), 0.06);
+    font-weight: 700;
+  }
+
+  // Per-group balance row
+  tbody > tr.aldg-balance-row > td {
+    background-color: rgba(var(--primary-rgb), 0.03);
+    font-weight: 700;
+    font-style: italic;
+  }
+}
+
+.aldg-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  color: #334155;
+}
+
+// Separator between id and name inside dropdown options
+.aldg-opt-sep {
+  margin: 0 0.4rem;
+  color: #94a3b8;
+}
+
+// ── ng-select overrides ───────────────────────────────────────────────────────
+.aldg-select {
+  font-size: 0.875rem;
+
+  .ng-select-container {
+    min-height: 38px !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+  }
+
+  &.ng-select-focused .ng-select-container,
+  &.ng-select-opened .ng-select-container {
+    border-color: var(--primary-color, #6366f1) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+  }
+
+  .ng-value-container {
+    padding: 0 0.625rem !important;
+
+    .ng-value       { font-size: 0.875rem; color: #1e293b; font-weight: 500; }
+    .ng-placeholder { font-size: 0.82rem; color: #94a3b8; }
+    .ng-input > input { font-size: 0.875rem; }
+  }
+
+  .ng-arrow-wrapper {
+    width: 24px;
+    padding-right: 6px;
+    .ng-arrow { border-color: #94a3b8 transparent transparent; border-width: 5px 5px 0; }
+  }
+
+  &.ng-select-opened .ng-arrow-wrapper .ng-arrow {
+    border-color: transparent transparent var(--primary-color, #6366f1);
+    border-width: 0 5px 5px;
+  }
+
+  .ng-clear-wrapper { color: #94a3b8; &:hover { color: #dc2626; } }
+}
+
+// Dropdown panel — appended to body
+.ng-dropdown-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  font-size: 0.875rem;
+  z-index: 9999;
+
+  .ng-dropdown-panel-items {
+    background: #ffffff;
+    max-height: 260px;
+
+    .ng-option {
+      background: #ffffff;
+      padding: 0.45rem 0.75rem;
+      color: #334155;
+      transition: background 0.1s;
+
+      &.ng-option-marked    { background: rgba(99, 102, 241, 0.07); color: #1e293b; }
+      &.ng-option-selected  { background: var(--primary-color, #6366f1); color: #ffffff; font-weight: 600;
+        &.ng-option-marked  { filter: brightness(1.1); }
+      }
+      &.ng-option-disabled  { color: #94a3b8; }
+    }
+  }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .aldg-container {
+    // Filters / inputs
+    .form-control      { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+    .form-control::placeholder { color: var(--text-muted) !important; }
+    .form-label        { color: var(--text-muted) !important; }
+
+    // Report title
+    .aldg-report-title  { color: var(--default-text-color) !important; }
+
+    // Table
+    .table                        { background: transparent !important; }
+    .table thead tr               { background: var(--default-background) !important; }
+    .table thead.table-primary th {
+      background-color: var(--default-background) !important;
+      background-image: none !important;
+      color: var(--text-muted) !important;
+      border-bottom-color: var(--default-border) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td                     { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th                     { border-color: var(--default-border) !important; }
+    .table tbody tr               { background: transparent !important; }
+    .table tbody tr:hover         { background: var(--list-hover-focus-bg) !important; }
+    .text-muted                   { color: var(--text-muted) !important; }
+
+    // Group + subtotal rows
+    .aldg-table tbody > tr.aldg-group-row > td {
+      background-color: rgba(99, 102, 241, 0.16) !important;
+      color: var(--default-text-color) !important;
+    }
+    .aldg-table tbody > tr.aldg-subtotal-row > td {
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      color: var(--default-text-color) !important;
+    }
+    .aldg-table tbody > tr.aldg-balance-row > td {
+      background-color: rgba(255, 255, 255, 0.03) !important;
+      color: var(--default-text-color) !important;
+    }
+    .table tfoot td { background: var(--default-background) !important; color: var(--default-text-color) !important; }
+
+    .aldg-mono { color: var(--default-text-color) !important; }
+
+    // ng-select
+    .aldg-select .ng-select-container { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+    .aldg-select .ng-value             { color: var(--default-text-color) !important; }
+    .aldg-select .ng-placeholder       { color: var(--text-muted) !important; }
+    .aldg-select .ng-input > input     { color: var(--default-text-color) !important; }
+  }
+
+  // Dropdown panel (appended to body, outside container)
+  .ng-dropdown-panel,
+  .ng-dropdown-panel .ng-dropdown-panel-items { background: rgb(var(--body-bg-rgb)) !important; border-color: var(--default-border) !important; }
+  .ng-dropdown-panel .ng-option               { background: transparent !important; color: var(--default-text-color) !important; }
+  .ng-dropdown-panel .ng-option.ng-option-marked   { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
+  .ng-dropdown-panel .ng-option.ng-option-disabled { color: var(--text-muted) !important; }
+}
+
+// ── Opening / final balance bars ──────────────────────────────────────────────
+.aldg-opening, .aldg-final {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .65rem 1rem; border-radius: 10px; margin: .75rem 0;
+  font-weight: 700;
+}
+.aldg-opening { background: rgba(var(--primary-rgb), .06); border: 1px solid rgba(var(--primary-rgb), .12); }
+.aldg-final   { background: rgba(var(--primary-rgb), .12); border: 1px solid rgba(var(--primary-rgb), .2); font-size: 1.05rem; }
+.aldg-opening-label, .aldg-final-label { color: #475569; }
+.aldg-final-tag {
+  margin-inline-start: .5rem; padding: .1rem .55rem; border-radius: 20px;
+  font-size: .78rem; background: #d1fae5; color: #047857;
+  &.is-credit { background: #fee2e2; color: #b91c1c; }
+}
+.aldg-des { max-width: 320px; white-space: normal; word-break: break-word; }
+
+[data-theme-mode="dark"] .aldg-container {
+  .aldg-opening, .aldg-final { background: rgba(255,255,255,.04) !important; border-color: var(--default-border) !important; }
+  .aldg-opening-label, .aldg-final-label { color: var(--text-muted) !important; }
+}

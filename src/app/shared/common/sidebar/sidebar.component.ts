@@ -26,6 +26,35 @@ export class SidebarComponent {
   options = { autoHide: false, scrollbarMinSize: 100 };
   public menuItems!: Menu[];
   public menuitemsSubscribe$!: Subscription;
+
+  /** Search box state + the grouped/filtered view actually rendered. */
+  searchTerm = '';
+  displayList: { item: Menu; sectionLabel: string | null }[] = [];
+
+  /** Top-level item (by translationKey) → logical section. */
+  private readonly SECTION_OF: Record<string, string> = {
+    'Nav.Home':             'general',
+    'Nav.Dashboard.Title':  'general',
+    'Nav.Dashboard.Title2': 'general',
+    'Nav.Accounting.Title': 'modules',
+    'Nav.Warehouse.Title':  'modules',
+    'Nav.Purchases.Title':  'modules',
+    'Nav.Sales.Title':      'modules',
+    'Nav.Assets.Title':     'modules',
+    'Nav.Production.Title': 'modules',
+    'Nav.Reports.Title':    'reports',
+    'Nav.Notes.Title':      'reports',
+    'Nav.Quotation.Title':  'reports',
+    'Nav.ServiceMisc.Title':'admin',
+    'Nav.SystemAdmin.Title':'admin',
+    'Nav.Settings.Title':   'admin',
+  };
+  private readonly SECTION_LABEL: Record<string, string> = {
+    general: 'Nav.Sections.General',
+    modules: 'Nav.Sections.Modules',
+    reports: 'Nav.Sections.Reports',
+    admin:   'Nav.Sections.Admin',
+  };
   constructor(
     private navServices: NavService,
     public router: Router,
@@ -36,6 +65,52 @@ export class SidebarComponent {
     private appStateService: AppStateService
   ) {
   }
+
+  /** Build the rendered list: grouped by section, or pruned to the search term. */
+  buildDisplay() {
+    const src = this.menuItems ?? [];
+    const term = this.searchTerm.trim().toLowerCase();
+
+    if (term) {
+      const pruned = this.filterTree(src.filter(i => !i.headTitle), term);
+      this.displayList = pruned.map(item => ({ item, sectionLabel: null }));
+      return;
+    }
+
+    let lastSection = '';
+    const list: { item: Menu; sectionLabel: string | null }[] = [];
+    for (const item of src) {
+      if (item.headTitle) continue;
+      const sec = this.SECTION_OF[item.translationKey ?? ''] ?? 'other';
+      let label: string | null = null;
+      if (sec !== lastSection) {
+        label = this.SECTION_LABEL[sec] ?? null;
+        lastSection = sec;
+      }
+      list.push({ item, sectionLabel: label });
+    }
+    this.displayList = list;
+  }
+
+  /** Returns a cloned, pruned tree keeping only branches whose title matches. */
+  private filterTree(items: Menu[], term: string): Menu[] {
+    const out: Menu[] = [];
+    for (const it of items) {
+      const title = (it.title ?? '').toLowerCase();
+      const selfMatch = title.includes(term);
+      const kids = it.children ? this.filterTree(it.children, term) : [];
+      if (selfMatch || kids.length) {
+        const clone: Menu = { ...it, active: true };
+        if (it.children) clone.children = kids.length ? kids : it.children;
+        out.push(clone);
+      }
+    }
+    return out;
+  }
+
+  onSearch() { this.buildDisplay(); }
+
+  clearSearch() { this.searchTerm = ''; this.buildDisplay(); }
 
   clearNavDropdown() {
     this.menuItems?.forEach((a: any) => {
@@ -51,6 +126,7 @@ export class SidebarComponent {
   ngOnInit() {
     this.menuitemsSubscribe$ = this.navServices.items.subscribe((items) => {
       this.menuItems = items;
+      this.buildDisplay();
     });
 
 

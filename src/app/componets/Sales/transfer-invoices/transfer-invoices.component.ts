@@ -9,6 +9,8 @@ import { SharedModule } from "../../../shared/common/sharedmodule";
 import { FotaraService, TransferInvoiceData, FotaraApiResponse } from "../../../shared/services/fotara.service";
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../shared/services/auth.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 // Material Table imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -39,7 +41,8 @@ interface InvoiceData {
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    HasPermissionDirective
   ],
   templateUrl: './transfer-invoices.component.html',
   styleUrl: './transfer-invoices.component.scss'
@@ -76,7 +79,8 @@ export class TransferInvoicesComponent implements OnInit {
     private toastr: ToastrService,
     private router: Router,
     private authService: AuthService,
-    private fotaraService: FotaraService
+    private fotaraService: FotaraService,
+    private cs: CompanySettingsService
   ) {
     this.dataSource.filterPredicate = (data: any, filter: string) => {
       return data.InvoiceNumber.toLowerCase().includes(filter) ||
@@ -134,7 +138,7 @@ export class TransferInvoicesComponent implements OnInit {
           TransactionNumber: invoice.TransactionNumber,
           CustomerName: invoice.CustomerName,
           FinancialYear: Math.floor(Number(invoice.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(this.cs.billDecimals),
         }));
         
         // Store all data

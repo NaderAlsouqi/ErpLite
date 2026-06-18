@@ -1,0 +1,167 @@
+<app-page-header
+  [title]="'Stamps.Title' | translate"
+  [title1]="'Nav.Accounting.Definitions' | translate"
+  [activeTitle]="'Nav.Accounting.Stamps' | translate">
+</app-page-header>
+
+<div class="stamps-container">
+  <div class="card custom-card">
+
+    <!-- ── Tabs header ─────────────────────────────────────────── -->
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'form'"
+             (click)="switchToForm()" href="javascript:void(0)">
+            <i class="ti ti-plus me-1"></i>{{ 'Stamps.StampDetails' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'"
+             (click)="switchToList()" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'Stamps.Title' | translate }}
+          </a>
+        </li>
+      </ul>
+
+      <div class="d-flex gap-1" *ngIf="activeTab === 'list'">
+        <button class="btn btn-sm btn-outline-secondary" (click)="loadData()" title="{{ 'General.Refresh' | translate }}">
+          <i class="ti ti-refresh"></i>
+        </button>
+        <button *hasPermission="'Stamps.Print'" class="btn btn-sm btn-outline-primary" (click)="print()">
+          <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Entry tab ───────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'form'" class="card-body">
+      <div class="row">
+        <div class="col-xl-8 col-lg-10">
+
+          <div class="form-group mb-3">
+            <label class="form-label">
+              <i class="ti ti-hash me-1"></i>
+              {{ 'Stamps.StampNo' | translate }}
+              <span class="text-danger ms-1">*</span>
+            </label>
+            <input type="number" class="form-control" min="1"
+              [(ngModel)]="current.SigNo"
+              (change)="onNoChange()"
+              [placeholder]="'Stamps.EnterStampNo' | translate" />
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">
+              <i class="ti ti-language me-1"></i>
+              {{ 'Stamps.ArabicName' | translate }}
+              <span class="text-danger ms-1">*</span>
+            </label>
+            <input type="text" class="form-control"
+              [(ngModel)]="current.Desc"
+              [placeholder]="'Stamps.EnterArabicName' | translate" />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">
+              <i class="ti ti-language me-1"></i>
+              {{ 'Stamps.EnglishName' | translate }}
+              <span class="text-danger ms-1">*</span>
+            </label>
+            <input type="text" class="form-control"
+              [(ngModel)]="current.eDesc"
+              [placeholder]="'Stamps.EnterEnglishName' | translate" />
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn btn-primary" *hasPermission="'Stamps.Create'" (click)="save()" [disabled]="saving">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+              {{ 'General.Save' | translate }}
+            </button>
+            <button class="btn btn-secondary" (click)="reset()">
+              <i class="ti ti-plus me-1"></i>
+              {{ 'General.New' | translate }}
+            </button>
+            <button class="btn btn-danger" *hasPermission="'Stamps.Delete'" (click)="delete()" [disabled]="!current.SigNo">
+              <i class="ti ti-trash me-1"></i>
+              {{ 'General.Delete' | translate }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── List tab ────────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'list'" class="card-body">
+
+      <!-- Search -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text"><i class="ti ti-search"></i></span>
+            <input type="text" class="form-control"
+              [(ngModel)]="filterTerm"
+              (input)="applyFilter()"
+              [placeholder]="'Stamps.SearchPlaceholder' | translate" />
+            <button *ngIf="filterTerm" class="btn btn-outline-secondary" type="button"
+              (click)="clearFilter()">
+              <i class="ti ti-x"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="d-flex justify-content-center my-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div *ngIf="!loading" class="table-responsive">
+        <table class="table table-bordered table-hover mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th class="col-no">{{ 'Stamps.StampNo' | translate }}</th>
+              <th>{{ 'Stamps.ArabicName' | translate }}</th>
+              <th>{{ 'Stamps.EnglishName' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let stamp of filteredStamps"
+              class="cursor-pointer"
+              (click)="onSelectRow(stamp)"
+              [class.selected-row]="current.SigNo === stamp.SigNo">
+              <td class="col-no">
+                <span class="stamp-no-text">{{ stamp.SigNo }}</span>
+              </td>
+              <td>{{ stamp.Desc }}</td>
+              <td>{{ stamp.eDesc }}</td>
+            </tr>
+            <tr *ngIf="filteredStamps.length === 0">
+              <td colspan="3" class="text-center text-muted py-4">
+                <i class="ti ti-inbox fs-2 d-block mb-2"></i>
+                {{ 'General.NoRecordsFound' | translate }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'Stamps.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="confirmDelete()">
+</app-confirmation-modal>

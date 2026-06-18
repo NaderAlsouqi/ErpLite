@@ -1,28 +1,50 @@
 
 <div class="login-page" [dir]="currentLang === 'ar' ? 'rtl' : 'ltr'">
 
+  <!-- Animated background -->
+  <div class="bg-aurora" aria-hidden="true">
+    <span class="orb orb--1"></span>
+    <span class="orb orb--2"></span>
+    <span class="orb orb--3"></span>
+    <span class="orb orb--4"></span>
+    <div class="bg-grid"></div>
+  </div>
+
   <!-- Language toggle -->
   <button class="lang-toggle-btn" type="button" (click)="toggleLanguage()">
+    <i class="bi bi-translate"></i>
     {{ 'LOGIN_PAGE.TOGGLE_LANG' | translate }}
   </button>
 
   <!-- Left brand panel -->
   <div class="brand-panel">
+    <span class="brand-shape brand-shape--ring"></span>
+    <span class="brand-shape brand-shape--blob"></span>
     <div class="brand-panel__inner">
       <div class="brand-logo">
+        <img src="./assets/images/brand-logos/skyline-logo-white.png" alt="logo" class="brand-svg" />
+        <!-- OLD LOGO — to restore, delete the <img> above and uncomment this block:
         <svg viewBox="0 0 210 54" xmlns="http://www.w3.org/2000/svg" class="brand-svg" direction="ltr">
-          <polygon points="12,2  50,2  42,16  4,16"  fill="#c41230"/>
-          <polygon points="8,20  46,20  38,34  0,34"  fill="#c41230"/>
-          <polygon points="12,38 50,38  42,52  4,52"  fill="#c41230"/>
+          <polygon points="12,2  50,2  42,16  4,16"  fill="#e8294b"/>
+          <polygon points="8,20  46,20  38,34  0,34"  fill="#e8294b"/>
+          <polygon points="12,38 50,38  42,52  4,52"  fill="#e8294b"/>
           <text x="60" y="31" font-family="'Segoe UI', Arial, sans-serif" font-weight="800"
                 font-size="19" letter-spacing="1" fill="#ffffff" text-anchor="start">SKYLINE</text>
           <text x="60" y="46" font-family="'Segoe UI', Arial, sans-serif" font-weight="400"
-                font-size="7.5" letter-spacing="3.8" fill="#7a93bf" text-anchor="start">INNOVATION</text>
+                font-size="7.5" letter-spacing="3.8" fill="#9fb3da" text-anchor="start">INNOVATION</text>
         </svg>
+        -->
       </div>
-      <!-- <h2 class="brand-tagline">{{ 'LOGIN_PAGE.ENTERPRISE_TAGLINE' | translate }}</h2> -->
-      <!-- <p class="brand-desc">{{ 'LOGIN_PAGE.BRAND_DESC' | translate }}</p> -->
+
+      <h2 class="brand-tagline">{{ 'LOGIN_PAGE.ENTERPRISE_TAGLINE' | translate }}</h2>
       <p class="brand-desc">JoFawtara</p>
+      <p class="brand-blurb">{{ 'LOGIN_PAGE.BRAND_DESC' | translate }}</p>
+
+      <ul class="brand-features">
+        <li><i class="bi bi-shield-check"></i><span>{{ 'LOGIN_PAGE.SIGN_IN_SUBTITLE' | translate }}</span></li>
+        <li><i class="bi bi-lightning-charge"></i><span>SKYLINE INNOVATION</span></li>
+      </ul>
+
       <div class="brand-dots">
         <span></span><span></span><span></span>
       </div>
@@ -34,6 +56,7 @@
     <div class="form-panel__inner">
 
       <div class="form-header">
+        <div class="form-badge"><i class="bi bi-person-lock"></i></div>
         <h1 class="form-title">{{ 'LOGIN_PAGE.WELCOME_BACK' | translate }}</h1>
         <p class="form-subtitle">{{ 'LOGIN_PAGE.SIGN_IN_SUBTITLE' | translate }}</p>
       </div>
@@ -81,7 +104,7 @@
 
         <div class="form-options">
           <label class="remember-label">
-            <input type="checkbox" id="remember">
+            <input type="checkbox" id="remember" formControlName="rememberMe">
             <span>{{ 'LOGIN_PAGE.REMEMBER_ME' | translate }}</span>
           </label>
           <a href="#" class="forgot-link" (click)="openForgotModal($event)">{{ 'LOGIN_PAGE.FORGOT_PASSWORD' | translate }}</a>

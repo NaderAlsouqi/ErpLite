@@ -113,9 +113,9 @@
       </div>
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-bordered">
+          <table class="table table-bordered table-hover mb-0">
             <caption dir="rtl"></caption>
-            <thead>
+            <thead class="table-primary">
               <tr>
                 <th>#</th>
                 <th>{{ 'VirtualPaybackPage.ItemName' | translate }}</th>
@@ -189,7 +189,7 @@
             <i class="ti ti-x me-1"></i>
             {{ 'General.Cancel' | translate }}
           </button>
-          <button class="btn btn-success" [disabled]="!isValidPayback() || submitting" (click)="submitPayback()">
+          <button class="btn btn-success" *hasPermission="'VirtualInvoices.Create'" [disabled]="!isValidPayback() || submitting" (click)="submitPayback()">
             <i class="ti ti-check me-1"></i>
             {{ submitting ? ('General.Processing' | translate) : ('VirtualPaybackPage.ProcessRefund' | translate) }}
           </button>

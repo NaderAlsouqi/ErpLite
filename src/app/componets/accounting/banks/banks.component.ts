@@ -1,18 +1,15 @@
-import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { ToastrService } from 'ngx-toastr';
-import { NgbModal, NgbModalConfig, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatSortModule, Sort } from '@angular/material/sort';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { BankDto, BankService } from '../../../shared/services/bank.service';
-import { ReportService } from '../../../shared/services/report.service';
 import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/services/chart-of-accounts.service';
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { ReportService } from '../../../shared/services/report.service';
 
 @Component({
   selector: 'app-banks',
@@ -21,227 +18,169 @@ import { ConfirmationModalComponent } from '../../../shared/common/confirmation-
     CommonModule,
     FormsModule,
     TranslateModule,
-    RouterModule,
+    NgSelectModule,
     SharedModule,
-    NgbModule,
-    MatTableModule,
-    MatSortModule,
-    MatPaginatorModule,
     ConfirmationModalComponent,
+    HasPermissionDirective,
   ],
-  providers: [NgbModalConfig, NgbModal],
   templateUrl: './banks.component.html',
   styleUrl: './banks.component.scss',
-  encapsulation: ViewEncapsulation.None,
 })
 export class BanksComponent implements OnInit {
-  @ViewChild('bankFormModal') bankFormModal!: TemplateRef<any>;
   @ViewChild('confirmModal') confirmModal!: ConfirmationModalComponent;
 
-  displayedColumns: string[] = ['bank_num', 'Bank', 'BEName', 'Accno', 'Actions'];
-  dataSource = new MatTableDataSource<BankDto>([]);
-  allData: BankDto[] = [];
-
-  pageSize = 10;
-  pageSizeOptions = [5, 10, 25, 50];
-  pageIndex = 0;
-  totalItems = 0;
-
-  loading = false;
-  submitted = false;
-  isEditMode = false;
-  modalRef!: NgbModalRef;
-  searchTerm = '';
-  selectedId: number | null = null;
-
-  bankForm: BankDto = { bank_num: 0, Bank: '', BEName: '', Accno: null, CCntrNo: null };
+  banks: BankDto[] = [];
+  filteredBanks: BankDto[] = [];
   accounts: ChartOfAccountDto[] = [];
+  filterName = '';
+
+  currentBank: BankDto = this.initForm();
+  loading = false;
+  saving = false;
+  activeTab: 'form' | 'list' = 'form';
+
+  switchToForm(): void { this.activeTab = 'form'; }
+  switchToList(): void { this.activeTab = 'list'; }
 
   constructor(
     private bankService: BankService,
+    private accService: ChartOfAccountsService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private modalService: NgbModal,
-    private modalConfig: NgbModalConfig,
     private reportService: ReportService,
-    private chartOfAccountsService: ChartOfAccountsService
-  ) {
-    this.modalConfig.backdrop = 'static';
-    this.modalConfig.keyboard = false;
-  }
+  ) {}
 
   ngOnInit(): void {
-    this.loadBanks();
-    this.chartOfAccountsService.getAll().subscribe({
-      next: (data) => { this.accounts = data; },
-      error: () => {},
-    });
+    this.loadData();
+    this.accService.getAll().subscribe(data => this.accounts = data);
   }
 
-  loadBanks(): void {
+  private initForm(): BankDto {
+    return { bank_num: 0, Bank: '', BEName: '', Accno: null, CCntrNo: null };
+  }
+
+  loadData(): void {
     this.loading = true;
     this.bankService.getAll().subscribe({
       next: (data) => {
-        this.allData = data;
-        this.totalItems = data.length;
-        this.applyFilter();
+        this.banks = data;
+        this.applyFilters();
+        this.setNextNo();
         this.loading = false;
       },
-      error: () => {
-        this.loading = false;
+      error: () => { this.loading = false; }
+    });
+  }
+
+  private setNextNo(): void {
+    const max = this.banks.length > 0 ? Math.max(...this.banks.map(b => b.bank_num ?? 0)) : 0;
+    this.currentBank.bank_num = max + 1;
+  }
+
+  applyFilters(): void {
+    const term = this.filterName.toLowerCase();
+    this.filteredBanks = this.banks.filter(b =>
+      !term ||
+      (b.bank_num ?? 0).toString().includes(term) ||
+      b.Bank?.toLowerCase().includes(term) ||
+      b.BEName?.toLowerCase().includes(term)
+    );
+  }
+
+  clearFilters(): void {
+    this.filterName = '';
+    this.applyFilters();
+  }
+
+  onNoChange(): void {
+    const no = +this.currentBank.bank_num;
+    if (!no) return;
+    const existing = this.banks.find(b => +b.bank_num === no);
+    if (existing) this.currentBank = { ...existing };
+  }
+
+  onSelectRow(bank: BankDto): void {
+    this.currentBank = { ...bank };
+    this.activeTab = 'form';   // open the selected record in the entry tab for editing
+  }
+
+  save(): void {
+    if (!this.validate()) return;
+    const isEdit = this.banks.some(b => +b.bank_num === +this.currentBank.bank_num);
+    this.saving = true;
+    const req = isEdit
+      ? this.bankService.update(this.currentBank.bank_num, this.currentBank)
+      : this.bankService.add(this.currentBank);
+    req.subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || this.translate.instant('General.SaveSuccess'));
+        this.loadData();
+        this.reset();
+        this.saving = false;
       },
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || err.error?.Message || this.translate.instant('General.Error'));
+        this.saving = false;
+      }
     });
   }
 
-  openAddModal(): void {
-    this.isEditMode = false;
-    this.submitted = false;
-    const nextNo = this.allData.length > 0
-      ? Math.max(...this.allData.map(b => b.bank_num ?? 0)) + 1
-      : 1;
-    this.bankForm = { bank_num: nextNo, Bank: '', BEName: '', Accno: null, CCntrNo: null };
-    this.modalRef = this.modalService.open(this.bankFormModal, {
-      centered: true,
-      size: 'md',
-      windowClass: 'form-modal-dialog animate__animated animate__fadeIn',
-    });
-  }
-
-  openEditModal(bank: BankDto): void {
-    this.isEditMode = true;
-    this.submitted = false;
-    this.selectedId = bank.bank_num;
-    this.bankForm = { bank_num: bank.bank_num, Bank: bank.Bank, BEName: bank.BEName, Accno: bank.Accno ?? null, CCntrNo: bank.CCntrNo ?? null };
-    this.modalRef = this.modalService.open(this.bankFormModal, {
-      centered: true,
-      size: 'md',
-      windowClass: 'form-modal-dialog animate__animated animate__fadeIn',
-    });
-  }
-
-  saveBank(): void {
-    this.submitted = true;
-    if (!this.bankForm.Bank?.trim() || !this.bankForm.BEName?.trim()) {
-      return;
-    }
-    if (!this.isEditMode && (!this.bankForm.bank_num || this.bankForm.bank_num <= 0)) {
-      return;
-    }
-
-    this.loading = true;
-
-    if (this.isEditMode && this.selectedId != null) {
-      this.bankService.update(this.selectedId, this.bankForm).subscribe({
-        next: () => {
-          this.toastr.success(this.translate.instant('Banks.UpdateSuccess'));
-          this.modalRef?.close();
-          this.loadBanks();
-          this.loading = false;
-        },
-        error: () => {
-          this.loading = false;
-        },
-      });
-    } else {
-      this.bankService.add(this.bankForm).subscribe({
-        next: () => {
-          this.toastr.success(this.translate.instant('Banks.AddSuccess'));
-          this.modalRef?.close();
-          this.loadBanks();
-          this.loading = false;
-        },
-        error: () => {
-          this.loading = false;
-        },
-      });
-    }
-  }
-
-  confirmDelete(bank: BankDto): void {
-    this.selectedId = bank.bank_num!;
+  delete(): void {
+    if (!this.currentBank.bank_num) return;
     this.confirmModal.show();
   }
 
-  deleteBank(): void {
-    if (this.selectedId == null) return;
-    this.loading = true;
-    this.bankService.delete(this.selectedId).subscribe({
-      next: () => {
-        this.toastr.success(this.translate.instant('Banks.DeleteSuccess'));
-        this.loadBanks();
-        this.loading = false;
+  confirmDelete(): void {
+    this.bankService.delete(this.currentBank.bank_num).subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || this.translate.instant('General.DeleteSuccess'));
+        this.loadData();
+        this.reset();
       },
-      error: () => {
-        this.loading = false;
-      },
-    });
-  }
-
-  onSearch(): void {
-    this.pageIndex = 0;
-    this.applyFilter();
-  }
-
-  private applyFilter(): void {
-    const term = this.searchTerm.toLowerCase();
-    const filtered = term
-      ? this.allData.filter(
-          (b) =>
-            b.Bank.toLowerCase().includes(term) ||
-            b.BEName.toLowerCase().includes(term) ||
-            b.bank_num?.toString().includes(term) ||
-            b.Accno?.toString().includes(term)
-        )
-      : [...this.allData];
-
-    this.totalItems = filtered.length;
-    const start = this.pageIndex * this.pageSize;
-    this.dataSource.data = filtered.slice(start, start + this.pageSize);
-  }
-
-  onSortChange(sort: Sort): void {
-    if (!sort.direction) return;
-    this.allData.sort((a, b) => {
-      const asc = sort.direction === 'asc';
-      switch (sort.active) {
-        case 'bank_num':
-          return this.compare(a.bank_num ?? 0, b.bank_num ?? 0, asc);
-        case 'Bank':
-          return this.compare(a.Bank, b.Bank, asc);
-        case 'BEName':
-          return this.compare(a.BEName, b.BEName, asc);
-        case 'Accno':
-          return this.compare(a.Accno ?? 0, b.Accno ?? 0, asc);
-        default:
-          return 0;
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || this.translate.instant('General.Error'));
       }
     });
-    this.pageIndex = 0;
-    this.applyFilter();
   }
 
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.applyFilter();
+  reset(): void {
+    this.currentBank = this.initForm();
+    this.setNextNo();
   }
 
-  private compare(a: any, b: any, asc: boolean): number {
-    return (a < b ? -1 : 1) * (asc ? 1 : -1);
+  validate(): boolean {
+    if (!this.currentBank.bank_num || this.currentBank.bank_num <= 0) {
+      this.toastr.warning(this.translate.instant('Banks.BankNumberRequired'));
+      return false;
+    }
+    if (!this.currentBank.Bank?.trim()) {
+      this.toastr.warning(this.translate.instant('Banks.ArabicNameRequired'));
+      return false;
+    }
+    if (!this.currentBank.BEName?.trim()) {
+      this.toastr.warning(this.translate.instant('Banks.EnglishNameRequired'));
+      return false;
+    }
+    return true;
   }
 
-  printTable(): void {
-    const title = this.translate.instant('Banks.Title');
+  accountSearchFn = (term: string, item: ChartOfAccountDto): boolean => {
+    const t = term.toLowerCase();
+    return String(item.no).includes(t) ||
+      (item.name?.toLowerCase().includes(t) ?? false) ||
+      (item.Ename?.toLowerCase().includes(t) ?? false);
+  };
+
+  print(): void {
+    const t = (k: string) => this.translate.instant(k);
     const cols = [
-      { label: this.translate.instant('Banks.BankNumber'),   key: 'bank_num' },
-      { label: this.translate.instant('Banks.ArabicName'),   key: 'Bank' },
-      { label: this.translate.instant('Banks.EnglishName'),  key: 'BEName' },
-      { label: this.translate.instant('Banks.AccountNumber'),key: 'Accno' },
+      { label: t('Banks.BankNumber') },
+      { label: t('Banks.ArabicName') },
+      { label: t('Banks.EnglishName') },
     ];
-    const rows = this.allData.map(r =>
-      cols.map(c => (r as any)[c.key] ?? '—').join('</td><td>')
-    ).map(r => `<tr><td>${r}</td></tr>`).join('');
-
-    this.reportService.printReport(title, cols, rows);
+    const rows = this.filteredBanks.map(b =>
+      `<tr><td>${b.bank_num ?? '—'}</td><td>${b.Bank ?? '—'}</td><td>${b.BEName ?? '—'}</td></tr>`
+    ).join('');
+    this.reportService.printReport(t('Banks.Title'), cols, rows);
   }
 }

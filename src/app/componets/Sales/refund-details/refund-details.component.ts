@@ -4,10 +4,12 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { InvoiceService } from '../../../shared/services/invoice.service'; 
 import { ReportService } from '../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { FormsModule } from '@angular/forms';
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 // Material Table imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -53,7 +55,8 @@ interface RefundItem {
     NgbAccordionModule,
     MatTableModule,
     MatSortModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    HasPermissionDirective
   ],
   providers: [DatePipe, ReportService, InvoiceService],
   templateUrl: './refund-details.component.html',
@@ -76,6 +79,7 @@ export class RefundDetailsComponent implements OnInit {
     private invoiceService: InvoiceService,
     private translate: TranslateService,
     private reportService: ReportService,
+    private cs: CompanySettingsService,
     private location: Location,
     private toastr: ToastrService,
     private datePipe: DatePipe
@@ -136,12 +140,12 @@ export class RefundDetailsComponent implements OnInit {
               UnitCode: item.UnitCode,
               Quantity: item.Quantity,
               UnitPrice: item.UnitPrice.toFixed(6),
-              DiscountAmount: item.DiscountAmount.toFixed(3),
+              DiscountAmount: item.DiscountAmount.toFixed(this.cs.billDecimals),
               TaxAmount: item.TaxAmount.toFixed(6),
               TaxPercent: item.TaxPercent + '%',
-              GrossAmount: item.GrossAmount.toFixed(3),
-              NetAmount: item.NetAmount.toFixed(3),
-              TotalAmount: item.TotalAmount.toFixed(3)
+              GrossAmount: item.GrossAmount.toFixed(this.cs.billDecimals),
+              NetAmount: item.NetAmount.toFixed(this.cs.billDecimals),
+              TotalAmount: item.TotalAmount.toFixed(this.cs.billDecimals)
             }));
             
             this.dataSource.data = formattedItems;

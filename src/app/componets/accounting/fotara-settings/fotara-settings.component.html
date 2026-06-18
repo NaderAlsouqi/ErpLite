@@ -1,0 +1,103 @@
+<app-page-header
+  [title]="'FotaraSettings.Title' | translate"
+  [title1]="'Nav.SystemAdmin.Title' | translate"
+  [activeTitle]="'FotaraSettings.Title' | translate">
+</app-page-header>
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header">
+        <div class="card-title">
+          <i class="ti ti-file-invoice me-1"></i>
+          {{ 'FotaraSettings.Title' | translate }}
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Save button -->
+        <div *hasPermission="'Comf.Edit'" class="mb-3 d-flex justify-content-end">
+          <button type="button" class="btn btn-primary"
+                  (click)="save()" [disabled]="saving || loading">
+            <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+            {{ 'FotaraSettings.Save' | translate }}
+          </button>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="!loading">
+
+          <!-- ── Section 1: Company / Tax identifiers ── -->
+          <div class="fs-section-title">
+            <i class="ti ti-building me-1"></i>
+            {{ 'FotaraSettings.CompanyInfo' | translate }}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">{{ 'FotaraSettings.CompanyName' | translate }} <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="form.the_company_name"
+                     [placeholder]="'FotaraSettings.CompanyName' | translate" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">{{ 'FotaraSettings.TaxNumber' | translate }} <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="form.the_tax_number" dir="ltr" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">{{ 'FotaraSettings.GlobalTaxNumber' | translate }}</label>
+              <input type="text" class="form-control" [(ngModel)]="form.the_global_tax_number" dir="ltr" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">{{ 'FotaraSettings.IncomeSourceSequence' | translate }}</label>
+              <input type="text" class="form-control" [(ngModel)]="form.income_source_sequence" dir="ltr" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ 'FotaraSettings.ZipCode' | translate }}</label>
+              <input type="text" class="form-control" [(ngModel)]="form.zip_code" dir="ltr" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ 'FotaraSettings.CityCode' | translate }}</label>
+              <input type="text" class="form-control" [(ngModel)]="form.city_code" dir="ltr" />
+            </div>
+          </div>
+
+          <!-- ── Section 2: API credentials ── -->
+          <div class="fs-section-title">
+            <i class="ti ti-key me-1"></i>
+            {{ 'FotaraSettings.Credentials' | translate }}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">{{ 'FotaraSettings.ClientId' | translate }} <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="form.Client_Id" dir="ltr"
+                     autocomplete="off" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{{ 'FotaraSettings.SecretKey' | translate }} <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input [type]="showSecret ? 'text' : 'password'" class="form-control"
+                       [(ngModel)]="form.Secret_Key" dir="ltr" autocomplete="new-password" />
+                <button type="button" class="btn btn-outline-secondary" (click)="showSecret = !showSecret"
+                        [title]="(showSecret ? 'FotaraSettings.HideSecret' : 'FotaraSettings.ShowSecret') | translate">
+                  <i class="ti" [ngClass]="showSecret ? 'ti-eye-off' : 'ti-eye'"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /!loading -->
+      </div><!-- /card-body -->
+    </div>
+  </div>
+</div>

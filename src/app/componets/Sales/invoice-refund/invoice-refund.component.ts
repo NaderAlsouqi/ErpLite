@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { InvoiceService } from '../../../shared/services/invoice.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { ToastrService } from 'ngx-toastr';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../shared/services/auth.service';
@@ -20,6 +21,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 
 // NgSelect import
 import { NgSelectModule } from '@ng-select/ng-select';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 
 interface RefundData {
@@ -71,7 +73,8 @@ export const MY_DATE_FORMATS = {
     MatPaginatorModule,
     MatCheckboxModule,        
     ConfirmationModalComponent,
-    NgSelectModule
+    NgSelectModule,
+    HasPermissionDirective
   ],
      providers: [
           DatePipe,
@@ -137,6 +140,7 @@ export class InvoiceRefundComponent implements OnInit {
   constructor(
     private invoiceService: InvoiceService,
     private reportService: ReportService,
+    private cs: CompanySettingsService,
     private authService: AuthService,
     private translate: TranslateService,
     private toastr: ToastrService,
@@ -213,7 +217,7 @@ export class InvoiceRefundComponent implements OnInit {
           CustomerName: refund.CustomerName,
           
           FinancialYear: Math.floor(Number(refund.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(this.cs.billDecimals),
           // Fix the transfer status mapping
           IsTransferred: refund.IsTransfered === 1 || refund.IsTransfered === true || refund.IsTransferred === 1 || refund.IsTransferred === true
         }));

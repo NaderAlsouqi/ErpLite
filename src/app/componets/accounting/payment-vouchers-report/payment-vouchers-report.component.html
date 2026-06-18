@@ -1,0 +1,131 @@
+<app-page-header
+  [title]="'PaymentVouchers.Title' | translate"
+  [title1]="'Nav.Accounting.GLReports' | translate"
+  [activeTitle]="'PaymentVouchers.Title' | translate">
+</app-page-header>
+
+<div class="row pv-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">
+          <i class="ti ti-file-invoice me-2"></i>
+          {{ 'PaymentVouchers.Title' | translate }}
+        </div>
+        <div class="d-flex gap-2">
+          <button *hasPermission="'PaymentVouchers.Print'" class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched || rows.length === 0">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Filter mode -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-3">
+            <label class="form-label d-block">{{ 'PaymentVouchers.FilterBy' | translate }}</label>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="pvMode" id="pvDate" value="DATE" [(ngModel)]="filterMode" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="pvDate">{{ 'PaymentVouchers.ByPeriod' | translate }}</label>
+              <input type="radio" class="btn-check" name="pvMode" id="pvDoc" value="DOC" [(ngModel)]="filterMode" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="pvDoc">{{ 'PaymentVouchers.ByDoc' | translate }}</label>
+            </div>
+          </div>
+
+          <ng-container *ngIf="filterMode === 'DATE'">
+            <div class="col-md-2">
+              <label class="form-label">{{ 'General.DateFrom' | translate }}</label>
+              <input type="date" class="form-control" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">{{ 'General.DateTo' | translate }}</label>
+              <input type="date" class="form-control" [(ngModel)]="dateTo" (change)="onFilterChange()" />
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="filterMode === 'DOC'">
+            <div class="col-md-2">
+              <label class="form-label">{{ 'PaymentVouchers.DocFrom' | translate }}</label>
+              <input type="number" min="1" class="form-control" [(ngModel)]="docFrom"
+                     (keypress)="onlyDigits($event)" (change)="sanitizeDoc('from')" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">{{ 'PaymentVouchers.DocTo' | translate }}</label>
+              <input type="number" min="1" class="form-control" [(ngModel)]="docTo"
+                     (keypress)="onlyDigits($event)" (change)="sanitizeDoc('to')" />
+            </div>
+          </ng-container>
+
+          <div class="col-md-4">
+            <label class="form-label d-block">{{ 'PaymentVouchers.SortBy' | translate }}</label>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="pvSort" id="pvSortDoc" value="DOC" [(ngModel)]="sortBy" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="pvSortDoc">{{ 'PaymentVouchers.DocNo' | translate }}</label>
+              <input type="radio" class="btn-check" name="pvSort" id="pvSortDate" value="DATE" [(ngModel)]="sortBy" (change)="onFilterChange()" />
+              <label class="btn btn-outline-primary" for="pvSortDate">{{ 'PaymentVouchers.DateCol' | translate }}</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched">
+          <div class="pv-print-area">
+            <div class="pv-report-title">
+              {{ 'PaymentVouchers.Title' | translate }}<br>
+              <small *ngIf="filterMode === 'DATE'">{{ dateFrom }} — {{ dateTo }}</small>
+              <small *ngIf="filterMode === 'DOC'">{{ 'PaymentVouchers.DocNo' | translate }} {{ docFrom }} — {{ docTo }}</small>
+              <small> · {{ 'PaymentVouchers.Count' | translate }}: {{ rows.length }}</small>
+            </div>
+
+            <div *ngIf="rows.length === 0" class="alert alert-info text-center">{{ 'General.NoData' | translate }}</div>
+
+            <div *ngIf="rows.length > 0" class="table-section">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 pv-table">
+                  <thead class="table-primary">
+                    <tr>
+                      <th class="text-center">{{ 'PaymentVouchers.DocNo' | translate }}</th>
+                      <th class="text-center">{{ 'PaymentVouchers.DocDate' | translate }}</th>
+                      <th class="text-end">{{ 'PaymentVouchers.Amount' | translate }}</th>
+                      <th>{{ 'PaymentVouchers.Beneficiary' | translate }}</th>
+                      <th>{{ 'PaymentVouchers.User' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let r of rows">
+                      <td class="text-center pv-mono">{{ r.DocNum }}</td>
+                      <td class="text-center">{{ r.Date }}</td>
+                      <td class="text-end">{{ r.Amount | number:'1.3-3' }}</td>
+                      <td>{{ r.Beneficiary }}</td>
+                      <td>{{ r.UserName }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot class="fw-bold table-light">
+                    <tr>
+                      <td colspan="2" class="text-center">{{ 'General.Total' | translate }}</td>
+                      <td class="text-end">{{ totalAmount | number:'1.3-3' }}</td>
+                      <td colspan="2"></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

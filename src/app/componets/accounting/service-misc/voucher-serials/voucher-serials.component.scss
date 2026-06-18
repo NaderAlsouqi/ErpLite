@@ -1,0 +1,134 @@
+.voucher-serials-container {
+  padding: 1rem;
+
+  .card-options {
+    .btn {
+      padding: 0.25rem 0.75rem;
+    }
+  }
+
+  .form-section {
+    .form-group {
+      margin-bottom: 1rem;
+      
+      label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        display: block;
+        
+        i {
+          color: var(--primary-rgb);
+          margin-right: 0.25rem;
+        }
+
+        .required {
+          color: #dc3545;
+          margin-left: 0.1rem;
+        }
+      }
+    }
+  }
+
+  .table-section {
+    .table-responsive {
+      max-height: 600px;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+
+    .selected-row {
+      background-color: rgba(var(--primary-rgb), 0.1);
+    }
+
+    tr {
+      cursor: pointer;
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+      }
+    }
+  }
+
+  .cash-credit-radio {
+    .form-check {
+      display: inline-block;
+      margin-right: 1.5rem;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    
+    .btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+
+// Global styles for ng-select within this component
+::ng-deep {
+  .voucher-serials-container {
+    .ng-select {
+      .ng-select-container {
+        border-radius: 4px;
+        min-height: 38px;
+      }
+    }
+  }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+::ng-deep [data-theme-mode="dark"] {
+  .voucher-serials-container {
+    label { color: var(--default-text-color) !important; }
+
+    .form-control {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+      &::placeholder { color: var(--text-muted) !important; }
+    }
+
+    .form-check-label { color: var(--default-text-color) !important; }
+
+    .table                        { background: transparent !important; }
+    .table thead tr               { background: var(--default-background) !important; }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-bottom-color: var(--default-border) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td                     { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th                     { border-color: var(--default-border) !important; }
+    .table tbody tr               { background: transparent !important; }
+    .table tbody tr:hover         { background: var(--list-hover-focus-bg) !important; }
+    .selected-row                 { background: rgba(var(--primary-rgb), 0.12) !important; }
+
+    .text-muted { color: var(--text-muted) !important; }
+
+    .ng-select .ng-select-container {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+    }
+    .ng-select .ng-value { color: var(--default-text-color) !important; }
+    .ng-select .ng-input > input { color: var(--default-text-color) !important; }
+    .ng-select .ng-placeholder { color: var(--text-muted) !important; }
+    .ng-dropdown-panel {
+      background-color: var(--custom-white) !important;
+      border-color: var(--default-border) !important;
+      .ng-option {
+        background-color: var(--custom-white) !important;
+        color: var(--default-text-color) !important;
+        &.ng-option-marked { background-color: var(--list-hover-focus-bg) !important; }
+        &.ng-option-selected { background-color: rgba(var(--primary-rgb), 0.15) !important; }
+      }
+    }
+  }
+}

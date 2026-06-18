@@ -9,6 +9,8 @@ import { ServiceInvoiceService, ServiceInvoiceMainData } from "../../../../share
 import { FotaraService } from "../../../../shared/services/fotara.service";
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../../shared/services/auth.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 // Material Table imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
@@ -38,7 +40,8 @@ interface ServiceInvoiceData {
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    HasPermissionDirective
   ],
   templateUrl: './service-transfer-invoices.component.html',
   styleUrl: './service-transfer-invoices.component.scss'
@@ -75,7 +78,8 @@ export class ServiceTransferInvoicesComponent implements OnInit {
     private toastr: ToastrService,
     private authService: AuthService,
         private router: Router,
-    private fotaraService: FotaraService
+    private fotaraService: FotaraService,
+    private cs: CompanySettingsService
   ) {
     this.dataSource.filterPredicate = (data: any, filter: string) => {
       return data.InvoiceNumber.toLowerCase().includes(filter) ||
@@ -125,7 +129,7 @@ export class ServiceTransferInvoicesComponent implements OnInit {
           TransactionNumber: invoice.TransactionNumber,
           CustomerName: invoice.CustomerName,
           FinancialYear: Math.floor(Number(invoice.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(invoice.InvoiceAmount).toFixed(this.cs.billDecimals),
         }));
         
         // Store all data

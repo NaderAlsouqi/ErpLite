@@ -323,7 +323,6 @@ export class TransferRefundsComponent implements OnInit {
    * Transfer selected refunds
    */
   async transferSelectedRefunds(): Promise<void> {
-    debugger
     if (this.selectedDocNumbers.size === 0) {
       this.toastr.warning(
         this.translate.instant('TransferRefundsPage.NoRefundsSelected'),

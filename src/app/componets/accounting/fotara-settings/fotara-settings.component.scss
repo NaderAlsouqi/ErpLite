@@ -1,0 +1,17 @@
+// ── Section title ─────────────────────────────────────────────────────────────
+.fs-section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-color, #6366f1);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--default-border, #e2e8f0);
+  margin-bottom: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .fs-section-title { border-bottom-color: var(--default-border) !important; }
+}

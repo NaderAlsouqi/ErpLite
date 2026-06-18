@@ -28,52 +28,20 @@
 
 // ── Table ─────────────────────────────────────────────────────────────────────
 .la-table {
-  width: 100%;
-  border-collapse: collapse;
   font-size: 0.875rem;
 
-  thead tr {
-    background: #f1f5f9;
-  }
-
   th {
-    padding: 0.65rem 1rem;
-    font-weight: 600;
-    font-size: 0.78rem;
-    color: #475569;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    border-bottom: 2px solid #e2e8f0;
     white-space: nowrap;
   }
 
   td {
     padding: 0.45rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
   }
 
-  .col-label {
-    width: 220px;
-    min-width: 180px;
-  }
-
-  .col-picker {
-    width: 180px;
-    min-width: 160px;
-  }
-
-  .col-name {
-    min-width: 200px;
-  }
-}
-
-.la-row {
-  transition: background 0.1s;
-
-  &:hover {
-    background: #f8fafc;
-  }
+  .col-label  { width: 220px; min-width: 180px; }
+  .col-picker { width: 180px; min-width: 160px; }
+  .col-name   { min-width: 200px; }
 }
 
 // ── Label ─────────────────────────────────────────────────────────────────────
@@ -165,8 +133,8 @@
   }
 }
 
-// Dropdown panel (global, appended to body)
-::ng-deep .ng-dropdown-panel {
+// Dropdown panel (appended to body)
+.ng-dropdown-panel {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
@@ -222,50 +190,41 @@
 
 // ── Dark mode ─────────────────────────────────────────────────────────────────
 [data-theme-mode="dark"] {
-  .mat-mdc-table         { background: transparent !important; }
-  .mat-mdc-header-row    { background-color: var(--default-background) !important; }
-  .mat-mdc-header-cell   { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
-  .mat-mdc-cell          { color: var(--default-text-color) !important; border-bottom-color: var(--default-border) !important; }
-  .mat-mdc-row:hover     { background-color: var(--list-hover-focus-bg) !important; }
-  .mat-mdc-no-data-row td { color: var(--text-muted) !important; }
-  .mat-mdc-paginator     { background: transparent !important; color: var(--default-text-color) !important; }
+  .la-container {
+    // Table
+    .table                        { background: transparent !important; }
+    .table thead tr               { background: var(--default-background) !important; }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-bottom-color: var(--default-border) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td                     { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th                     { border-color: var(--default-border) !important; }
+    .table tbody tr               { background: transparent !important; }
+    .table tbody tr:hover         { background: var(--list-hover-focus-bg) !important; }
 
-  .form-modal-header  { background: var(--custom-white) !important; border-bottom-color: var(--default-border) !important; }
-  .form-modal-title   { color: var(--default-text-color) !important; }
-  .form-modal-subtitle { color: var(--text-muted) !important; }
-  .form-modal-close   { background: rgba(255,255,255,0.08) !important; color: var(--text-muted) !important; }
-  .form-modal-close:hover { background: rgba(255,255,255,0.15) !important; color: var(--default-text-color) !important; }
-  .form-modal-body    { background: var(--custom-white) !important; }
-  .form-modal-footer  { background: var(--default-background) !important; border-top-color: var(--default-border) !important; }
-  .form-field-label   { color: var(--default-text-color) !important; }
-  .form-field-label i { color: var(--text-muted) !important; }
-  .form-field-input   { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
-  .form-field-input::placeholder { color: var(--text-muted) !important; }
-  .form-field-input option { background: rgb(var(--body-bg-rgb)); color: var(--default-text-color); }
-  .form-btn-cancel    { color: var(--text-muted) !important; background: var(--custom-white) !important; border-color: var(--default-border) !important; }
-  .form-btn-cancel:hover { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
-}
+    // Labels
+    .la-label    { color: var(--default-text-color) !important; }
+    .la-required { color: var(--default-text-color) !important; }
+    .la-acc-name { color: var(--text-muted) !important; }
+    .la-opt-name, .la-opt-ename { color: var(--text-muted) !important; }
+    .text-muted  { color: var(--text-muted) !important; }
 
-// ── Dark mode – link-accounts specific ───────────────────────────────────────
-[data-theme-mode="dark"] {
-  // Table
-  .la-table                { background: transparent !important; }
-  .la-table thead tr        { background: var(--default-background) !important; }
-  .la-table th              { color: var(--text-muted) !important; border-bottom-color: var(--default-border) !important; }
-  .la-table td              { border-bottom-color: var(--default-border) !important; }
-  .la-row                   { background: transparent !important; }
-  .la-row:hover             { background: var(--list-hover-focus-bg) !important; }
+    // ng-select
+    .la-select .ng-select-container              { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+    .la-select .ng-value                         { color: var(--default-text-color) !important; }
+    .la-select .ng-placeholder                   { color: var(--text-muted) !important; }
+    .la-select .ng-input > input                 { color: var(--default-text-color) !important; }
+    .la-select.la-select-required .ng-select-container { border-color: rgba(239,68,68,0.5) !important; background: rgba(239,68,68,0.06) !important; }
+  }
 
-  // Labels
-  .la-label    { color: var(--default-text-color) !important; }
-  .la-required { color: var(--default-text-color) !important; }
-  .la-acc-name { color: var(--text-muted) !important; }
-  .la-opt-name, .la-opt-ename { color: var(--text-muted) !important; }
-
-  // ng-select
-  .la-select .ng-select-container              { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
-  .la-select .ng-value                         { color: var(--default-text-color) !important; }
-  .la-select .ng-placeholder                   { color: var(--text-muted) !important; }
-  .la-select .ng-input > input                 { color: var(--default-text-color) !important; }
-  .la-select.la-select-required .ng-select-container { border-color: rgba(239,68,68,0.5) !important; background: rgba(239,68,68,0.06) !important; }
+  // Dropdown panel (appended to body, outside container)
+  .ng-dropdown-panel,
+  .ng-dropdown-panel .ng-dropdown-panel-items { background: rgb(var(--body-bg-rgb)) !important; border-color: var(--default-border) !important; }
+  .ng-dropdown-panel .ng-option               { background: transparent !important; color: var(--default-text-color) !important; }
+  .ng-dropdown-panel .ng-option.ng-option-marked   { background: var(--list-hover-focus-bg) !important; color: var(--default-text-color) !important; }
+  .ng-dropdown-panel .ng-option.ng-option-selected { background: var(--primary-color, #6366f1) !important; color: #ffffff !important; }
+  .ng-dropdown-panel .ng-option.ng-option-disabled { color: var(--text-muted) !important; }
 }

@@ -1,0 +1,40 @@
+<app-page-header
+  [title]="'Home.Title' | translate"
+  [activeTitle]="'Home.Subtitle' | translate">
+</app-page-header>
+
+<div class="row hp-container">
+  <div class="col-xl-12">
+
+    <!-- ── Financial Management Dashboard (its own card with customize panel) ── -->
+    <app-financial-dashboard></app-financial-dashboard>
+
+    <!-- ── Action groups (one card per group) ──────────────────────────────── -->
+    <div *ngFor="let group of groups" class="card custom-card mb-3">
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"
+           [ngClass]="'hp-group-header-' + group.color">
+        <div class="card-title mb-0">
+          <i [class]="group.icon + ' me-2'"></i>
+          {{ group.titleKey | translate }}
+        </div>
+        <span class="badge bg-light text-dark border">
+          {{ group.cards.length }}
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="hp-action-grid">
+          <button
+            *ngFor="let card of group.cards"
+            class="hp-action-card"
+            [ngClass]="'hp-action-card-' + card.color"
+            (click)="navigate(card.path)"
+          >
+            <i [class]="card.icon + ' hp-action-icon'"></i>
+            <span class="hp-action-label">{{ card.labelKey | translate }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

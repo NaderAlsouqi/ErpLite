@@ -1,0 +1,408 @@
+<app-page-header
+  [title]="'ChequeReturn.Title' | translate"
+  [title1]="'Nav.Accounting.GL' | translate"
+  [activeTitle]="'Nav.Accounting.ChequeReturn' | translate">
+</app-page-header>
+
+<div class="row cr-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <!-- ── Tabs ─────────────────────────────────────────────── -->
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <ul class="nav nav-tabs card-header-tabs mb-0">
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'form'" (click)="switchToForm()" href="javascript:void(0)">
+              <i class="ti ti-file-text me-1"></i>
+              {{ 'ChequeReturn.VoucherEntry' | translate }}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'list'" (click)="switchToList()" href="javascript:void(0)">
+              <i class="ti ti-list me-1"></i>
+              {{ 'ChequeReturn.VouchersList' | translate }}
+            </a>
+          </li>
+        </ul>
+        <ng-container *ngIf="activeTab === 'form'">
+          <button *hasPermission="'ChequeReturn.Print'" class="btn btn-sm btn-outline-primary"
+            (click)="printVoucher()" [disabled]="!docNum">
+            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
+          </button>
+        </ng-container>
+      </div>
+
+      <!-- ════════════════ FORM TAB ════════════════ -->
+      <div *ngIf="activeTab === 'form'" class="card-body">
+
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <div *ngIf="!loading">
+
+          <!-- ── Header row 1: Year / Date / Serial / DocNum / Branch ── -->
+          <div class="row g-3 mb-3">
+
+            <!-- السنة المالية -->
+            <div class="col-md-2 year-field" [class.year-off]="myYear !== currentYear">
+              <label class="form-label">{{ 'ChequeReturn.Year' | translate }}</label>
+              <input type="number" class="form-control"
+                [(ngModel)]="myYear"
+                min="1900" [max]="currentYear"
+                (change)="onYearChange()" />
+            </div>
+
+            <!-- التاريخ -->
+            <div class="col-md-3">
+              <label class="form-label">{{ 'ChequeReturn.Date' | translate }}</label>
+              <input type="text" class="form-control"
+                mwlFlatpickr
+                [options]="dateOptions"
+                [(ngModel)]="date"
+                (flatpickrChange)="onDateChange($event)" />
+            </div>
+
+            <!-- نوع التسلسل -->
+            <div class="col-md-3">
+              <label class="form-label">{{ 'ChequeReturn.VType' | translate }}</label>
+              <ng-select
+                [items]="voucherSerials"
+                bindValue="VSerialNo"
+                [(ngModel)]="vType"
+                (change)="onVTypeChange()"
+                [searchable]="true"
+                [clearable]="false"
+                [placeholder]="'ChequeReturn.VType' | translate">
+                <ng-template ng-label-tmp let-s="item">{{ s.VSerialNo }} — {{ s.SName }}</ng-template>
+                <ng-template ng-option-tmp let-s="item">{{ s.VSerialNo }} — {{ s.SName }}</ng-template>
+              </ng-select>
+            </div>
+
+            <!-- رقم المستند -->
+            <div class="col-md-2">
+              <label class="form-label">{{ 'ChequeReturn.DocNum' | translate }}</label>
+              <input type="number" min="1" [max]="navMax + 1" class="form-control"
+                [(ngModel)]="docNum"
+                (change)="onDocNumChange()" />
+            </div>
+
+            <!-- الفرع -->
+            <div class="col-md-2">
+              <label class="form-label">{{ 'ChequeReturn.BrNo' | translate }}</label>
+              <input type="number" class="form-control" [(ngModel)]="brNo" readonly />
+            </div>
+
+          </div>
+
+          <!-- ── Account & Currency ─────────────────────────────── -->
+          <div class="row g-3 mb-3">
+
+            <!-- الحساب الدائن -->
+            <div class="col-md-6">
+              <label class="form-label text-danger fw-semibold">
+                {{ 'ChequeReturn.CreditAcc' | translate }}
+                <span class="ms-1">*</span>
+              </label>
+              <ng-select
+                [items]="leafAccounts"
+                bindValue="no"
+                [(ngModel)]="creditAcc"
+                (change)="onCreditAccSelected($event)"
+                [searchFn]="accountSearchFn"
+                [searchable]="true"
+                [class.is-invalid]="saveAttempted && !creditAcc"
+                [placeholder]="'ChequeReturn.CreditAcc' | translate">
+                <ng-template ng-label-tmp let-acc="item">{{ acc.no }} — {{ acc.name }}</ng-template>
+                <ng-template ng-option-tmp let-acc="item">{{ acc.no }} — {{ acc.name }}</ng-template>
+              </ng-select>
+            </div>
+
+            <!-- العملة -->
+            <div class="col-md-3">
+              <label class="form-label">{{ 'ChequeReturn.Currency' | translate }}</label>
+              <ng-select
+                [items]="currencies"
+                bindValue="cur_no"
+                [(ngModel)]="curNo"
+                (change)="onCurrencySelected($event)"
+                [searchable]="true"
+                [clearable]="false">
+                <ng-template ng-label-tmp let-c="item">{{ c.cur }}</ng-template>
+                <ng-template ng-option-tmp let-c="item">{{ c.cur }} — {{ c.cur_name }}</ng-template>
+              </ng-select>
+            </div>
+
+            <!-- سعر الصرف -->
+            <div class="col-md-3">
+              <label class="form-label">{{ 'ChequeReturn.Rate' | translate }}</label>
+              <input type="number" min="0" step="0.0001" class="form-control"
+                [(ngModel)]="rate"
+                [class.is-invalid]="saveAttempted && rate < 0" />
+            </div>
+
+          </div>
+
+          <!-- ── Cheques grid ────────────────────────────────────── -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0 fw-semibold">
+              <i class="ti ti-arrow-back-up me-1 text-primary"></i>
+              {{ 'ChequeReturn.ChequesGrid' | translate }}
+            </h6>
+            <button class="btn btn-sm btn-outline-primary" (click)="addLine()">
+              <i class="ti ti-plus me-1"></i>{{ 'ChequeReturn.AddLine' | translate }}
+            </button>
+          </div>
+
+          <div class="table-responsive mb-3">
+            <table class="table table-bordered table-hover cr-table mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th class="col-cheqnum">{{ 'ChequeReturn.CheqNum' | translate }} <span class="text-danger">*</span></th>
+                  <th class="col-amt">{{ 'ChequeReturn.Amt' | translate }}</th>
+                  <th class="col-draw">{{ 'ChequeReturn.Draw' | translate }}</th>
+                  <th class="col-vhrno">{{ 'ChequeReturn.VhrNo' | translate }}</th>
+                  <th class="col-date1">{{ 'ChequeReturn.Date1' | translate }}</th>
+                  <th class="col-custacc">{{ 'ChequeReturn.CustAcc' | translate }}</th>
+                  <th class="col-banknum">{{ 'ChequeReturn.BankNum' | translate }}</th>
+                  <th class="col-bank">{{ 'ChequeReturn.Bank' | translate }}</th>
+                  <th class="col-del text-center">{{ 'General.Delete' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let line of lines; let i = index" [class.table-danger]="lineHasDuplicate[i]">
+
+                  <!-- رقم الشيك -->
+                  <td class="col-cheqnum">
+                    <ng-select
+                      [items]="availableCheques"
+                      bindValue="CheqNum"
+                      [(ngModel)]="line.cheqNum"
+                      (change)="onChequeSelected(i, $event?.CheqNum ?? null)"
+                      [searchFn]="chequeSearchFn"
+                      [searchable]="true"
+                      [clearable]="true"
+                      appendTo="body"
+                      [class.ng-invalid]="(saveAttempted && !line.cheqNum) || lineHasDuplicate[i]"
+                      [placeholder]="'ChequeReturn.CheqNum' | translate">
+                      <ng-template ng-label-tmp let-c="item">{{ c.CheqNum }}</ng-template>
+                      <ng-template ng-option-tmp let-c="item">
+                        <span class="fw-semibold">{{ c.CheqNum }}</span>
+                        <span *ngIf="c.Draw" class="text-muted ms-1">— {{ c.Draw }}</span>
+                        <span *ngIf="c.BankName" class="text-muted ms-1">— {{ c.BankName }}</span>
+                      </ng-template>
+                    </ng-select>
+                  </td>
+
+                  <!-- المبلغ -->
+                  <td class="col-amt">
+                    <input type="number" class="form-control inline-input text-start"
+                      [(ngModel)]="line.amt" readonly />
+                  </td>
+
+                  <!-- الساحب -->
+                  <td class="col-draw">
+                    <input type="text" class="form-control inline-input"
+                      [(ngModel)]="line.draw"
+                      [placeholder]="'ChequeReturn.Draw' | translate" />
+                  </td>
+
+                  <!-- رقم القبض -->
+                  <td class="col-vhrno">
+                    <input type="text" class="form-control inline-input" [(ngModel)]="line.vhrNo" readonly />
+                  </td>
+
+                  <!-- تاريخ الاستحقاق -->
+                  <td class="col-date1">
+                    <input type="text" class="form-control inline-input" [(ngModel)]="line.date1" readonly />
+                  </td>
+
+                  <!-- رقم الحساب -->
+                  <td class="col-custacc">
+                    <input type="text" class="form-control inline-input"
+                      [value]="line.custAcc ? (line.custAcc + (line.custAccName ? ' — ' + line.custAccName : '')) : ''"
+                      readonly />
+                  </td>
+
+                  <!-- رقم البنك -->
+                  <td class="col-banknum">
+                    <input type="number" class="form-control inline-input" [(ngModel)]="line.bankNum" readonly />
+                  </td>
+
+                  <!-- البنك -->
+                  <td class="col-bank">
+                    <input type="text" class="form-control inline-input" [(ngModel)]="line.bankName" readonly />
+                  </td>
+
+                  <!-- حذف -->
+                  <td class="col-del text-center">
+                    <button class="btn btn-sm btn-outline-danger"
+                      (click)="removeLine(i)"
+                      [disabled]="lines.length === 1">
+                      <i class="ti ti-trash"></i>
+                    </button>
+                  </td>
+
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="fw-semibold border-top border-2">
+                  <td class="text-end">{{ 'General.Total' | translate }}</td>
+                  <td class="text-start">{{ totalAmt | number: numFmt }}</td>
+                  <td colspan="7"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- ── Action buttons ─────────────────────────────────── -->
+          <div class="d-flex gap-2 flex-wrap">
+            <button *hasPermission="'ChequeReturn.Create'" class="btn btn-primary"
+              (click)="save()" [disabled]="saving || hasAnyDuplicate">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+              <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+              {{ 'General.Save' | translate }}
+            </button>
+            <button *hasPermission="'ChequeReturn.Delete'" class="btn btn-outline-danger ms-auto"
+              (click)="confirmDelete()" [disabled]="!docNum">
+              <i class="ti ti-trash me-1"></i>
+              {{ 'General.Delete' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ LIST TAB ════════════════ -->
+      <div *ngIf="activeTab === 'list'" class="card-body">
+
+        <div *ngIf="loading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <div *ngIf="!loading">
+          <div class="row g-2 mb-3">
+            <div class="col-md-2 year-field" [class.year-off]="myYear !== currentYear">
+              <label class="form-label small">{{ 'ChequeReturn.Year' | translate }}</label>
+              <input type="number" class="form-control form-control-sm"
+                [(ngModel)]="myYear" min="1900" [max]="currentYear" (change)="onYearChange()" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small">{{ 'ChequeReturn.VType' | translate }}</label>
+              <ng-select [items]="voucherSerials" bindValue="VSerialNo" [(ngModel)]="vType"
+                (change)="loadList()" [searchable]="true" [clearable]="false">
+                <ng-template ng-label-tmp let-s="item">{{ s.VSerialNo }} — {{ s.SName }}</ng-template>
+                <ng-template ng-option-tmp let-s="item">{{ s.VSerialNo }} — {{ s.SName }}</ng-template>
+              </ng-select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button class="btn btn-primary" (click)="loadList()">
+                <i class="ti ti-refresh fs-5"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover cr-table mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th>{{ 'ChequeReturn.DocNum' | translate }}</th>
+                  <th>{{ 'ChequeReturn.Date' | translate }}</th>
+                  <th>{{ 'ChequeReturn.LineCount' | translate }}</th>
+                  <th>{{ 'ChequeReturn.Total' | translate }}</th>
+                  <th class="text-center" style="width:90px">{{ 'General.Actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let row of dataSource.data">
+                  <tr class="cursor-pointer" (click)="toggleRowExpand(row)">
+                    <td class="fw-bold">
+                      <i class="ti small me-1 text-muted"
+                        [class.ti-chevron-down]="isRowExpanded(row)"
+                        [class.ti-chevron-right]="!isRowExpanded(row)"></i>
+                      {{ row.DocNum }}
+                    </td>
+                    <td>{{ row.Date | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ row.LineCount }}</td>
+                    <td>{{ row.Total | number: numFmt }}</td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-outline-primary"
+                        (click)="openVoucherFromList(row); $event.stopPropagation()">
+                        <i class="ti ti-eye me-1"></i>{{ 'General.View' | translate }}
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary ms-1"
+                        [routerLink]="['/accounting/vouchers/journal']"
+                        [queryParams]="{ docNum: row.DocNum, year: row.MyYear, vType: row.VType, docType: 10 }"
+                        (click)="$event.stopPropagation()">
+                        <i class="ti ti-file-text me-1"></i>{{ 'General.ViewDocument' | translate }}
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="isRowExpanded(row)" class="bg-light">
+                    <td colspan="5" class="p-0 border-top-0">
+                      <div *ngIf="isRowLoading(row)" class="d-flex justify-content-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                      </div>
+                      <table *ngIf="!isRowLoading(row)" class="table table-sm table-bordered table-hover cr-table mb-0">
+                        <thead class="table-primary">
+                          <tr>
+                            <th>{{ 'ChequeReturn.CheqNum' | translate }}</th>
+                            <th>{{ 'ChequeReturn.Amt' | translate }}</th>
+                            <th>{{ 'ChequeReturn.Draw' | translate }}</th>
+                            <th>{{ 'ChequeReturn.Date1' | translate }}</th>
+                            <th>{{ 'ChequeReturn.CustAcc' | translate }}</th>
+                            <th>{{ 'ChequeReturn.Bank' | translate }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let line of getExpandedLines(row)">
+                            <td>{{ line.CheqNum }}</td>
+                            <td>{{ line.Amt | number: numFmt }}</td>
+                            <td>{{ line.Draw }}</td>
+                            <td>{{ line.Date1 | date:'dd/MM/yyyy' }}</td>
+                            <td>{{ line.CustAcc }}{{ line.CustAccName ? ' — ' + line.CustAccName : '' }}</td>
+                            <td>{{ line.BankName }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </ng-container>
+                <tr *ngIf="dataSource.data.length === 0">
+                  <td colspan="5" class="text-center text-muted py-4">
+                    <i class="ti ti-folder-open fs-2 d-block mb-2"></i>
+                    {{ 'General.NoRecordsFound' | translate }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <mat-paginator
+            [length]="totalItems"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="pageSizeOptions"
+            [pageIndex]="pageIndex"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<ng-template #deleteConfirmModal>
+  <div class="modal-header">
+    <h5 class="modal-title">{{ 'General.ConfirmDelete' | translate }}</h5>
+    <button type="button" class="btn-close" (click)="modalRef.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p>{{ 'ChequeReturn.DeleteConfirmMsg' | translate : { docNum: docNum } }}</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline-secondary" (click)="modalRef.dismiss()">{{ 'General.Cancel' | translate }}</button>
+    <button class="btn btn-danger" (click)="executeDelete()">{{ 'General.Delete' | translate }}</button>
+  </div>
+</ng-template>

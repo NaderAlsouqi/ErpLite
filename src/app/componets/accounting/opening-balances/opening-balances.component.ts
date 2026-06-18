@@ -11,9 +11,11 @@ import { AccfDto, AccfService } from '../../../shared/services/accf.service';
 import { CurrencyDto, CurrencyService } from '../../../shared/services/currency.service';
 import { ReportService } from '../../../shared/services/report.service';
 import { ComfService } from '../../../shared/services/comf.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { AccountingStateService } from '../../../shared/services/accounting-state.service';
 import { forkJoin } from 'rxjs';
 import * as XLSX from 'xlsx';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 export interface AccfRow extends AccfDto {
   _creditInput: number | null;
@@ -33,6 +35,7 @@ export interface AccfRow extends AccfDto {
     SharedModule,
     NgbModule,
     NgSelectModule,
+    HasPermissionDirective,
   ],
   templateUrl: './opening-balances.component.html',
   styleUrl: './opening-balances.component.scss',
@@ -58,6 +61,7 @@ export class OpeningBalancesComponent implements OnInit {
     private accountingState: AccountingStateService,
     private toastr: ToastrService,
     private translate: TranslateService,
+    private cs: CompanySettingsService,
   ) {}
 
   ngOnInit(): void {
@@ -136,6 +140,11 @@ export class OpeningBalancesComponent implements OnInit {
     return this.rows.filter(r => r._dirty).length;
   }
 
+  get numFmt(): string {
+    const d = this.cs.decimals;
+    return `1.${d}-${d}`;
+  }
+
   // ── Inline input handlers ─────────────────────────────────────────────────
 
   onDebitChange(row: AccfRow): void {
@@ -177,7 +186,7 @@ export class OpeningBalancesComponent implements OnInit {
 
     if (!this.isBalanced) {
       this.toastr.error(
-        this.translate.instant('ChartOfAccounts.BalanceMismatch', { diff: this.balanceDiff.toFixed(3) }),
+        this.translate.instant('ChartOfAccounts.BalanceMismatch', { diff: this.balanceDiff.toFixed(this.cs.decimals) }),
         undefined,
         { timeOut: 5000 }
       );
@@ -366,11 +375,11 @@ export class OpeningBalancesComponent implements OnInit {
       const cells = [
         r.no,
         r.name ?? '—',
-        bb > 0 ? bb.toFixed(3) : '—',
-        bb < 0 ? Math.abs(bb).toFixed(3) : '—',
+        bb > 0 ? bb.toFixed(this.cs.decimals) : '—',
+        bb < 0 ? Math.abs(bb).toFixed(this.cs.decimals) : '—',
         this.getCurrencyName(r.CurNo),
-        (r.LRate ?? 1).toFixed(3),
-        this.calcForeignAmount(r).toFixed(3),
+        (r.LRate ?? 1).toFixed(this.cs.decimals),
+        this.calcForeignAmount(r).toFixed(this.cs.decimals),
       ];
       return `<tr><td>${cells.join('</td><td>')}</td></tr>`;
     }).join('');

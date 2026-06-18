@@ -8,6 +8,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/services/chart-of-accounts.service';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-transfer-account-movements',
@@ -20,6 +21,7 @@ import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/servi
     SharedModule,
     NgSelectModule,
     ConfirmationModalComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './transfer-account-movements.component.html',
   styleUrl: './transfer-account-movements.component.scss',

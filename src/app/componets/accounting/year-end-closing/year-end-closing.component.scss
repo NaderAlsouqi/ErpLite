@@ -1,0 +1,71 @@
+:host { display: block; }
+
+.yec-container { padding: 1rem; }
+
+.card-header { display: flex; justify-content: space-between; align-items: center; }
+.card-title { margin-bottom: 0; }
+
+// ── Inventory closing box ─────────────────────────────────────────────────────
+.yec-inv {
+  margin-top: .5rem;
+  padding: 1.1rem 1.25rem 1.35rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.yec-sub {
+  display: inline-block;
+  font-weight: 700;
+  font-size: .85rem;
+  color: #4f46e5;
+}
+
+.yec-disabled { opacity: .55; pointer-events: none; }
+
+// ── ng-select ─────────────────────────────────────────────────────────────────
+.yec-select {
+  font-size: .875rem;
+  .ng-select-container {
+    min-height: 38px !important;
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
+  }
+  &.ng-select-focused .ng-select-container {
+    border-color: var(--primary-color, #6366f1) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.12) !important;
+  }
+}
+.ng-dropdown-panel { z-index: 9999; }
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+.yec-progress-wrap { margin-top: 1.5rem; }
+.yec-progress-label { font-size: .85rem; font-weight: 600; color: #475569; }
+.yec-progress-pct   { font-size: .85rem; font-weight: 700; color: #4f46e5; }
+
+.yec-progress {
+  height: 14px;
+  border-radius: 8px;
+  background: #e2e8f0;
+  overflow: hidden;
+
+  .progress-bar {
+    background: linear-gradient(90deg, #6366f1, #818cf8) !important;
+    transition: width .35s ease;
+  }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-theme-mode="dark"] {
+  .yec-container {
+    .yec-inv { background: rgba(255,255,255,.03) !important; border-color: var(--default-border) !important; }
+    .yec-sub { color: #a5b4fc !important; }
+    .form-control { background-color: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important; }
+    .form-label { color: var(--text-muted) !important; }
+    .yec-select .ng-select-container { background: var(--form-control-bg) !important; border-color: var(--input-border) !important; }
+    .yec-select .ng-value { color: var(--default-text-color) !important; }
+    .yec-progress { background: rgba(255,255,255,.08); }
+    .yec-progress-label { color: var(--text-muted) !important; }
+  }
+}

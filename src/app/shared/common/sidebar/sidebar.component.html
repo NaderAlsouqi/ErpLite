@@ -2,6 +2,8 @@
 
   <!-- Logo -->
   <a routerLink="/sales/invoice" class="sidebar-logo" style="text-decoration: none; display: block;">
+    <img src="./assets/images/brand-logos/skyline-logo-white.png" alt="logo" class="logo-svg" />
+    <!-- OLD LOGO — to restore, delete the <img> above and uncomment this block:
     <svg viewBox="0 0 210 54" xmlns="http://www.w3.org/2000/svg" class="logo-svg" direction="ltr">
       <polygon points="12,2  50,2  42,16  4,16"  fill="#c41230"/>
       <polygon points="8,20  46,20  38,34  0,34"  fill="#c41230"/>
@@ -13,6 +15,7 @@
             font-size="7.5" letter-spacing="3.8" fill="#7a93bf"
             text-anchor="start" direction="ltr">INNOVATION</text>
     </svg>
+    -->
   </a>
 
   <!-- User info -->
@@ -21,10 +24,25 @@
     <span class="user-name">{{ userName }}</span>
   </div>
 
+  <!-- Search -->
+  <div class="nav-search">
+    <i class="bi bi-search nav-search-icon"></i>
+    <input type="text" class="nav-search-input" [(ngModel)]="searchTerm" (input)="onSearch()"
+           [placeholder]="'Nav.SearchPlaceholder' | translate" />
+    @if (searchTerm) {
+      <button type="button" class="nav-search-clear" (click)="clearSearch()" aria-label="clear">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    }
+  </div>
+
   <!-- Nav Items -->
   <ul class="nav-list">
-    @for (item of menuItems; track item) {
-      @if (!item.headTitle) {
+    @for (entry of displayList; track $index) {
+      @if (entry.sectionLabel) {
+        <li class="nav-section">{{ entry.sectionLabel | translate }}</li>
+      }
+      @if (entry.item; as item) {
         <li class="nav-group">
           @if (item.type === 'sub') {
             <!-- Expandable parent -->
@@ -117,6 +135,9 @@
           }
         </li>
       }
+    }
+    @if (displayList.length === 0) {
+      <li class="nav-empty">{{ 'Nav.NoResults' | translate }}</li>
     }
   </ul>
 

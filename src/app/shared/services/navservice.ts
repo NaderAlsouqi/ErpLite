@@ -78,7 +78,7 @@ export class NavService implements OnDestroy {
       });
     if (window.innerWidth < 991) {
       // Detect Route change sidebar close
-      this.router.events.subscribe((event) => {
+      this.router.events.subscribe((_event) => {
         this.collapseSidebar = true;
         this.megaMenu = false;
         this.levelMenu = false;
@@ -92,7 +92,7 @@ export class NavService implements OnDestroy {
     });
 
     // Set initial layout direction
-    const initialLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const initialLang = this.translateService.currentLang || this.translateService.defaultLang || 'ar';
     this.updateLayoutDirection(initialLang);
 
     // Subscribe to auth changes to update menu when user logs in/out
@@ -121,6 +121,27 @@ export class NavService implements OnDestroy {
 
   // Original menu items with translation keys and role restrictions
   ORIGINALMENU: Menu[] = [
+    { headTitle: 'Nav.Dashboard.HeadTitle' },
+    {
+      title: 'Home',
+      translationKey: 'Nav.Home',
+      icon: 'bi-house',
+      dirchange: false,
+      type: 'link',
+      active: false,
+      selected: false,
+      path: '/home2',
+    },
+    {
+      title: 'Dashboard',
+      translationKey: 'Nav.Dashboard.Title',
+      icon: 'bi-speedometer2',
+      dirchange: false,
+      type: 'link',
+      active: false,
+      selected: false,
+      path: '/dashboard',
+    },
     { headTitle: 'Nav.Accounting.Title' },
     {
       title: 'Accounting',
@@ -129,7 +150,6 @@ export class NavService implements OnDestroy {
       dirchange: false,
       type: 'sub',
       active: false,
-      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
       children: [
         // {
         //   title: 'Receipt Vouchers',
@@ -141,16 +161,6 @@ export class NavService implements OnDestroy {
         //   path: '/accounting/receipt-vouchers',
         //   roles: ['Admin', 'Manager', 'Sales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
         // },
-        {
-          title: 'Virtual Receipt Vouchers',
-          translationKey: 'Nav.Accounting.VirtualReceiptVouchers',
-          dirchange: false,
-          type: 'link',
-          active: false,
-          selected: false,
-          path: '/accounting/virtual/receipt-vouchers',
-          roles: ['Admin', 'Manager', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
-        },
         // General Ledger
         {
           title: 'General Ledger',
@@ -172,6 +182,7 @@ export class NavService implements OnDestroy {
                 { title: 'مراكز الكلف',  translationKey: 'Nav.Accounting.CostCenters',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/cost-centers' },
                 { title: 'البنوك',        translationKey: 'Nav.Accounting.Banks',           dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/banks' },
                 { title: 'العملات',       translationKey: 'Nav.Accounting.Currencies',      dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/currencies' },
+                { title: 'الاختام',       translationKey: 'Nav.Accounting.Stamps',           dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/stamps' },
               ]
             },
             {
@@ -183,8 +194,7 @@ export class NavService implements OnDestroy {
               children: [
                 { title: 'قائمة الحسابات',       translationKey: 'Nav.Accounting.AccountsList',              dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/accounts-list' },
                 { title: 'الأرصدة الافتتاحية',  translationKey: 'Nav.Accounting.OpeningBalances',           dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/opening-balances' },
-                { title: 'الغاء حساب',           translationKey: 'Nav.Accounting.CancelAccount',            dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/cancel-account' },
-                { title: 'ربط الزمر بالحسابات',  translationKey: 'Nav.Accounting.LinkGroupsToAccounts',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/link-groups-accounts' },
+{ title: 'ربط الزمر بالحسابات',  translationKey: 'Nav.Accounting.LinkGroupsToAccounts',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/link-groups-accounts' },
                 { title: 'ربط الحسابات',          translationKey: 'Nav.Accounting.LinkAccounts',             dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/link-accounts' },
                 { title: 'تعديل اسم حساب',        translationKey: 'Nav.Accounting.EditAccountName',          dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/edit-account-name' },
                 { title: 'تفريغ مراكز الكلف',     translationKey: 'Nav.Accounting.ClearCostCenters',         dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/gl/clear-cost-centers' },
@@ -198,7 +208,26 @@ export class NavService implements OnDestroy {
               dirchange: false,
               type: 'sub',
               active: false,
-              children: []
+              children: [
+                { title: 'تقارير القيود اليومية', translationKey: 'Nav.Accounting.JournalVoucherReport', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/vouchers/journal-report' },
+                { title: 'كشف حساب متفرع',       translationKey: 'Nav.Accounting.AccBelongReport',       dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/vouchers/acc-belong-report' },
+                { title: 'كشف حساب تفصيلي',      translationKey: 'Nav.Accounting.DetailedStatement',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/detailed-statement' },
+                { title: 'كشف تحليل الذمم',      translationKey: 'Nav.Accounting.AgingAnalysis',         dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/aging-analysis' },
+                { title: 'ميزان مراجعة خلال فترة', translationKey: 'Nav.Accounting.TrialBalance',          dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/trial-balance' },
+                { title: 'قائمة الدخل',           translationKey: 'Nav.Accounting.IncomeStatement',       dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/income-statement' },
+                { title: 'الميزانية العمومية',     translationKey: 'Nav.Accounting.BalanceSheet',          dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/balance-sheet' },
+                { title: 'قائمة الحسابات',         translationKey: 'Nav.Accounting.AccountsListReport',    dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/accounts-list' },
+                { title: 'الأرصدة الافتتاحية',     translationKey: 'Nav.Accounting.BeginningBalances',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/beginning-balances' },
+                { title: 'كشف الأرصدة الشهرية',    translationKey: 'Nav.Accounting.MonthlyBalances',       dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/monthly-balances' },
+                { title: 'كشف زمر الحسابات',       translationKey: 'Nav.Accounting.AccountsGroupsReport',  dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/accounts-groups' },
+                { title: 'كشف أرصدة مراكز الكلف',  translationKey: 'Nav.Accounting.CostCenterAccBalances', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/cost-center-account-balances' },
+                { title: 'كشف حركات مراكز الكلفة', translationKey: 'Nav.Accounting.CostCenterTransactions', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/cost-center-transactions' },
+                { title: 'كشف حركة شيك وارد', translationKey: 'Nav.Accounting.IncomingChequeMovement', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/incoming-cheque-movement' },
+                { title: 'الشيكات الواردة خلال فترة', translationKey: 'Nav.Accounting.InwardCheques', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/inward-cheques' },
+                { title: 'الشيكات الصادرة خلال فترة', translationKey: 'Nav.Accounting.OutwardCheques', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/outward-cheques' },
+                { title: 'الشيكات الصادرة الى مستفيد', translationKey: 'Nav.Accounting.ChequesToBeneficiary', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/cheques-to-beneficiary' },
+                { title: 'كشف سندات الصرف', translationKey: 'Nav.Accounting.PaymentVouchers', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/reports/payment-vouchers' },
+              ]
             },
           ]
         },
@@ -217,8 +246,8 @@ export class NavService implements OnDestroy {
               type: 'sub',
               active: false,
               children: [
-                { title: 'سندات القبض', translationKey: 'Nav.Accounting.ReceiptVouchers', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/receipt-vouchers' },
-                { title: 'العملاء',            translationKey: 'Nav.Accounting.Customers',          dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/ar/customers' },
+                { title: 'سندات القبض',           translationKey: 'Nav.Accounting.ReceiptVouchers',        dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/receipt-vouchers' },
+                { title: 'العملاء',                translationKey: 'Nav.Accounting.Customers',               dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/ar/customers' },
               ]
             },
             {
@@ -276,14 +305,17 @@ export class NavService implements OnDestroy {
               active: false,
               children: [
                 { title: 'سند قبض شيكات',        translationKey: 'Nav.Accounting.ChequeReceiptVoucher', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/ar/cheque-receipt-vouchers' },
+                { title: 'سند صرف شيكات',        translationKey: 'Nav.Accounting.ChequePaymentVoucher', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/payment-voucher' },
                 { title: 'شيكات واردة اول مرة',  translationKey: 'Nav.Accounting.IncomingCheques',   dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/incoming-first' },
                 { title: 'شيكات صادرة اول مرة',  translationKey: 'Nav.Accounting.OutgoingCheques',   dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/outgoing-first' },
-                { title: 'ايداع الشيكات',         translationKey: 'Nav.Accounting.ChequeDeposit',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/deposit' },
+                { title: 'ايداع الشيكات',          translationKey: 'Nav.Accounting.ChequeDeposit',    dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/deposit' },
+
                 { title: 'تحصيل الشيكات',         translationKey: 'Nav.Accounting.ChequeCollection',  dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/collection' },
                 { title: 'ارجاع الشيكات',         translationKey: 'Nav.Accounting.ChequeReturn',      dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/return' },
                 { title: 'اعادة شيكات راجعة',     translationKey: 'Nav.Accounting.ChequeReReturn',    dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/re-return' },
                 { title: 'سحب الشيكات',           translationKey: 'Nav.Accounting.ChequeWithdrawal',  dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/withdrawal' },
                 { title: 'تجيير الشيكات',         translationKey: 'Nav.Accounting.ChequeEndorsement', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/endorse' },
+                { title: 'متابعة الشيكات الرئيسية', translationKey: 'Nav.Accounting.CheqTracking',      dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/cheques/tracking' },
               ]
             },
             {
@@ -294,6 +326,41 @@ export class NavService implements OnDestroy {
               active: false,
               children: []
             },
+          ]
+        },
+        // الفواتير
+        {
+          title: 'الفواتير',
+          translationKey: 'Nav.Accounting.Invoices',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            {
+              title: 'شاشات الادخال',
+              translationKey: 'Nav.Accounting.InputScreens',
+              dirchange: false,
+              type: 'sub',
+              active: false,
+              children: [
+                { title: 'فاتورة خدمات', translationKey: 'Nav.Accounting.ServiceInvoice', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/invoices/service' },
+              ]
+            },
+          ]
+        },
+        // متفرقات
+        {
+          title: 'متفرقات',
+          translationKey: 'Nav.Accounting.Misc',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            { title: 'ترحيل المستندات', translationKey: 'Nav.Accounting.DocumentPosting', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/misc/document-posting' },
+            { title: 'فك ترحيل المستندات', translationKey: 'Nav.Accounting.DocumentUnposting', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/misc/document-unposting' },
+            { title: 'كشف حركات السندات المفقودة', translationKey: 'Nav.Accounting.MissingVouchers', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/misc/missing-vouchers' },
+            { title: 'الاقفال السنوي', translationKey: 'Nav.Accounting.YearEndClosing', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/misc/year-end-closing' },
+            { title: 'كشف حركات ورصيد حساب', translationKey: 'Nav.Accounting.AccountLedger', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/misc/account-ledger' },
           ]
         },
       ]
@@ -328,6 +395,16 @@ export class NavService implements OnDestroy {
       active: false,
       roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'DeliveryDriver', 'ServiceInvoices', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
       children: [
+        {
+          title: 'Quotation',
+          translationKey: 'Nav.Quotation.Title',
+          dirchange: false,
+          type: 'link',
+          active: false,
+          selected: false,
+          path: '/reseller/quotation',
+          roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
+        },
         {
           title: 'Invoices',
           translationKey: 'Nav.Sales.InvoicesCategory',
@@ -653,16 +730,63 @@ export class NavService implements OnDestroy {
       path: '/reseller/notes',
       roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
     },
-    { headTitle: 'Nav.Notes.Title' },
     {
-      title: 'Quotation',
-      translationKey: 'Nav.Quotation.Title',
-      icon: 'bi-file-earmark-text',
-      dirchange: false,
-      type: 'link',
+      title: 'Service Misc',
+      translationKey: 'Nav.ServiceMisc.Title',
+      icon: 'bi-grid',
+      type: 'sub',
       active: false,
-      path: '/reseller/quotation',
-      roles: ['Admin', 'Manager', 'Sales', 'VirtualSales', 'CashLink', 'VirtualCashLink', 'CashLinkLimit', 'VirtualCashLinkLimit'],
+      roles: ['Admin', 'Manager'],
+      children: [
+        {
+          title: 'Voucher Serials',
+          translationKey: 'Nav.ServiceMisc.VoucherSerials',
+          dirchange: false,
+          type: 'link',
+          active: false,
+          selected: false,
+          path: '/accounting/service-misc/voucher-serials',
+          roles: ['Admin', 'Manager'],
+        },
+        {
+          title: 'Branches',
+          translationKey: 'Nav.ServiceMisc.Branches',
+          dirchange: false,
+          type: 'link',
+          active: false,
+          selected: false,
+          path: '/accounting/service-misc/branches',
+          roles: ['Admin', 'Manager'],
+        }
+      ]
+    },
+
+    { headTitle: 'Nav.SystemAdmin.HeadTitle' },
+    {
+      title: 'System Administration',
+      translationKey: 'Nav.SystemAdmin.Title',
+      icon: 'bi-building-gear',
+      type: 'sub',
+      active: false,
+      roles: ['Admin', 'Manager', 'Administrator'],
+      children: [
+        {
+          title: 'Company Information',
+          translationKey: 'Nav.SystemAdmin.CompanyInfo',
+          type: 'link',
+          path: '/accounting/system/company-info',
+          active: false,
+          roles: ['Admin', 'Manager', 'Administrator'],
+        },
+        {
+          title: 'Billing System Linkage',
+          translationKey: 'Nav.SystemAdmin.FotaraSettings',
+          type: 'link',
+          path: '/accounting/system/fotara-settings',
+          active: false,
+          roles: ['Admin', 'Manager', 'Administrator'],
+        }
+      ]
     },
 
     { headTitle: 'Nav.Settings.Title' },
@@ -674,12 +798,27 @@ export class NavService implements OnDestroy {
       active: false,
       children: [
         {
+          title: 'Appearance',
+          translationKey: 'Nav.Settings.Appearance',
+          type: 'link',
+          path: '/accounting/settings/appearance',
+          active: false,
+        },
+        {
           title: 'Permissions',
           translationKey: 'Nav.Settings.Permissions',
           type: 'link',
           path: '/accounting/admin/permissions',
           active: false,
           roles: ['Admin', 'Manager', 'Administrator'],
+        },
+        {
+          title: 'Activity Log',
+          translationKey: 'Nav.Settings.ActivityLog',
+          icon: 'bi-journal-text',
+          type: 'link',
+          path: '/activity-log',
+          active: false,
         },
       ],
     },

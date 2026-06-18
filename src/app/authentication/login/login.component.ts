@@ -48,7 +48,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   forgotLoading = false;
 
   get currentLang(): string {
-    return this.translateService.currentLang || localStorage.getItem('language') || 'en';
+    return this.translateService.currentLang || localStorage.getItem('language') || 'ar';
   }
 
   constructor(
@@ -74,7 +74,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.loginForm = this.formBuilder.group({
       Login_Name: ['', [Validators.required]],
-      Password: ['', [Validators.required]]
+      Password: ['', [Validators.required]],
+      rememberMe: [true]
     });
 
     this.forgotForm = this.formBuilder.group({
@@ -94,9 +95,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
-    const loginRequest = this.loginForm.value;
+    const { rememberMe, ...loginRequest } = this.loginForm.value;
 
-    this.authService.login(loginRequest).subscribe({
+    this.authService.login(loginRequest, rememberMe).subscribe({
       next: (response) => {
         if (response.Token) {
           this.transferData();

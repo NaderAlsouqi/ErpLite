@@ -1,0 +1,623 @@
+[
+  {
+    "section": "General",
+    "route": "/home2",
+    "title": "Home (Dashboard)",
+    "desc": "Default landing page. Voucher-activity dashboard with date-range / currency / posted-status filters (auto-applied and remembered), per-type KPIs, data grids and switchable charts (column/line/area/pie/donut) for Journal, Cash Payment, Cheque Payment and Receipt vouchers, plus quick shortcuts to every system page.",
+    "file": "01_home2.png",
+    "finalUrl": "http://localhost:4200/home2",
+    "ok": true
+  },
+  {
+    "section": "General",
+    "route": "/dashboard",
+    "title": "Control Panel",
+    "desc": "Primary control-panel dashboard with high-level operational widgets and summaries.",
+    "file": "02_dashboard.png",
+    "finalUrl": "http://localhost:4200/dashboard",
+    "ok": true
+  },
+  {
+    "section": "General",
+    "route": "/activity-log",
+    "title": "Activity Log",
+    "desc": "Audit trail of user actions across the system, filterable for review.",
+    "file": "03_activity-log.png",
+    "finalUrl": "http://localhost:4200/activity-log",
+    "ok": true
+  },
+  {
+    "section": "Accounting · General Ledger",
+    "route": "/accounting/gl/accounts-list",
+    "title": "Chart of Accounts",
+    "desc": "Tree-based chart of accounts with inline add / edit / delete, branch and cost-center flags, search, and Excel import/export. Posting to parent (non-leaf) accounts is blocked.",
+    "file": "04_accounting_gl_accounts-list.png",
+    "finalUrl": "http://localhost:4200/accounting/gl/accounts-list",
+    "ok": true
+  },
+  {
+    "section": "Accounting · General Ledger",
+    "route": "/accounting/gl/opening-balances",
+    "title": "Opening Balances",
+    "desc": "Enter and import the opening debit/credit balances for accounts at the start of the fiscal year.",
+    "file": "05_accounting_gl_opening-balances.png",
+    "finalUrl": "http://localhost:4200/accounting/gl/opening-balances",
+    "ok": true
+  },
+  {
+    "section": "Accounting · General Ledger",
+    "route": "/accounting/gl/link-groups-accounts",
+    "title": "Link Groups to Accounts",
+    "desc": "Associate account groups with their member accounts for grouped reporting.",
+    "file": "06_accounting_gl_link-groups-accounts.png",
+    "finalUrl": "http://localhost:4200/accounting/gl/link-groups-accounts",
+    "ok": true
+  },
+  {
+    "section": "Accounting · General Ledger",
+    "route": "/accounting/gl/link-accounts",
+    "title": "Link Accounts",
+    "desc": "Map/link accounts to system roles (e.g. cash, bank, customers, suppliers) used by automated postings.",
+    "file": "07_accounting_gl_link-accounts.png",
+    "finalUrl": "http://localhost:4200/accounting/gl/link-accounts",
+    "ok": true
+  },
+  {
+    "section": "Accounting · General Ledger",
+    "route": "/accounting/gl/edit-account-name",
+    "title": "Edit Account Name",
+    "desc": "Bulk rename of account names (Arabic/English) with print support.",
+    "file": "08_accounting_gl_edit-account-name.png",
+    "finalUrl": "http://localhost:4200/accounting/gl/edit-account-name",
+    "ok": true
+  },
+  {
+    "section": "Accounting · General Ledger",
+    "route": "/accounting/gl/clear-cost-centers",
+    "title": "Clear Cost Centers",
+    "desc": "Utility to clear/reset cost-center assignments on account movements.",
+    "file": "09_accounting_gl_clear-cost-centers.png",
+    "finalUrl": "http://localhost:4200/accounting/gl/clear-cost-centers",
+    "ok": true
+  },
+  {
+    "section": "Accounting · General Ledger",
+    "route": "/accounting/gl/transfer-account-movements",
+    "title": "Transfer Account Movements",
+    "desc": "Move posted movements from one account to another.",
+    "file": "10_accounting_gl_transfer-account-movements.png",
+    "finalUrl": "http://localhost:4200/accounting/gl/transfer-account-movements",
+    "ok": true
+  },
+  {
+    "section": "Accounting · General Ledger",
+    "route": "/accounting/gl/cc-opening-balances",
+    "title": "Cost-Center Opening Balances",
+    "desc": "Enter the opening balances per cost center.",
+    "file": "11_accounting_gl_cc-opening-balances.png",
+    "finalUrl": "http://localhost:4200/accounting/gl/cc-opening-balances",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Vouchers",
+    "route": "/accounting/vouchers/journal",
+    "title": "Journal Vouchers (القيود اليومية)",
+    "desc": "Create/edit general-ledger journal entries: date, serial type, currency, and balanced debit/credit lines with cost centers. Cannot save unless the entry balances (difference = 0).",
+    "file": "12_accounting_vouchers_journal.png",
+    "finalUrl": "http://localhost:4200/accounting/vouchers/journal",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Vouchers",
+    "route": "/accounting/receipt-vouchers",
+    "title": "Receipt Vouchers (سند قبض)",
+    "desc": "Record cash/bank receipts from customers, debiting the cash/bank account and crediting the party.",
+    "file": "13_accounting_receipt-vouchers.png",
+    "finalUrl": "http://localhost:4200/accounting/receipt-vouchers",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Vouchers",
+    "route": "/accounting/vouchers/cash-payment",
+    "title": "Cash Payment Voucher (سند صرف نقدي)",
+    "desc": "Record cash payments to suppliers/expenses.",
+    "file": "14_accounting_vouchers_cash-payment.png",
+    "finalUrl": "http://localhost:4200/accounting/vouchers/cash-payment",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Vouchers",
+    "route": "/accounting/cheques/payment-voucher",
+    "title": "Cheque Payment Voucher (سند صرف شيكات)",
+    "desc": "Issue payment by cheque, generating the corresponding GL voucher and outgoing cheque.",
+    "file": "15_accounting_cheques_payment-voucher.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/payment-voucher",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Vouchers",
+    "route": "/accounting/ar/cheque-receipt-vouchers",
+    "title": "Cheque Receipt Voucher (سند قبض شيكات)",
+    "desc": "Receive payment by cheque, recording the incoming cheque and its GL voucher.",
+    "file": "16_accounting_ar_cheque-receipt-vouchers.png",
+    "finalUrl": "http://localhost:4200/accounting/ar/cheque-receipt-vouchers",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Vouchers",
+    "route": "/accounting/vouchers/journal-report",
+    "title": "Journal Voucher Report",
+    "desc": "List/print journal vouchers within a period with filters; clears results when filters change.",
+    "file": "17_accounting_vouchers_journal-report.png",
+    "finalUrl": "http://localhost:4200/accounting/vouchers/journal-report",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Vouchers",
+    "route": "/accounting/vouchers/acc-belong-report",
+    "title": "Account Belong Report",
+    "desc": "Statement of an account and the accounts that belong to it (branched view).",
+    "file": "18_accounting_vouchers_acc-belong-report.png",
+    "finalUrl": "http://localhost:4200/accounting/vouchers/acc-belong-report",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Cheques",
+    "route": "/accounting/cheques/incoming-first",
+    "title": "Incoming Cheques (first entry)",
+    "desc": "Register beginning/incoming cheques (number, bank, drawer, dates, amount, currency).",
+    "file": "19_accounting_cheques_incoming-first.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/incoming-first",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Cheques",
+    "route": "/accounting/cheques/outgoing-first",
+    "title": "Outgoing Cheques (first entry)",
+    "desc": "Register beginning/outgoing cheques.",
+    "file": "20_accounting_cheques_outgoing-first.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/outgoing-first",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Cheques",
+    "route": "/accounting/cheques/deposit",
+    "title": "Cheque Deposit",
+    "desc": "Deposit incoming cheques to a bank account.",
+    "file": "21_accounting_cheques_deposit.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/deposit",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Cheques",
+    "route": "/accounting/cheques/collection",
+    "title": "Cheque Collection",
+    "desc": "Mark deposited cheques as collected/cleared.",
+    "file": "22_accounting_cheques_collection.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/collection",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Cheques",
+    "route": "/accounting/cheques/return",
+    "title": "Cheque Return",
+    "desc": "Record returned (bounced) cheques.",
+    "file": "23_accounting_cheques_return.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/return",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Cheques",
+    "route": "/accounting/cheques/re-return",
+    "title": "Re-deposit Returned Cheques",
+    "desc": "Re-deposit previously returned cheques.",
+    "file": "24_accounting_cheques_re-return.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/re-return",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Cheques",
+    "route": "/accounting/cheques/withdrawal",
+    "title": "Cheque Withdrawal",
+    "desc": "Withdraw/cancel incoming cheques.",
+    "file": "25_accounting_cheques_withdrawal.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/withdrawal",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Cheques",
+    "route": "/accounting/cheques/endorse",
+    "title": "Cheque Endorsement",
+    "desc": "Endorse incoming cheques to a third party.",
+    "file": "26_accounting_cheques_endorse.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/endorse",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Cheques",
+    "route": "/accounting/cheques/tracking",
+    "title": "Cheque Tracking",
+    "desc": "Track the full movement history of a cheque by serial/number/value/date.",
+    "file": "27_accounting_cheques_tracking.png",
+    "finalUrl": "http://localhost:4200/accounting/cheques/tracking",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/detailed-statement",
+    "title": "Detailed Account Statement",
+    "desc": "Detailed ledger statement per account with opening balance, movements, cheques, aging and balance in words; deep-links to source vouchers.",
+    "file": "28_accounting_reports_detailed-statement.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/detailed-statement",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/aging-analysis",
+    "title": "Aging Analysis",
+    "desc": "Receivables/payables aging buckets (0-30, 31-60, 61-90, 91-120, >120 days).",
+    "file": "29_accounting_reports_aging-analysis.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/aging-analysis",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/trial-balance",
+    "title": "Trial Balance",
+    "desc": "Trial balance for a period with debit/credit and balance columns.",
+    "file": "30_accounting_reports_trial-balance.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/trial-balance",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/income-statement",
+    "title": "Income Statement",
+    "desc": "Profit & loss statement for the selected period.",
+    "file": "31_accounting_reports_income-statement.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/income-statement",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/balance-sheet",
+    "title": "Balance Sheet",
+    "desc": "Statement of financial position (assets, liabilities, equity).",
+    "file": "32_accounting_reports_balance-sheet.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/balance-sheet",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/accounts-list",
+    "title": "Accounts List Report",
+    "desc": "Printable list of accounts up to a level, with clickable links to the chart of accounts.",
+    "file": "33_accounting_reports_accounts-list.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/accounts-list",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/beginning-balances",
+    "title": "Beginning Balances Report",
+    "desc": "Report of opening balances per account.",
+    "file": "34_accounting_reports_beginning-balances.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/beginning-balances",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/monthly-balances",
+    "title": "Monthly Balances",
+    "desc": "Account balances broken down by month.",
+    "file": "35_accounting_reports_monthly-balances.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/monthly-balances",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/accounts-groups",
+    "title": "Account Groups Report",
+    "desc": "Balances aggregated by account group.",
+    "file": "36_accounting_reports_accounts-groups.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/accounts-groups",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/cost-center-account-balances",
+    "title": "Cost-Center Account Balances",
+    "desc": "Account balances per cost center, with optional estimated-balance columns and clickable cost-center links.",
+    "file": "37_accounting_reports_cost-center-account-balances.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/cost-center-account-balances",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/cost-center-transactions",
+    "title": "Cost-Center Transactions",
+    "desc": "Detailed transactions per cost center, including the cost-center column.",
+    "file": "38_accounting_reports_cost-center-transactions.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/cost-center-transactions",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/incoming-cheque-movement",
+    "title": "Incoming Cheque Movement",
+    "desc": "Movement statement for a selected incoming cheque, by serial type.",
+    "file": "39_accounting_reports_incoming-cheque-movement.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/incoming-cheque-movement",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/inward-cheques",
+    "title": "Inward Cheques (period)",
+    "desc": "Incoming cheques received within a period.",
+    "file": "40_accounting_reports_inward-cheques.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/inward-cheques",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/outward-cheques",
+    "title": "Outward Cheques (period)",
+    "desc": "Outgoing cheques issued within a period.",
+    "file": "41_accounting_reports_outward-cheques.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/outward-cheques",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/cheques-to-beneficiary",
+    "title": "Cheques to Beneficiary",
+    "desc": "Outgoing cheques issued to a specific beneficiary.",
+    "file": "42_accounting_reports_cheques-to-beneficiary.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/cheques-to-beneficiary",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Reports",
+    "route": "/accounting/reports/payment-vouchers",
+    "title": "Payment Vouchers Report",
+    "desc": "List of cheque payment vouchers (سندات الصرف) within a period.",
+    "file": "43_accounting_reports_payment-vouchers.png",
+    "finalUrl": "http://localhost:4200/accounting/reports/payment-vouchers",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Misc",
+    "route": "/accounting/misc/account-ledger",
+    "title": "Account Ledger (كشف حركات ورصيد حساب)",
+    "desc": "Ledger for one account over a period: opening balance, movements with running balance, final balance; rows deep-link to vouchers and to the detailed statement (in a popup).",
+    "file": "44_accounting_misc_account-ledger.png",
+    "finalUrl": "http://localhost:4200/accounting/misc/account-ledger",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Misc",
+    "route": "/accounting/misc/missing-vouchers",
+    "title": "Missing / Unbalanced Vouchers",
+    "desc": "Finds gaps in voucher numbering for a type (auto-fills min/max), and an unbalanced-transactions view for vouchers that don't net to zero.",
+    "file": "45_accounting_misc_missing-vouchers.png",
+    "finalUrl": "http://localhost:4200/accounting/misc/missing-vouchers",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Misc",
+    "route": "/accounting/misc/year-end-closing",
+    "title": "Year-End Closing (الاقفال السنوي)",
+    "desc": "Generates the year-end closing voucher that nets income-statement accounts into the P&L account, with a progress bar; supports deleting the closing entry.",
+    "file": "46_accounting_misc_year-end-closing.png",
+    "finalUrl": "http://localhost:4200/accounting/misc/year-end-closing",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Misc",
+    "route": "/accounting/misc/document-posting",
+    "title": "Document Posting",
+    "desc": "Post selected documents/ranges to the ledger.",
+    "file": "47_accounting_misc_document-posting.png",
+    "finalUrl": "http://localhost:4200/accounting/misc/document-posting",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Misc",
+    "route": "/accounting/misc/document-unposting",
+    "title": "Document Un-posting",
+    "desc": "Reverse posting on selected documents.",
+    "file": "48_accounting_misc_document-unposting.png",
+    "finalUrl": "http://localhost:4200/accounting/misc/document-unposting",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Definitions",
+    "route": "/accounting/definitions/banks",
+    "title": "Banks",
+    "desc": "Define bank accounts used in cheque and payment operations.",
+    "file": "49_accounting_definitions_banks.png",
+    "finalUrl": "http://localhost:4200/accounting/definitions/banks",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Definitions",
+    "route": "/accounting/definitions/currencies",
+    "title": "Currencies",
+    "desc": "Define currencies: number, Arabic/English name, exchange rate, decimal places and symbols.",
+    "file": "50_accounting_definitions_currencies.png",
+    "finalUrl": "http://localhost:4200/accounting/definitions/currencies",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Definitions",
+    "route": "/accounting/definitions/account-groups",
+    "title": "Account Groups",
+    "desc": "Define account groups for grouped reporting.",
+    "file": "51_accounting_definitions_account-groups.png",
+    "finalUrl": "http://localhost:4200/accounting/definitions/account-groups",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Definitions",
+    "route": "/accounting/definitions/cost-centers",
+    "title": "Cost Centers",
+    "desc": "Define cost centers used to tag and analyze transactions.",
+    "file": "52_accounting_definitions_cost-centers.png",
+    "finalUrl": "http://localhost:4200/accounting/definitions/cost-centers",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Definitions",
+    "route": "/accounting/definitions/taxes",
+    "title": "Taxes",
+    "desc": "Define tax types and rates.",
+    "file": "53_accounting_definitions_taxes.png",
+    "finalUrl": "http://localhost:4200/accounting/definitions/taxes",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Definitions",
+    "route": "/accounting/definitions/stamps",
+    "title": "Stamps",
+    "desc": "Define stamp duties/fees.",
+    "file": "54_accounting_definitions_stamps.png",
+    "finalUrl": "http://localhost:4200/accounting/definitions/stamps",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Parties & Invoices",
+    "route": "/accounting/ar/customers",
+    "title": "Customers",
+    "desc": "Customer master data for receivables.",
+    "file": "55_accounting_ar_customers.png",
+    "finalUrl": "http://localhost:4200/accounting/ar/customers",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Parties & Invoices",
+    "route": "/accounting/ap/suppliers",
+    "title": "Suppliers",
+    "desc": "Supplier/vendor master data for payables.",
+    "file": "56_accounting_ap_suppliers.png",
+    "finalUrl": "http://localhost:4200/accounting/ap/suppliers",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Parties & Invoices",
+    "route": "/accounting/invoices/service",
+    "title": "Service Invoice (فاتورة خدمات)",
+    "desc": "Create service-type invoices that auto-post to the general ledger.",
+    "file": "57_accounting_invoices_service.png",
+    "finalUrl": "http://localhost:4200/accounting/invoices/service",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Administration",
+    "route": "/accounting/admin/permissions",
+    "title": "Permissions",
+    "desc": "User × permission matrix grouped by module. Grant/revoke fine-grained permissions; gated by Admin.ManagePermissions.",
+    "file": "58_accounting_admin_permissions.png",
+    "finalUrl": "http://localhost:4200/accounting/admin/permissions",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Administration",
+    "route": "/accounting/system/company-info",
+    "title": "Company Info",
+    "desc": "Company profile, decimals and branding used across the app.",
+    "file": "59_accounting_system_company-info.png",
+    "finalUrl": "http://localhost:4200/accounting/system/company-info",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Administration",
+    "route": "/accounting/settings/appearance",
+    "title": "Appearance",
+    "desc": "Theme (light/dark), app theme and layout/direction settings.",
+    "file": "60_accounting_settings_appearance.png",
+    "finalUrl": "http://localhost:4200/accounting/settings/appearance",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Administration",
+    "route": "/accounting/service-misc/voucher-serials",
+    "title": "Voucher Serials",
+    "desc": "Define voucher serial/numbering types per voucher category.",
+    "file": "61_accounting_service-misc_voucher-serials.png",
+    "finalUrl": "http://localhost:4200/accounting/service-misc/voucher-serials",
+    "ok": true
+  },
+  {
+    "section": "Accounting · Administration",
+    "route": "/accounting/service-misc/branches",
+    "title": "Branches",
+    "desc": "Define company branches.",
+    "file": "62_accounting_service-misc_branches.png",
+    "finalUrl": "http://localhost:4200/accounting/service-misc/branches",
+    "ok": true
+  },
+  {
+    "section": "Sales",
+    "route": "/sales/invoice",
+    "title": "Sales Invoices",
+    "desc": "List of sales invoices with sorting, paging, view/print and (where allowed) delete and e-invoice transfer.",
+    "file": "63_sales_invoice.png",
+    "finalUrl": "http://localhost:4200/sales/invoice",
+    "ok": true
+  },
+  {
+    "section": "Sales",
+    "route": "/sales/add-invoice",
+    "title": "Add Sales Invoice",
+    "desc": "Create a new sales invoice: customer, line items (qty, price, discount, tax).",
+    "file": "64_sales_add-invoice.png",
+    "finalUrl": "http://localhost:4200/sales/add-invoice",
+    "ok": true
+  },
+  {
+    "section": "Sales",
+    "route": "/sales/transfer-invoices",
+    "title": "Transfer Invoices",
+    "desc": "Invoices pending transfer to e-invoicing (JoFawtara/Fotara) with QR generation.",
+    "file": "65_sales_transfer-invoices.png",
+    "finalUrl": "http://localhost:4200/sales/transfer-invoices",
+    "ok": true
+  },
+  {
+    "section": "Sales",
+    "route": "/sales/transfered-invoices",
+    "title": "Transferred Invoices",
+    "desc": "Invoices already transferred to e-invoicing, with their QR codes.",
+    "file": "66_sales_transfered-invoices.png",
+    "finalUrl": "http://localhost:4200/sales/transfered-invoices",
+    "ok": true
+  },
+  {
+    "section": "Sales",
+    "route": "/sales/refunds",
+    "title": "Refunds",
+    "desc": "Sales refund/credit documents.",
+    "file": "67_sales_refunds.png",
+    "finalUrl": "http://localhost:4200/sales/refunds",
+    "ok": true
+  },
+  {
+    "section": "Sales",
+    "route": "/sales/service/invoice",
+    "title": "Service Invoices",
+    "desc": "List of service invoices.",
+    "file": "68_sales_service_invoice.png",
+    "finalUrl": "http://localhost:4200/sales/service/invoice",
+    "ok": true
+  },
+  {
+    "section": "Sales",
+    "route": "/sales/virtual/invoices",
+    "title": "Virtual Invoices",
+    "desc": "List of virtual invoices.",
+    "file": "69_sales_virtual_invoices.png",
+    "finalUrl": "http://localhost:4200/sales/virtual/invoices",
+    "ok": true
+  }
+]

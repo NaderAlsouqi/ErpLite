@@ -4,6 +4,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { VirtualInvoiceService } from '../../../../shared/services/virtual-invoice.service';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from "../../../../shared/common/sharedmodule";
 import { FotaraService, TransferRefundInvoiceData, FotaraApiResponse } from "../../../../shared/services/fotara.service";
@@ -37,7 +39,8 @@ interface RefundData {
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    HasPermissionDirective
   ],
   templateUrl: './virtual-transfer-refunds.component.html',
   styleUrl: './virtual-transfer-refunds.component.scss'
@@ -73,7 +76,8 @@ export class VirtualTransferRefundsComponent implements OnInit {
     private fotaraService: FotaraService,
     private translate: TranslateService,
     private toastr: ToastrService,
-    private router: Router
+    private router: Router,
+    private cs: CompanySettingsService
   ) {
     this.dataSource.filterPredicate = (data: any, filter: string) => {
       return data.DocumentNumber.toLowerCase().includes(filter) ||
@@ -124,7 +128,7 @@ export class VirtualTransferRefundsComponent implements OnInit {
           InvoiceNumber: refund.InvoiceNumber || '',
           CustomerName: refund.CustomerName,
           FinancialYear: Math.floor(Number(refund.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(3),
+          InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(this.cs.billDecimals),
         }));
 
         // Store all data
@@ -437,7 +441,7 @@ export class VirtualTransferRefundsComponent implements OnInit {
               InvoiceNumber: refund.InvoiceNumber || '',
               CustomerName: refund.CustomerName,
               FinancialYear: Math.floor(Number(refund.FinancialYear)).toString(),
-              InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(3),
+              InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(this.cs.billDecimals),
             }));
 
             // Store all data

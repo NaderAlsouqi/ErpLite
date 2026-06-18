@@ -14,14 +14,15 @@
           <span *ngIf="deliveryName" class="ms-2 delivery-badge">{{ deliveryName }}</span>
         </div>
         <div class="card-options">
-          <button [routerLink]="['/sales/add-refund']" class="btn btn-outline-primary mr-1">
+          <button [routerLink]="['/sales/add-refund']" *hasPermission="'Refunds.Create'" class="btn btn-outline-primary mr-1">
             <i class="ti ti-plus me-1"></i>
             {{ 'VirtualRefundsPage.AddRefund' | translate }}
           </button>
           <div style="margin-right: 10px;"></div>
-          <button 
-            class="btn btn-outline-primary"         
-            (click)="PrintRefundsInvoices(this.allData)"   
+          <button
+            class="btn btn-outline-primary"
+            *hasPermission="'Refunds.Print'"
+            (click)="PrintRefundsInvoices(this.allData)"
             [disabled]="this.allData.length === 0">
             <i class="ti ti-printer me-1"></i>
             {{ 'General.Print' | translate }}
@@ -147,7 +148,7 @@
         
         <!-- Refunds table -->
         <div *ngIf="!loading" class="table-responsive">
-          <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="table table-bordered">
+          <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="table table-bordered table-hover mb-0">
             
             <!-- Refund Date Column -->
             <ng-container matColumnDef="InvoiceDate">
@@ -199,25 +200,27 @@
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef class="text-center"> {{ 'General.Actions' | translate }} </th>
               <td mat-cell *matCellDef="let row" class="text-center">
-                <button class="btn btn-sm btn-primary me-1" (click)="viewRefund(row)" 
+                <button class="btn btn-sm btn-primary me-1" (click)="viewRefund(row)"
                     title="{{ 'VirtualRefundsPage.ViewRefund' | translate }}">
                   <i class="ti ti-eye"></i>
                 </button>
-                
+
                 <!-- Print Button -->
-                <button class="btn btn-sm btn-info me-1" 
+                <button *hasPermission="'Refunds.Print'" class="btn btn-sm btn-info me-1"
                         (click)="generateRefundPDF(row)"
                         [disabled]="isPrinting(row.DocumentNumber)"
                         title="{{ 'VirtualRefundsPage.PrintRefund' | translate }}">
                   <i class="ti" [ngClass]="isPrinting(row.DocumentNumber) ? 'ti-loader ti-spin' : 'ti-printer'"></i>
                 </button>
-                
+
                 <!-- Only show delete button for non-transferred refunds -->
-                <button *ngIf="!row.IsTransferred" class="btn btn-sm btn-danger" 
-                    (click)="confirmDeleteRefund(row)" 
-                    title="{{ 'VirtualRefundsPage.DeleteRefund' | translate }}">
-                  <i class="ti ti-trash"></i>
-                </button>
+                <ng-container *hasPermission="'Refunds.Delete'">
+                  <button *ngIf="!row.IsTransferred" class="btn btn-sm btn-danger"
+                      (click)="confirmDeleteRefund(row)"
+                      title="{{ 'VirtualRefundsPage.DeleteRefund' | translate }}">
+                    <i class="ti ti-trash"></i>
+                  </button>
+                </ng-container>
               </td>
             </ng-container>
             

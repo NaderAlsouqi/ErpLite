@@ -1,0 +1,73 @@
+.ab-container { padding: 1rem; }
+
+.ab-filter-box {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #f8fafc;
+}
+
+.table-section {
+  .table-responsive {
+    max-height: 60vh;
+    overflow: scroll;
+
+    &::-webkit-scrollbar       { width: 10px; height: 10px; }
+    &::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    &::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; border: 2px solid #f1f5f9; }
+    &::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    &::-webkit-scrollbar-corner { background: #f1f5f9; }
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #f1f5f9;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    white-space: nowrap;
+  }
+
+  table {
+    min-width: max-content;
+    th, td { font-size: 0.82rem; white-space: nowrap; }
+  }
+}
+
+.ab-monthly .table-section {
+  table { th, td { font-size: 0.78rem; } }
+}
+
+.ab-report-title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 0 1rem;
+  line-height: 1.6;
+}
+
+::ng-deep [data-theme-mode="dark"] {
+  .ab-container {
+    .ab-filter-box { background: var(--default-background); border-color: var(--default-border); }
+    .form-control, .form-select {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+      &::placeholder { color: var(--text-muted) !important; }
+    }
+    .form-check-label { color: var(--default-text-color); }
+    .table                        { background: transparent !important; }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td                     { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th                     { border-color: var(--default-border) !important; }
+    .table tbody tr               { background: transparent !important; }
+    .table tbody tr:hover         { background: var(--list-hover-focus-bg) !important; }
+    .table tfoot td               { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .text-muted                   { color: var(--text-muted) !important; }
+    .ab-report-title              { color: var(--default-text-color); }
+  }
+}
