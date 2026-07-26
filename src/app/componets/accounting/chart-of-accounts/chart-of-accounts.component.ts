@@ -11,6 +11,7 @@ import { SharedModule } from '../../../shared/common/sharedmodule';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/services/chart-of-accounts.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { CostCenterDto, CostCenterService } from '../../../shared/services/cost-center.service';
 import { ComfService } from '../../../shared/services/comf.service';
 import { AccountingStateService } from '../../../shared/services/accounting-state.service';
@@ -39,6 +40,7 @@ export interface DisplayItem {
   selector: 'app-chart-of-accounts',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -100,7 +102,7 @@ export class ChartOfAccountsComponent implements OnInit {
     private accountsService: ChartOfAccountsService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
     private costCenterService: CostCenterService,
     private comfService: ComfService,
     private accountingState: AccountingStateService,

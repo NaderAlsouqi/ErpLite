@@ -17,6 +17,7 @@ interface StateType {
   themeBackground: string,
   backgroundImage: string,
   appTheme: string,                   // classic, editorial
+  boldLabels: boolean,                // make form field labels bold
 };
 @Injectable({
   providedIn: 'root'
@@ -39,6 +40,7 @@ export class AppStateService {
     themeBackground: '',
     backgroundImage: '',            // bgimg1, bgimg2, bgimg3, bgimg4, bgimg5
     appTheme: 'classic',            // classic, editorial
+    boldLabels: false,              // make form field labels bold
   } // Store initial state
   private stateSubject = new BehaviorSubject<StateType>(this.initialState); // Use any for initial null value
   state$ = this.stateSubject.asObservable();
@@ -194,6 +196,11 @@ export class AppStateService {
     let html = document.querySelector('html');
     html?.setAttribute('data-app-theme', appTheme || 'classic');
   }
+  private applyBoldLabelsSpecificChanges(bold: boolean) {
+    let html = document.querySelector('html');
+    if (bold) { html?.setAttribute('data-bold-labels', 'on'); }
+    else { html?.removeAttribute('data-bold-labels'); }
+  }
 
   public applyReset() {
     let html = document.querySelector('html');
@@ -267,6 +274,8 @@ export class AppStateService {
     }
     // App theme (classic | editorial) — always apply so attribute is set on startup too
     this.applyAppThemeSpecificChanges(state['appTheme'] || 'classic');
+    // Bold field labels — always apply so it also reflects on startup / toggle-off
+    this.applyBoldLabelsSpecificChanges(!!state['boldLabels']);
 
 
 

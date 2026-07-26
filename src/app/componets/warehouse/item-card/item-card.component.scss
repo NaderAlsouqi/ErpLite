@@ -1,0 +1,85 @@
+.item-card-container {
+  padding: 1rem;
+
+  .section-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: rgba(var(--primary-rgb), 1);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--default-border, #e9ecef);
+    padding-bottom: 6px;
+    margin: 1rem 0 0.75rem;
+  }
+
+  .form-label { font-weight: 500; margin-bottom: 0.25rem; .required { color: #dc3545; } }
+
+  .dgrid {
+    border: 1px solid var(--default-border, #e9ecef);
+    border-radius: 6px;
+    overflow: visible;
+
+    .dgrid-head, .dgrid-row {
+      display: grid;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+    }
+    .dgrid-head {
+      background: rgba(var(--primary-rgb), 0.08);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+    .dgrid-row { border-top: 1px solid var(--default-border, #e9ecef); }
+
+    &.units-grid .dgrid-head, &.units-grid .dgrid-row { grid-template-columns: 1.6fr 1.4fr 1.1fr 0.6fr 1.1fr 1.5fr 40px; }
+    &.cat-grid   .dgrid-head, &.cat-grid   .dgrid-row { grid-template-columns: 1.6fr 1.5fr 1fr 1fr 0.9fr 0.9fr 40px; }
+    &.alt-grid   .dgrid-head, &.alt-grid   .dgrid-row { grid-template-columns: 1.6fr 2.4fr 40px; }
+
+    .form-control, .form-control-sm { width: 100%; min-width: 0; }
+    input[type="checkbox"] { justify-self: center; }
+    .btn { padding: 0.2rem 0.4rem; }
+    ::ng-deep .ng-select { width: 100%; }
+    ::ng-deep .ng-select.ng-select-single .ng-select-container { min-height: 31px; height: 31px; }
+  }
+
+  .item-list {
+    max-height: 65vh;
+    overflow: auto;
+    tr.cursor-pointer { cursor: pointer; }
+    tbody tr:hover { background-color: rgba(var(--primary-rgb), 0.06); }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    max-width: 600px;
+    .btn { flex: 1; display: flex; align-items: center; justify-content: center; }
+  }
+}
+
+::ng-deep [data-theme-mode="dark"] {
+  .item-card-container {
+    .form-label, .form-check-label { color: var(--default-text-color) !important; }
+    .form-control {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+      &::placeholder { color: var(--text-muted) !important; }
+    }
+    .table                        { background: transparent !important; }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th { border-color: var(--default-border) !important; }
+    .dgrid { border-color: var(--default-border) !important; }
+    .dgrid .dgrid-head { color: var(--default-text-color) !important; }
+    .dgrid .dgrid-row { border-top-color: var(--default-border) !important; }
+    hr { border-color: var(--default-border) !important; }
+  }
+}

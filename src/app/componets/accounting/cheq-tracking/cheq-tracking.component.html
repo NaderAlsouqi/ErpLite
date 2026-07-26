@@ -33,6 +33,7 @@
             (click)="print()" [disabled]="!_loadedDocNo">
             <i class="ti ti-printer me-1"></i>{{ 'CheqTracking.Print' | translate }}
           </button>
+            <app-approve-voucher></app-approve-voucher>
           <div class="vr mx-1"></div>
           <button class="btn btn-sm btn-outline-secondary" (click)="goFirst()"
             title="{{ 'CheqTracking.First' | translate }}">
@@ -92,10 +93,10 @@
             <input type="number" class="form-control" [(ngModel)]="brNo" readonly />
           </div>
 
-        </div>
+        
 
         <!-- ── Row 2: Date / Currency / Rate ───────────────── -->
-        <div class="row g-3 mb-3">
+        
 
           <div class="col-md-3">
             <label class="form-label">{{ 'CheqTracking.Date' | translate }}</label>
@@ -128,10 +129,10 @@
               [(ngModel)]="curRate" step="0.0001" [disabled]="isPosted" />
           </div>
 
-        </div>
+        
 
         <!-- ── Row 3: Period filter (احضار) ────────────────── -->
-        <div class="row g-3 mb-4 align-items-end">
+        
 
           <div class="col-md-3">
             <label class="form-label">{{ 'CheqTracking.PeriodFrom' | translate }}</label>

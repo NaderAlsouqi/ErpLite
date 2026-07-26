@@ -1,0 +1,124 @@
+<app-page-header
+  [title]="'SubCategories.Title' | translate"
+  [title1]="'Nav.Warehouse.InputScreens' | translate"
+  [activeTitle]="'Nav.Warehouse.EntrySubItems' | translate">
+</app-page-header>
+
+<div class="subcat-container">
+  <div class="card custom-card">
+
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="card-title mb-0">
+        <i class="ti ti-binary-tree me-1"></i>{{ 'SubCategories.Title' | translate }}
+      </div>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary" (click)="reset()">
+          <i class="ti ti-refresh me-1"></i>{{ 'General.New' | translate }}
+        </button>
+        <button *hasPermission="'SubCategories.Create'" class="btn btn-sm btn-primary"
+          (click)="save()" [disabled]="saving || !parent">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>{{ 'General.Save' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      <!-- ── Parent selector ─────────────────────────────────────── -->
+      <div class="row g-3 align-items-end mb-3">
+        <div class="col-md-5">
+          <label class="form-label"><i class="ti ti-hash"></i> {{ 'SubCategories.Parent' | translate }} <span class="required">*</span></label>
+          <ng-select
+            [items]="mainCategories"
+            bindValue="TypeNo"
+            [(ngModel)]="parentNo"
+            [clearable]="true"
+            (change)="onParentChange()"
+            [placeholder]="'SubCategories.SelectParent' | translate"
+            appendTo="body">
+            <ng-template ng-label-tmp let-item="item">
+              {{ item.TypeNo }} — {{ isAr ? item.TypeName : (item.Etname || item.TypeName) }}
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+              {{ item.TypeNo }} — {{ isAr ? item.TypeName : (item.Etname || item.TypeName) }}
+            </ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">{{ 'SubCategories.ParentName' | translate }}</label>
+          <input type="text" class="form-control" [value]="parent ? (isAr ? parent.TypeName : (parent.Etname || parent.TypeName)) : ''" readonly />
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="d-flex justify-content-center my-4">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+
+      <!-- ── Children grid ───────────────────────────────────────── -->
+      <div *ngIf="parent && !loading" class="children-section">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="mb-0">{{ 'SubCategories.Children' | translate }}</h6>
+          <button class="btn btn-sm btn-outline-primary" (click)="addRow()">
+            <i class="ti ti-plus me-1"></i>{{ 'SubCategories.AddRow' | translate }}
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th style="width:140px">{{ 'SubCategories.Code' | translate }}</th>
+                <th>{{ 'SubCategories.ArabicName' | translate }}</th>
+                <th>{{ 'SubCategories.EnglishName' | translate }}</th>
+                <th style="width:60px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of rows; let i = index">
+                <td>
+                  <input type="number" min="1" class="form-control form-control-sm" [(ngModel)]="row.Code"
+                    [readonly]="!row.isNew" [placeholder]="'SubCategories.Code' | translate" />
+                </td>
+                <td>
+                  <input type="text" maxlength="30" class="form-control form-control-sm" [(ngModel)]="row.ArName"
+                    [placeholder]="'SubCategories.EnterArabicName' | translate" />
+                </td>
+                <td>
+                  <input type="text" maxlength="30" class="form-control form-control-sm" [(ngModel)]="row.EnName"
+                    [placeholder]="'SubCategories.EnterEnglishName' | translate" />
+                </td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-danger" (click)="removeRow(i)"
+                    [disabled]="!row.isNew && !row.CanDelete"
+                    [title]="(!row.isNew && !row.CanDelete) ? ('SubCategories.CannotRemove' | translate) : ('General.Delete' | translate)">
+                    <i class="ti ti-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="rows.length === 0">
+                <td colspan="4" class="text-center text-muted py-3">{{ 'General.NoRecordsFound' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <div *ngIf="!parent && !loading" class="text-center text-muted py-5">
+        <i class="ti ti-arrow-up me-1"></i>{{ 'SubCategories.SelectParent' | translate }}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  #convertModal
+  [title]="'SubCategories.ConvertTitle' | translate"
+  [message]="'SubCategories.ConvertConfirm' | translate"
+  [confirmButtonText]="'General.Yes' | translate"
+  [cancelButtonText]="'General.No' | translate"
+  confirmButtonClass="btn-primary"
+  (confirm)="confirmConvert()">
+</app-confirmation-modal>

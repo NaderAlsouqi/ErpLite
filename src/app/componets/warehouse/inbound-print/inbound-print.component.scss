@@ -1,0 +1,39 @@
+.ipr-container {
+  .form-label { font-weight: 500; margin-bottom: 0.25rem; }
+  .form-check { margin-bottom: 0.15rem; }
+
+  .ip-voucher-head {
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    background: var(--bs-primary-bg-subtle, #f1f6ff);
+
+    .ip-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; text-align: center; }
+    .ip-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.35rem 1.25rem;
+    }
+    .ip-wide { grid-column: 1 / -1; }
+    .ip-lbl { color: var(--text-muted, #64748b); font-weight: 600; }
+  }
+
+  .table {
+    th, td { white-space: nowrap; vertical-align: middle; }
+  }
+  .table-responsive { max-height: 60vh; overflow: auto; }
+
+  /* Opaque sticky header (also enforced globally) so scrolled rows don't bleed through. */
+  thead.table-primary > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: var(--bs-primary-bg-subtle, #cfe2ff) !important;
+    background-clip: padding-box;
+  }
+  tbody > tr > td       { background-color: var(--bs-body-bg, #fff); }
+  tbody > tr:hover > td { background-color: var(--bs-table-hover-bg, rgba(0,0,0,0.0375)); }
+  tfoot > tr > td       { background-color: #eef2f7; }
+
+  ::ng-deep .ng-select .ng-select-container { min-height: 38px; }
+}

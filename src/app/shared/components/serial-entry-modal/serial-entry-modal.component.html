@@ -1,0 +1,60 @@
+<div class="ser-overlay" *ngIf="visible" (click)="cancel()">
+  <div class="ser-dialog" (click)="$event.stopPropagation()">
+    <div class="ser-header">
+      <h6 class="mb-0">
+        <i class="ti ti-list-numbers me-1"></i>{{ 'Serials.Title' | translate }}
+      </h6>
+      <button type="button" class="btn btn-sm btn-light" (click)="cancel()"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="ser-body">
+      <!-- item + required count -->
+      <div class="ser-meta">
+        <div><span class="ser-label">{{ 'Serials.Item' | translate }}:</span> {{ itemNo }} — {{ itemName }}</div>
+        <div>
+          <span class="ser-label">{{ 'Serials.Required' | translate }}:</span> {{ requiredCount }}
+          &nbsp;·&nbsp;
+          <span class="ser-label">{{ 'Serials.Entered' | translate }}:</span>
+          <span [class.text-success]="countOk" [class.text-danger]="!countOk">{{ serials.length }}</span>
+        </div>
+      </div>
+
+      <!-- PICK mode (outbound / damage): choose in-stock serials -->
+      <div *ngIf="isPick" class="mb-2">
+        <label class="form-label">{{ 'Serials.PickInStock' | translate }}</label>
+        <div *ngIf="loading" class="text-muted small"><span class="spinner-border spinner-border-sm me-1"></span>{{ 'General.Loading' | translate }}</div>
+        <ng-select *ngIf="!loading" [items]="available" [(ngModel)]="serials" [multiple]="true"
+          [closeOnSelect]="false" [maxSelectedItems]="requiredCount"
+          appendTo="body" [placeholder]="'Serials.SelectSerials' | translate">
+        </ng-select>
+        <small *ngIf="!loading && !available.length" class="text-danger">{{ 'Serials.NoneInStock' | translate }}</small>
+      </div>
+
+      <!-- ENTER mode (inbound): type new serials -->
+      <div *ngIf="!isPick">
+        <label class="form-label">{{ 'Serials.AddSerial' | translate }}</label>
+        <div class="input-group input-group-sm mb-2">
+          <input type="text" class="form-control" [(ngModel)]="newSerial"
+            (keyup.enter)="addSerial()" [placeholder]="'Serials.SerialNo' | translate" />
+          <button type="button" class="btn btn-outline-primary" (click)="addSerial()">
+            <i class="ti ti-plus me-1"></i>{{ 'Serials.Add' | translate }}
+          </button>
+        </div>
+        <div class="ser-chips">
+          <span class="ser-chip" *ngFor="let s of serials; let i = index">
+            {{ s }}
+            <button type="button" class="ser-chip-x" (click)="removeSerial(i)"><i class="ti ti-x"></i></button>
+          </span>
+          <span *ngIf="!serials.length" class="text-muted small">{{ 'Serials.NoneYet' | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ser-footer">
+      <button type="button" class="btn btn-secondary" (click)="cancel()">{{ 'General.Cancel' | translate }}</button>
+      <button type="button" class="btn btn-primary" (click)="confirm()" [disabled]="requiredCount > 0 && !countOk">
+        <i class="ti ti-check me-1"></i>{{ 'General.Ok' | translate }}
+      </button>
+    </div>
+  </div>
+</div>

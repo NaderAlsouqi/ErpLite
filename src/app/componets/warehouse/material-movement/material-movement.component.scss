@@ -1,0 +1,46 @@
+.mm-container {
+  .form-label { font-weight: 500; margin-bottom: 0.25rem; }
+  .form-check { margin-bottom: 0.15rem; }
+
+  .mm-item-header {
+    background: var(--bs-primary-bg-subtle, #cfe2ff);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-bottom: 0;
+    border-radius: 6px 6px 0 0;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+
+  .table {
+    th, td { white-space: nowrap; vertical-align: middle; }
+    td:nth-child(4) { white-space: normal; min-width: 220px; }   /* description wraps */
+  }
+  /* Always-visible vertical scrollbar (overflow-y: scroll keeps the track shown
+     even when a group's table doesn't overflow); horizontal scrolls as needed. */
+  .table-responsive {
+    max-height: 65vh;
+    overflow-y: scroll;
+    overflow-x: auto;
+  }
+  /* Force the vertical scrollbar track to render on WebKit even when idle. */
+  .table-responsive::-webkit-scrollbar          { width: 12px; height: 10px; }
+  .table-responsive::-webkit-scrollbar-track    { background: #eef2f7; border-radius: 4px; }
+  .table-responsive::-webkit-scrollbar-thumb    { background: #b6c2d1; border-radius: 4px; border: 2px solid #eef2f7; }
+  .table-responsive::-webkit-scrollbar-thumb:hover { background: #8996a8; }
+
+  /* Opaque sticky header (also enforced globally) so scrolled rows don't bleed through. */
+  thead.table-primary > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: var(--bs-primary-bg-subtle, #cfe2ff) !important;
+    background-clip: padding-box;
+  }
+  tbody > tr.mm-opening > td { background-color: #f1f5f9; font-weight: 600; }
+  tfoot > tr > td { background-color: #eef2f7; }
+
+  ::ng-deep .ng-select .ng-select-container { min-height: 38px; }
+}

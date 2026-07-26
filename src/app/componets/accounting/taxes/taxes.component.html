@@ -1,6 +1,6 @@
 <app-page-header
   [title]="'Taxes.Title' | translate"
-  [title1]="'Nav.Accounting.Definitions' | translate"
+  [title1]="parentTitleKey | translate"
   [activeTitle]="'Nav.Accounting.Taxes' | translate">
 </app-page-header>
 
@@ -28,9 +28,7 @@
         <button class="btn btn-sm btn-outline-secondary" (click)="loadData()" title="{{ 'General.Refresh' | translate }}">
           <i class="ti ti-refresh"></i>
         </button>
-        <button *hasPermission="'Taxes.Print'" class="btn btn-sm btn-outline-primary" (click)="print()">
-          <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-        </button>
+        <app-report-export *hasPermission="pPrint" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
       </div>
     </div>
 
@@ -89,7 +87,7 @@
           </div>
 
           <div class="action-buttons">
-            <button *hasPermission="'Taxes.Create'" class="btn btn-primary" (click)="save()" [disabled]="saving">
+            <button *hasPermission="pCreate" class="btn btn-primary" (click)="save()" [disabled]="saving">
               <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
               <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
               {{ 'General.Save' | translate }}
@@ -97,7 +95,7 @@
             <button class="btn btn-secondary" (click)="reset()">
               <i class="ti ti-refresh me-1"></i>{{ 'General.New' | translate }}
             </button>
-            <button *hasPermission="'Taxes.Delete'" class="btn btn-danger" (click)="delete()" [disabled]="!currentTax.TaxNo">
+            <button *hasPermission="pDelete" class="btn btn-danger" (click)="delete()" [disabled]="!currentTax.TaxNo">
               <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
             </button>
           </div>
@@ -139,7 +137,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let tax of filteredTaxes"
+              <tr *ngFor="let tax of filteredTaxes | paginate:page:pageSize"
                   class="cursor-pointer"
                   (click)="onSelectRow(tax)"
                   [class.selected-row]="currentTax.TaxNo === tax.TaxNo">
@@ -154,6 +152,7 @@
             </tbody>
           </table>
         </div>
+        <app-paginator [total]="filteredTaxes.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
       </div>
 
     </div>

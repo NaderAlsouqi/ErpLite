@@ -9,6 +9,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { CostCenterDto, CostCenterService } from '../../../shared/services/cost-center.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { forkJoin } from 'rxjs';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
@@ -48,6 +49,7 @@ export interface DisplayItem {
   selector: 'app-clear-cost-centers',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -101,7 +103,7 @@ export class ClearCostCentersComponent implements OnInit {
     private translate: TranslateService,
     private modalService: NgbModal,
     private modalConfig: NgbModalConfig,
-    private reportService: ReportService,
+    public reportService: ReportService,
     private el: ElementRef<HTMLElement>,
   ) {
     this.modalConfig.backdrop = 'static';

@@ -7,6 +7,9 @@ import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 import { AccountGroupsService, AccountGroupDto } from '../../../shared/services/account-groups.service';
 import {
   AccountsGroupsReportService,
@@ -16,7 +19,8 @@ import {
 @Component({
   selector: 'app-accounts-groups-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, PaginatorComponent, PaginatePipe],
   templateUrl: './accounts-groups-report.component.html',
   styleUrl: './accounts-groups-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -35,6 +39,8 @@ export class AccountsGroupsReportComponent implements OnInit {
   rows: AccountsGroupsReportRowDto[] = [];
   loading = false;
   fetched = false;
+  page = 1;
+  pageSize = 10;
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
 
@@ -55,7 +61,7 @@ export class AccountsGroupsReportComponent implements OnInit {
   constructor(
     private svc:        AccountsGroupsReportService,
     private groupsSvc:  AccountGroupsService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:  TranslateService,
     private toastr:     ToastrService,
   ) {}
@@ -96,6 +102,7 @@ export class AccountsGroupsReportComponent implements OnInit {
     }).subscribe({
       next: data => {
         this.rows = data ?? [];
+        this.page = 1;
         this.fetched = true;
         this.loading = false;
         if (this.rows.length === 0) {

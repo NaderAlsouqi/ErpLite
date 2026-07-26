@@ -1,0 +1,131 @@
+<app-page-header
+  [title]="'ItemBarcode.Title' | translate"
+  [title1]="'Nav.Warehouse.InputScreens' | translate"
+  [activeTitle]="'Nav.Warehouse.EntryBarcode' | translate">
+</app-page-header>
+
+<div class="barcode-container">
+  <div class="card custom-card">
+
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="card-title mb-0">
+        <i class="ti ti-barcode me-1"></i>{{ 'ItemBarcode.Title' | translate }}
+      </div>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary" (click)="reset()">
+          <i class="ti ti-refresh me-1"></i>{{ 'General.New' | translate }}
+        </button>
+        <button *hasPermission="'ItemBarcode.Create'" class="btn btn-sm btn-primary"
+          (click)="save()" [disabled]="saving || !selectedUnit">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>{{ 'General.Save' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      <!-- ── Item + Unit selectors ───────────────────────────────── -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label"><i class="ti ti-package"></i> {{ 'ItemBarcode.Item' | translate }} <span class="required">*</span></label>
+          <ng-select
+            [items]="items"
+            bindValue="ItemNo"
+            [typeahead]="itemInput$"
+            [loading]="itemsLoading"
+            [(ngModel)]="itemNo"
+            [clearable]="true"
+            (change)="onItemChange($event)"
+            [placeholder]="'ItemBarcode.SearchItem' | translate"
+            appendTo="body">
+            <ng-template ng-label-tmp let-item="item">
+              {{ item.ItemNo }} — {{ isAr ? item.ItemName : (item.Ename || item.ItemName) }}
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+              {{ item.ItemNo }} — {{ isAr ? item.ItemName : (item.Ename || item.ItemName) }}
+            </ng-template>
+          </ng-select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label"><i class="ti ti-ruler-2"></i> {{ 'ItemBarcode.Unit' | translate }} <span class="required">*</span></label>
+          <ng-select
+            [items]="units"
+            bindValue="UnitNo"
+            [(ngModel)]="unitNo"
+            [clearable]="true"
+            [disabled]="!selectedItem"
+            (change)="onUnitChange($event)"
+            [placeholder]="'ItemBarcode.SelectUnit' | translate"
+            appendTo="body">
+            <ng-template ng-label-tmp let-u="item">
+              {{ u.UnitNo }} — {{ isAr ? u.UnitName : (u.UnitEname || u.UnitName) }}
+            </ng-template>
+            <ng-template ng-option-tmp let-u="item">
+              {{ u.UnitNo }} — {{ isAr ? u.UnitName : (u.UnitEname || u.UnitName) }}
+            </ng-template>
+          </ng-select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ItemBarcode.Operand' | translate }}</label>
+          <input type="text" class="form-control" [value]="selectedUnit ? selectedUnit.Operand : ''" readonly />
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="d-flex justify-content-center my-4">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+
+      <!-- ── Barcodes grid ───────────────────────────────────────── -->
+      <div *ngIf="selectedUnit && !loading" class="barcodes-section">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="mb-0">{{ 'ItemBarcode.Barcodes' | translate }}</h6>
+          <button class="btn btn-sm btn-outline-primary" (click)="addRow()">
+            <i class="ti ti-plus me-1"></i>{{ 'ItemBarcode.AddRow' | translate }}
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th style="width:70px">#</th>
+                <th>{{ 'ItemBarcode.Barcode' | translate }}</th>
+                <th style="width:90px">{{ 'ItemBarcode.Primary' | translate }}</th>
+                <th style="width:60px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of rows; let i = index" [class.table-light]="row.Old === 1">
+                <td class="text-center">{{ i + 1 }}</td>
+                <td>
+                  <input type="text" maxlength="50" class="form-control form-control-sm" [(ngModel)]="row.Barcode"
+                    [readonly]="row.Old === 1" [placeholder]="'ItemBarcode.EnterBarcode' | translate" />
+                </td>
+                <td class="text-center">
+                  <span *ngIf="row.Old === 1" class="badge bg-primary-transparent">{{ 'ItemBarcode.Primary' | translate }}</span>
+                </td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-danger" (click)="removeRow(i)" [disabled]="row.Old === 1"
+                    [title]="row.Old === 1 ? ('ItemBarcode.CannotRemovePrimary' | translate) : ('General.Delete' | translate)">
+                    <i class="ti ti-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="rows.length === 0">
+                <td colspan="4" class="text-center text-muted py-3">{{ 'ItemBarcode.NoBarcodes' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="!selectedUnit && !loading" class="text-center text-muted py-5">
+        <i class="ti ti-arrow-up me-1"></i>{{ 'ItemBarcode.SelectItemUnit' | translate }}
+      </div>
+
+    </div>
+  </div>
+</div>

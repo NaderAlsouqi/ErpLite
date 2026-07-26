@@ -54,3 +54,8 @@
   padding: 0.5rem 0 1rem;
   line-height: 1.6;
 }
+
+// ── Dark mode ──
+::ng-deep [data-theme-mode="dark"] app-income-statement {
+  tbody > tr.fw-bold > td { background-color: rgba(255, 255, 255, 0.04) !important; }
+}

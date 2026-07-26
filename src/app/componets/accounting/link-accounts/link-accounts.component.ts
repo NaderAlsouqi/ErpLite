@@ -9,6 +9,7 @@ import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ComfLinkAccountsDto, ComfService } from '../../../shared/services/comf.service';
 import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/services/chart-of-accounts.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { forkJoin } from 'rxjs';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
@@ -22,6 +23,7 @@ interface AccountRow {
   selector: 'app-link-accounts',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -51,6 +53,8 @@ export class LinkAccountsComponent implements OnInit {
     { key: 'acc_fxcomm',     labelKey: 'LinkAccounts.CurrentAssets', required: true },
     { key: 'defferdcheqacc', labelKey: 'LinkAccounts.DeferredCheques' },
     { key: 'costgoodsacc',   labelKey: 'LinkAccounts.CostOfGoods' },
+    { key: 'acc_grni',       labelKey: 'LinkAccounts.Grni' },
+    { key: 'acc_vatinput',   labelKey: 'LinkAccounts.VatInput' },
   ];
 
   form: ComfLinkAccountsDto = {
@@ -68,6 +72,8 @@ export class LinkAccountsComponent implements OnInit {
     acc_fxcomm:     null,
     defferdcheqacc: null,
     costgoodsacc:   null,
+    acc_grni:       null,
+    acc_vatinput:   null,
   };
 
   accounts: ChartOfAccountDto[] = [];
@@ -79,7 +85,7 @@ export class LinkAccountsComponent implements OnInit {
     private accountsService: ChartOfAccountsService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {

@@ -157,9 +157,7 @@
         <div class="card-title">
           {{ 'VoucherSerial.List' | translate }}
         </div>
-        <button *hasPermission="'VoucherSerials.Print'" class="btn btn-outline-primary" (click)="print()">
-          <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-        </button>
+        <app-report-export *hasPermission="'VoucherSerials.Print'" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
       </div>
       <div class="card-body table-section">
         <!-- Filters -->
@@ -204,7 +202,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of filteredVSerials" (click)="onSelectVoucher(item)" [class.selected-row]="currentVSerial.VtypeNo === item.VtypeNo && currentVSerial.VSerialNo === item.VSerialNo">
+              <tr *ngFor="let item of filteredVSerials | paginate:page:pageSize" (click)="onSelectVoucher(item)" [class.selected-row]="currentVSerial.VtypeNo === item.VtypeNo && currentVSerial.VSerialNo === item.VSerialNo">
                 <td>{{ item.VoucherTypeName }} ({{ item.VtypeNo }})</td>
                 <td>{{ item.VSerialNo }}</td>
                 <td>{{ item.SName }}</td>
@@ -217,6 +215,7 @@
             </tbody>
           </table>
         </div>
+        <app-paginator [total]="filteredVSerials.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
       </div>
     </div>
   </div>

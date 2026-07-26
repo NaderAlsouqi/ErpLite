@@ -1,0 +1,58 @@
+.supplier-quotation-container {
+  padding: 1rem;
+
+  .form-label { font-weight: 500; font-size: 0.82rem; margin-bottom: 0.15rem; .required { color: #dc3545; } }
+
+  .section-title {
+    font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+    color: var(--primary-color, #1b2b4a);
+    border-bottom: 1px solid var(--default-border, #e2e8f0);
+    padding-bottom: 4px; margin: 0.5rem 0 0.75rem;
+  }
+
+  .sq-grid {
+    th { white-space: nowrap; font-size: 0.82rem; }
+    td { padding: 0.25rem 0.35rem; }
+    .form-control-sm { font-size: 0.82rem; }
+    ::ng-deep .ng-select.ng-select-single .ng-select-container { min-height: 32px; height: 32px; }
+  }
+
+  .totals { font-size: 0.9rem; b { color: var(--primary-color, #1b2b4a); } }
+
+  .action-buttons {
+    display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.25rem;
+    .btn { min-width: 130px; display: flex; align-items: center; justify-content: center; }
+  }
+
+  .cursor-pointer { cursor: pointer; }
+}
+
+::ng-deep [data-theme-mode="dark"] {
+  .supplier-quotation-container {
+    .form-label, .totals { color: var(--default-text-color) !important; }
+    .form-control {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+    }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th { border-color: var(--default-border) !important; }
+    .section-title { color: var(--default-text-color) !important; }
+  }
+}
+
+// Row deep-linked from تجميع طلبات شراء المواد — marked so it is obvious which
+// quotation was asked for when the list opens pre-filtered.
+.supplier-quotation-container tr.sq-highlight > td {
+  background-color: rgba(255, 193, 7, .18) !important;
+  box-shadow: inset 3px 0 0 var(--bs-warning, #ffc107);
+}
+
+[data-theme-mode='dark'] .supplier-quotation-container tr.sq-highlight > td {
+  background-color: rgba(255, 193, 7, .24) !important;
+}

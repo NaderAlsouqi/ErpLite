@@ -18,6 +18,7 @@ import { FooterComponent } from './footer/footer.component';
 import { CustomHeaderComponent } from './custom-header/custom-header.component';
 import { OverlayscrollbarsModule } from "overlayscrollbars-ngx";
 import { TranslateModule } from '@ngx-translate/core';
+import { AttachmentsComponent } from '../components/attachments/attachments.component';
 
 
 @NgModule({
@@ -41,7 +42,8 @@ import { TranslateModule } from '@ngx-translate/core';
         FormsModule, ReactiveFormsModule,
         RouterModule, FullscreenDirective,
         HoverEffectSidebarDirective, DropdownPositionDirective,
-        TranslateModule
+        TranslateModule,
+        AttachmentsComponent
     ]
 })
 export class SharedModule { }

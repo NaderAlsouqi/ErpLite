@@ -1,0 +1,89 @@
+.ser-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1080;
+}
+
+.ser-dialog {
+  background: #fff;
+  border-radius: .5rem;
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .25);
+}
+
+.ser-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .6rem .9rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ser-body {
+  padding: .9rem;
+  overflow-y: auto;
+}
+
+.ser-footer {
+  display: flex;
+  gap: .5rem;
+  justify-content: flex-end;
+  padding: .6rem .9rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.ser-meta {
+  font-size: .85rem;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: .375rem;
+  padding: .5rem .6rem;
+  margin-bottom: .75rem;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.ser-label {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.ser-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  min-height: 2.2rem;
+  padding: .35rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: .375rem;
+}
+
+.ser-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  background: #eef2ff;
+  color: #3730a3;
+  border-radius: 1rem;
+  padding: .1rem .25rem .1rem .6rem;
+  font-size: .8rem;
+}
+
+.ser-chip-x {
+  border: none;
+  background: transparent;
+  color: #6366f1;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 .15rem;
+}
+.ser-chip-x:hover { color: #dc2626; }

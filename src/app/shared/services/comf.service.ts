@@ -35,6 +35,11 @@ export interface CompanyInfoDto {
   enableAccfAuto: boolean;
 }
 
+export interface CompanyLogoDto {
+  imageBase64?: string | null;
+  contentType?: string | null;
+}
+
 export interface ComfLinkAccountsDto {
   acc_debit?: number | null;
   acc_credit?: number | null;
@@ -50,6 +55,8 @@ export interface ComfLinkAccountsDto {
   acc_fxcomm?: number | null;
   defferdcheqacc?: number | null;
   costgoodsacc?: number | null;
+  acc_grni?: number | null;
+  acc_vatinput?: number | null;
 }
 
 export interface CusfDto {
@@ -101,5 +108,17 @@ export class ComfService {
 
   saveCompanyInfo(dto: CompanyInfoDto): Observable<any> {
     return this.http.put(`${this.apiUrl}/SaveCompanyInfo`, dto);
+  }
+
+  getCompanyLogo(): Observable<CompanyLogoDto> {
+    return this.http.get<CompanyLogoDto>(`${this.apiUrl}/GetCompanyLogo`);
+  }
+
+  saveCompanyLogo(dto: CompanyLogoDto): Observable<any> {
+    return this.http.post(`${this.apiUrl}/SaveCompanyLogo`, dto);
+  }
+
+  deleteCompanyLogo(): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/DeleteCompanyLogo`);
   }
 }

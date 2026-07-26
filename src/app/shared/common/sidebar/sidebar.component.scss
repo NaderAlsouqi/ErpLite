@@ -201,6 +201,18 @@ li.nav-section:first-child {
   font-weight: 700;
   font-size: 0.875rem;
   flex-shrink: 0;
+  overflow: hidden;
+
+  &.has-logo {
+    background: #fff;
+  }
+
+  .user-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
 }
 
 .user-name {
@@ -338,3 +350,22 @@ li.nav-section:first-child {
   width: 0px;
   background: transparent;
 }
+
+/* Pending-tasks notification badge (المهمات) */
+.nav-child-item .nav-badge,
+.nav-item .nav-badge {
+  margin-inline-start: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 10px;
+  color: #fff;
+  background: #e53935;
+}
+.nav-badge-danger { background: #e53935 !important; }

@@ -15,9 +15,7 @@
           {{ 'BeginningBalances.Title' | translate }}
         </div>
         <div class="d-flex gap-2">
-          <button class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched || rows.length === 0">
-            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-          </button>
+          <app-report-export [disabled]="!fetched || rows.length === 0" (formatSelected)="reportPrint.setNextFormat($event); print()"></app-report-export>
           <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
             <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
             <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
@@ -78,7 +76,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let r of rows" [class.bb-parent]="r.Lvl === 1">
+                    <tr *ngFor="let r of rows | paginate:page:pageSize" [class.bb-parent]="r.Lvl === 1">
                       <td class="text-center">
                         <a class="rec-link" [routerLink]="['/accounting/gl/accounts-list']"
                            [queryParams]="{ focus: r.AccNo }">{{ r.AccNo }}</a>
@@ -101,6 +99,7 @@
                   </tfoot>
                 </table>
               </div>
+              <app-paginator [total]="rows.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
             </div>
           </div>
         </ng-container>

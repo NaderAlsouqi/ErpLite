@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ReportService } from '../../shared/services/report.service';
+import { ReportExportComponent } from '../../shared/components/report-export/report-export.component';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../shared/common/sharedmodule';
@@ -16,6 +17,7 @@ import {
   selector: 'app-activity-log',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -53,7 +55,7 @@ export class ActivityLogComponent implements OnInit {
   constructor(
     private activityLogService: ActivityLogService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {

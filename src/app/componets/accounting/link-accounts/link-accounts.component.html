@@ -14,10 +14,7 @@
           {{ 'LinkAccounts.Title' | translate }}
         </div>
         <div class="card-options">
-          <button class="btn btn-outline-primary me-2" *hasPermission="'Comf.Print'" (click)="printTable()" [disabled]="loading">
-            <i class="ti ti-printer me-1"></i>
-            {{ 'General.Print' | translate }}
-          </button>
+          <app-report-export *hasPermission="'Comf.Print'" [disabled]="loading" (formatSelected)="reportService.setNextFormat($event); printTable()"></app-report-export>
           <button class="btn btn-danger me-2" *hasPermission="'Comf.LinkAccounts'" (click)="save()" [disabled]="saving || loading">
             <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
             <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>

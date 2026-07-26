@@ -1,0 +1,274 @@
+<app-page-header
+  [title]="'SupplierQuotation.Title' | translate"
+  [title1]="'Nav.Purchases.Documents' | translate"
+  [activeTitle]="'SupplierQuotation.Title' | translate">
+</app-page-header>
+
+<div class="supplier-quotation-container">
+  <div class="card custom-card">
+
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'form'" (click)="switchTab('form')" href="javascript:void(0)">
+            <i class="ti ti-file-text me-1"></i>{{ 'SupplierQuotation.FormTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'" (click)="switchTab('list')" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'SupplierQuotation.ListTab' | translate }}
+          </a>
+        </li>
+      </ul>
+      <app-report-export *hasPermission="pPrint"
+        (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
+    </div>
+
+    <!-- ════ Form ════ -->
+    <div *ngIf="activeTab === 'form'" class="card-body">
+
+      <!-- approved offers are locked: they already produced a purchase order -->
+      <div *ngIf="readOnly" class="alert alert-success d-flex align-items-center gap-2 py-2">
+        <i class="ti ti-lock"></i>
+        <span>{{ 'SupplierQuotation.ApprovedBanner' | translate:{ no: hdr.poNo } }}</span>
+      </div>
+
+      <div class="section-title">{{ 'SupplierQuotation.HeaderInfo' | translate }}</div>
+      <div class="row g-2 mb-3">
+        <div class="col-md-2 year-field" [class.year-off]="hdr.year !== currentYear">
+          <label class="form-label year-field" [class.year-off]="hdr.year !== currentYear">{{ 'SupplierQuotation.Year' | translate }}</label>
+          <input type="number" class="form-control year-field" [class.year-off]="hdr.year !== currentYear"
+                 [(ngModel)]="hdr.year" (change)="reset(); refreshNextNo(); loadList()" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.QuotNo' | translate }} <span class="required">*</span></label>
+          <div class="input-group">
+            <input type="text" class="form-control" [(ngModel)]="hdr.quotNo" (change)="onQuotNoChange()" />
+            <button class="btn btn-outline-secondary" (click)="switchTab('list')"
+                    [title]="'SupplierQuotation.Lookup' | translate"><i class="ti ti-search"></i></button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.Date' | translate }} <span class="required">*</span></label>
+          <input type="date" class="form-control" [(ngModel)]="hdr.qdate" [disabled]="readOnly" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.ValidUntil' | translate }}</label>
+          <input type="date" class="form-control" [(ngModel)]="hdr.validUntil" [disabled]="readOnly" />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">{{ 'SupplierQuotation.Supplier' | translate }} <span class="required">*</span></label>
+          <ng-select [items]="lookups.Suppliers" bindValue="VenNo" [(ngModel)]="hdr.venNo"
+                     [clearable]="true" [disabled]="readOnly" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.VenNo }} — {{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.VenNo }} — {{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'SupplierQuotation.MaterialReqNo' | translate }}</label>
+          <div class="input-group">
+            <ng-select class="flex-grow-1" [items]="purchaseOrders" bindValue="OrderNo"
+                       [(ngModel)]="hdr.itemReq" [clearable]="true" [disabled]="readOnly"
+                       [placeholder]="'SupplierQuotation.MaterialReqNo' | translate" appendTo="body">
+              <ng-template ng-label-tmp let-x="item">{{ x.OrderNo }}</ng-template>
+              <ng-template ng-option-tmp let-x="item">
+                {{ x.OrderNo }}<span *ngIf="x.VenName"> — {{ x.VenName }}</span>
+                <small class="text-muted"> ({{ x.ODate | slice:0:10 }})</small>
+              </ng-template>
+            </ng-select>
+            <button class="btn btn-outline-success" (click)="loadFromRequest()" [disabled]="readOnly"
+                    [title]="'SupplierQuotation.LoadPo' | translate"><i class="ti ti-download"></i></button>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'SupplierQuotation.PaymentTerm' | translate }}</label>
+          <ng-select [items]="lookups.PaymentTerms" bindValue="TermNo" [(ngModel)]="hdr.cluse"
+                     [clearable]="true" [disabled]="readOnly" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.TermNo }} — {{ x.Des }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.TermNo }} — {{ x.Des }}</ng-template>
+          </ng-select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.Currency' | translate }} <span class="required">*</span></label>
+          <ng-select [items]="lookups.Currencies" bindValue="CurNo" [(ngModel)]="hdr.curNo"
+                     [clearable]="false" [disabled]="readOnly" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.CurNo }} — {{ isAr ? x.Cur : (x.Ename || x.Cur) }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.CurNo }} — {{ isAr ? x.Cur : (x.Ename || x.Cur) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'SupplierQuotation.Rate' | translate }} <span class="required">*</span></label>
+          <input type="number" class="form-control" [(ngModel)]="hdr.rate" [disabled]="readOnly" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.DeliveryTime' | translate }}</label>
+          <input type="text" class="form-control" maxlength="50" [(ngModel)]="hdr.delvTime" [disabled]="readOnly" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'SupplierQuotation.Note1' | translate }}</label>
+          <input type="text" class="form-control" maxlength="250" [(ngModel)]="hdr.note1" [disabled]="readOnly" />
+        </div>
+      </div>
+
+      <!-- ── Items ── -->
+      <div class="section-title d-flex align-items-center justify-content-between">
+        <span>{{ 'SupplierQuotation.Items' | translate }}</span>
+        <button class="btn btn-sm btn-outline-primary" (click)="addLine()" [disabled]="readOnly">
+          <i class="ti ti-plus me-1"></i>{{ 'SupplierQuotation.AddLine' | translate }}
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0 sq-grid">
+          <thead class="table-primary">
+            <tr>
+              <th style="width:14%">{{ 'SupplierQuotation.ItemNo' | translate }}</th>
+              <th style="width:20%">{{ 'SupplierQuotation.ItemName' | translate }}</th>
+              <th style="width:12%">{{ 'SupplierQuotation.UnitName' | translate }}</th>
+              <th style="width:9%">{{ 'SupplierQuotation.Qty' | translate }}</th>
+              <th style="width:11%">{{ 'SupplierQuotation.Price' | translate }}</th>
+              <th style="width:9%">{{ 'SupplierQuotation.LineDis' | translate }}</th>
+              <th style="width:11%">{{ 'SupplierQuotation.Total' | translate }}</th>
+              <th style="width:8%">{{ 'SupplierQuotation.DelvDays' | translate }}</th>
+              <th style="width:6%"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of lines; let i = index">
+              <td>
+                <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="l.ItemNo" [searchFn]="itemSearchFn"
+                           (change)="onItemPick(l)" [clearable]="true" [disabled]="readOnly"
+                           [placeholder]="'SupplierQuotation.PickItem' | translate" appendTo="body">
+                  <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }}</ng-template>
+                  <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+                </ng-select>
+              </td>
+              <td><input type="text" class="form-control form-control-sm" [value]="l.ItemName" readonly /></td>
+              <td>
+                <ng-select [items]="l.units" bindValue="UnitNo" [(ngModel)]="l.UnitNo" (change)="onUnitPick(l)"
+                           [disabled]="readOnly || !l.units.length" [clearable]="false" appendTo="body">
+                  <ng-template ng-label-tmp let-u="item">{{ u.UnitNo }}</ng-template>
+                  <ng-template ng-option-tmp let-u="item">{{ u.UnitNo }} — {{ u.UnitName }}</ng-template>
+                </ng-select>
+              </td>
+              <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="l.Qty" [disabled]="readOnly" /></td>
+              <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="l.Cost" [disabled]="readOnly" /></td>
+              <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="l.LineDis" [disabled]="readOnly" /></td>
+              <td class="text-end fw-semibold">{{ lineTotal(l) | number:'1.0-3' }}</td>
+              <td><input type="number" class="form-control form-control-sm text-end" [(ngModel)]="l.DelvDays" [disabled]="readOnly" /></td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-danger" (click)="removeLine(i)" [disabled]="readOnly">
+                  <i class="ti ti-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Totals ── -->
+      <div class="row g-2 mt-3 totals">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.Total' | translate }}</label>
+          <input type="text" class="form-control text-end" [value]="total | number:'1.0-3'" readonly />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.Discount' | translate }}</label>
+          <div class="input-group">
+            <input type="number" class="form-control text-end" [(ngModel)]="hdr.dis" [disabled]="readOnly" />
+            <button class="btn" [class.btn-primary]="hdr.isPercent" [class.btn-outline-secondary]="!hdr.isPercent"
+                    (click)="hdr.isPercent = !hdr.isPercent" [disabled]="readOnly"
+                    [title]="'SupplierQuotation.TogglePercent' | translate">
+              {{ hdr.isPercent ? '%' : '#' }}
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.DiscountAmount' | translate }}</label>
+          <input type="text" class="form-control text-end" [value]="disAmount | number:'1.0-3'" readonly />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">{{ 'SupplierQuotation.Net' | translate }}</label>
+          <input type="text" class="form-control text-end fw-bold" [value]="net | number:'1.0-3'" readonly />
+        </div>
+      </div>
+
+      <!-- ── Actions ── -->
+      <div class="d-flex flex-wrap gap-2 mt-4">
+        <button class="btn btn-primary" *hasPermission="pCreate" (click)="save(false)"
+                [disabled]="saving || readOnly">
+          <i class="ti ti-device-floppy me-1"></i>{{ 'General.Save' | translate }}
+        </button>
+        <button class="btn btn-success" *hasPermission="pPrint" (click)="save(true)"
+                [disabled]="saving || readOnly">
+          <i class="ti ti-printer me-1"></i>{{ 'SupplierQuotation.SavePrint' | translate }}
+        </button>
+        <button class="btn btn-outline-secondary" (click)="newDoc()">
+          <i class="ti ti-file-plus me-1"></i>{{ 'General.New' | translate }}
+        </button>
+        <button class="btn btn-outline-danger" *hasPermission="pDelete" (click)="confirmDelete()"
+                [disabled]="!isExisting || readOnly">
+          <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ════ List ════ -->
+    <div *ngIf="activeTab === 'list'" class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text"><i class="ti ti-search"></i></span>
+            <input type="text" class="form-control" [(ngModel)]="listFilter"
+                   [placeholder]="'SupplierQuotation.SearchPlaceholder' | translate" />
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th>{{ 'SupplierQuotation.QuotNo' | translate }}</th>
+              <th>{{ 'SupplierQuotation.Date' | translate }}</th>
+              <th>{{ 'SupplierQuotation.Supplier' | translate }}</th>
+              <th>{{ 'SupplierQuotation.ValidUntil' | translate }}</th>
+              <th class="text-end">{{ 'SupplierQuotation.Net' | translate }}</th>
+              <th>{{ 'SupplierQuotation.Status' | translate }}</th>
+              <th>{{ 'SupplierQuotation.PurchaseOrder' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of filteredQuotations | paginate:page:pageSize" class="cursor-pointer"
+                [class.sq-highlight]="r.QuotNo === highlightQuotNo" (click)="openRow(r)">
+              <td>{{ r.QuotNo }}</td>
+              <td>{{ (r.QDate || '') | slice:0:10 }}</td>
+              <td>{{ r.VenName }}</td>
+              <td>{{ (r.ValidUntil || '') | slice:0:10 }}</td>
+              <td class="text-end">{{ netOf(r) | number:'1.0-3' }}</td>
+              <td><span [class]="statusClass(r.Status)">{{ statusKey(r.Status) | translate }}</span></td>
+              <td>{{ r.PONo }}</td>
+            </tr>
+            <tr *ngIf="filteredQuotations.length === 0">
+              <td colspan="7" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <app-paginator [total]="filteredQuotations.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+    </div>
+
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'SupplierQuotation.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="doDelete()">
+</app-confirmation-modal>

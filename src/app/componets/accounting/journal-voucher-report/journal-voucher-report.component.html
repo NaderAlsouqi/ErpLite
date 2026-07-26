@@ -20,9 +20,7 @@
             <i *ngIf="!loading" class="ti ti-search me-1"></i>
             {{ 'General.Search' | translate }}
           </button>
-          <button class="btn btn-outline-primary" (click)="print()" [disabled]="!hasResults">
-            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-          </button>
+          <app-report-export [disabled]="!hasResults" (formatSelected)="reportPrint.setNextFormat($event); print()"></app-report-export>
           <button class="btn btn-outline-secondary" (click)="clearFilters()">
             <i class="ti ti-refresh me-1"></i>{{ 'General.Clear' | translate }}
           </button>

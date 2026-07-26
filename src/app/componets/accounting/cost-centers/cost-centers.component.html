@@ -28,9 +28,7 @@
         <button class="btn btn-sm btn-outline-secondary" (click)="loadData()" title="{{ 'General.Refresh' | translate }}">
           <i class="ti ti-refresh"></i>
         </button>
-        <button *hasPermission="'CostCenters.Print'" class="btn btn-sm btn-outline-primary" (click)="print()">
-          <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-        </button>
+        <app-report-export *hasPermission="'CostCenters.Print'" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
       </div>
     </div>
 
@@ -112,7 +110,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let cc of filteredCostCenters"
+              <tr *ngFor="let cc of filteredCostCenters | paginate:page:pageSize"
                   class="cursor-pointer"
                   [attr.id]="'cc-row-' + cc.CcntrNo"
                   (click)="onSelectRow(cc)"
@@ -130,6 +128,7 @@
             </tbody>
           </table>
         </div>
+        <app-paginator [total]="filteredCostCenters.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
       </div>
 
     </div>

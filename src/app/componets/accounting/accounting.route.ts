@@ -88,6 +88,10 @@ export const admin: Routes = [
         path: 'settings/appearance',
         loadComponent: () => import('./appearance/appearance.component').then(m => m.AppearanceComponent),
       },
+      {
+        path: 'settings/report-print',
+        loadComponent: () => import('./report-print-settings/report-print-settings.component').then(m => m.ReportPrintSettingsComponent),
+      },
       { path: 'accounts-receivable',  loadComponent: uc },
       { path: 'accounts-payable',     loadComponent: uc },
 
@@ -215,6 +219,12 @@ export const admin: Routes = [
         path: 'definitions/taxes',
         loadComponent: () => import('./taxes/taxes.component').then(m => m.TaxesComponent),
       },
+      {
+        path: 'definitions/tax-conditions',
+        loadComponent: () => import('../purchases/tax-conditions/tax-conditions.component').then(m => m.TaxConditionsComponent),
+        canActivate: [PermissionGuard],
+        data: { permissions: ['AccTaxConditions.View'], permPrefix: 'AccTaxConditions' },
+      },
 
       // الشيكات
       {
@@ -259,6 +269,8 @@ export const admin: Routes = [
       {
         path: 'invoices/service',
         loadComponent: () => import('./serv-bill/serv-bill.component').then(m => m.ServBillComponent),
+        canActivate: [PermissionGuard],
+        data: { permissions: ['ServBill.View'] }
       },
 
       // متفرقات

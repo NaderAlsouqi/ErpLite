@@ -12,10 +12,7 @@
       <div class="card-header">
         <div class="card-title">{{ 'ActivityLog.Title' | translate }}</div>
         <div class="card-options">
-          <button class="btn btn-outline-primary" (click)="print()">
-            <i class="ti ti-printer me-1"></i>
-            {{ 'General.Print' | translate }}
-          </button>
+          <app-report-export (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
         </div>
       </div>
 

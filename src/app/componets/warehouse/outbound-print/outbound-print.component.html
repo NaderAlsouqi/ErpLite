@@ -1,0 +1,123 @@
+<app-page-header
+  [title]="'OutboundPrint.Title' | translate"
+  [title1]="'Nav.Warehouse.Reports' | translate"
+  [activeTitle]="'OutboundPrint.Title' | translate">
+</app-page-header>
+
+<div class="row opr-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">{{ 'OutboundPrint.Title' | translate }}</div>
+        <div class="d-flex gap-2">
+          <app-report-export [disabled]="!fetched || rows.length === 0" (formatSelected)="reportPrint.setNextFormat($event); onExport()"></app-report-export>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-printer me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Filters ───────────────────────────────────── -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-2">
+            <label class="form-label">{{ 'OutboundPrint.Year' | translate }} <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="year" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">{{ 'OutboundPrint.Serial' | translate }} <span class="text-danger">*</span></label>
+            <ng-select [items]="serials" bindValue="VSerialNo" [(ngModel)]="serialNo" [clearable]="false"
+              (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-s="item">{{ s.VSerialNo }} — {{ isAr ? s.SName : (s.Sename || s.SName) }}</ng-template>
+              <ng-template ng-option-tmp let-s="item">{{ s.VSerialNo }} — {{ isAr ? s.SName : (s.Sename || s.SName) }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'OutboundPrint.DocNo' | translate }} <span class="text-danger">*</span></label>
+            <input type="text" inputmode="numeric" class="form-control" [(ngModel)]="docNo" (keypress)="onlyDigits($event)" (change)="sanitizeDoc()" />
+          </div>
+        </div>
+        <div class="row g-3 align-items-end mb-3" *ngIf="canViewCost">
+          <div class="col-md-4">
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="showDetails" [(ngModel)]="showDetails" /><label class="form-check-label" for="showDetails">{{ 'OutboundPrint.ShowDetails' | translate }}</label></div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5"><div class="spinner-border text-primary" role="status"></div></div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched">
+          <div *ngIf="rows.length === 0" class="alert alert-info text-center">{{ 'OutboundPrint.NotFound' | translate }}</div>
+
+          <div *ngIf="header as hd">
+            <!-- Voucher header -->
+            <div class="op-voucher-head mb-3">
+              <div class="op-title">{{ 'OutboundPrint.VoucherTitle' | translate }}<span *ngIf="hd.SerialName"> — {{ isAr ? hd.SerialName : (hd.SerialEName || hd.SerialName) }}</span></div>
+              <div class="op-grid">
+                <div><span class="op-lbl">{{ 'OutboundPrint.DocNo' | translate }}:</span> <b>{{ hd.DocNo }}</b></div>
+                <div><span class="op-lbl">{{ 'OutboundPrint.Date' | translate }}:</span> {{ fmtDate(hd.TransDate) }}</div>
+                <div *ngIf="hd.TargetName"><span class="op-lbl">{{ 'OutboundPrint.Target' | translate }}:</span> {{ isAr ? hd.TargetName : (hd.TargetEName || hd.TargetName) }}</div>
+                <div><span class="op-lbl">{{ 'OutboundPrint.CustAcc' | translate }}:</span> {{ hd.AccNo }}</div>
+                <div class="op-wide" *ngIf="hd.CustomerName"><span class="op-lbl">{{ 'OutboundPrint.Customer' | translate }}:</span> {{ hd.CustomerName }}</div>
+                <div class="op-wide" *ngIf="hd.Des"><span class="op-lbl">{{ 'OutboundPrint.Des' | translate }}:</span> {{ hd.Des }}</div>
+              </div>
+            </div>
+
+            <!-- Lines -->
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover table-sm mb-0">
+                <thead class="table-primary">
+                  <tr>
+                    <th>{{ 'OutboundPrint.ItemNo' | translate }}</th>
+                    <th>{{ 'OutboundPrint.ItemName' | translate }}</th>
+                    <th class="text-end">{{ 'OutboundPrint.Qty' | translate }}</th>
+                    <th>{{ 'OutboundPrint.Unit' | translate }}</th>
+                    <th>{{ 'OutboundPrint.Store' | translate }}</th>
+                    <ng-container *ngIf="showDetailCols; else basicHead">
+                      <th class="text-end">{{ 'OutboundPrint.Cost' | translate }}</th>
+                      <th class="text-end">{{ 'OutboundPrint.Total' | translate }}</th>
+                      <th>{{ 'OutboundPrint.CrAcc' | translate }}</th>
+                      <th>{{ 'OutboundPrint.DrAcc' | translate }}</th>
+                    </ng-container>
+                    <ng-template #basicHead><th>{{ 'OutboundPrint.Batch' | translate }}</th></ng-template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of rows | paginate:page:pageSize">
+                    <td>{{ r.ItemNo }}</td>
+                    <td>{{ isAr ? r.ItemName : (r.Ename || r.ItemName) }}</td>
+                    <td class="text-end">{{ r.Qty | number:numFmt }}</td>
+                    <td>{{ isAr ? r.Unit : (r.UnitE || r.Unit) }}</td>
+                    <td>{{ isAr ? r.StoreName : (r.StoreEName || r.StoreName) }}</td>
+                    <ng-container *ngIf="showDetailCols; else basicCells">
+                      <td class="text-end">{{ r.Cost | number:numFmt }}</td>
+                      <td class="text-end fw-semibold">{{ r.Total | number:numFmt }}</td>
+                      <td>{{ r.CrAccName || r.CrAccNo }}</td>
+                      <td>{{ r.DrAccName || r.DrAccNo }}</td>
+                    </ng-container>
+                    <ng-template #basicCells><td>{{ r.BatchNo }}</td></ng-template>
+                  </tr>
+                </tbody>
+                <tfoot class="fw-bold table-light" *ngIf="showDetailCols">
+                  <tr>
+                    <td colspan="6">{{ 'General.Total' | translate }}</td>
+                    <td class="text-end">{{ grandTotal | number:numFmt }}</td>
+                    <td></td><td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <app-paginator [total]="rows.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

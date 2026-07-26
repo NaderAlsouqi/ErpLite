@@ -1,0 +1,131 @@
+.purchase-order-container {
+  padding: 1rem;
+
+  .form-label { font-weight: 500; font-size: 0.82rem; margin-bottom: 0.15rem; .required { color: #dc3545; } }
+
+  .section-title {
+    font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+    color: var(--primary-color, #1b2b4a);
+    border-bottom: 1px solid var(--default-border, #e2e8f0);
+    padding-bottom: 4px; margin: 0.5rem 0 0.75rem;
+  }
+
+  .po-grid {
+    th { white-space: nowrap; font-size: 0.82rem; }
+    td { padding: 0.25rem 0.35rem; }
+    .form-control-sm { font-size: 0.82rem; }
+    ::ng-deep .ng-select.ng-select-single .ng-select-container { min-height: 32px; height: 32px; }
+  }
+
+  .totals { font-size: 0.9rem; b { color: var(--primary-color, #1b2b4a); } }
+
+  .action-buttons {
+    display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.25rem;
+    .btn { min-width: 130px; display: flex; align-items: center; justify-content: center; }
+  }
+
+  .cursor-pointer { cursor: pointer; }
+}
+
+::ng-deep [data-theme-mode="dark"] {
+  .purchase-order-container {
+    .form-label, .totals { color: var(--default-text-color) !important; }
+    .form-control {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+    }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th { border-color: var(--default-border) !important; }
+    .section-title { color: var(--default-text-color) !important; }
+  }
+}
+
+// ── prominent status badge + lifecycle stepper ──
+.po-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: .7rem 1.1rem;
+  border: 1px solid var(--default-border);
+  border-radius: .6rem;
+
+  .po-steps { display: flex; align-items: center; flex-wrap: wrap; flex: 1; row-gap: .4rem; }
+
+  .po-step {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    font-size: .85rem;
+    color: var(--text-muted);
+    padding-inline-end: 1.4rem;
+    position: relative;
+
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      inset-inline-end: .35rem;
+      top: 50%;
+      width: .7rem;
+      height: 2px;
+      background: var(--default-border);
+    }
+
+    .po-dot {
+      width: 1.7rem;
+      height: 1.7rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .78rem;
+      font-weight: 700;
+      background: var(--default-border);
+      color: var(--text-muted);
+      flex: 0 0 auto;
+    }
+
+    &[data-state='done'] { color: #198754; .po-dot { background: #198754; color: #fff; } }
+    &[data-state='current'] {
+      font-weight: 700;
+      color: var(--primary-color);
+      .po-dot { background: var(--primary-color); color: #fff; box-shadow: 0 0 0 3px rgba(13, 110, 253, .22); }
+    }
+  }
+
+  .po-current-badge {
+    font-size: .95rem;
+    padding: .5rem .95rem;
+    margin-inline-start: auto;
+    display: inline-flex;
+    align-items: center;
+    .ti-circle-filled { font-size: .6rem; }
+  }
+
+  &.po-cancelled {
+    border-color: rgba(220, 53, 69, .5);
+    background: rgba(220, 53, 69, .06);
+    .po-cancel-note { color: #dc3545; font-weight: 600; font-size: 1rem; flex: 1; }
+  }
+}
+
+[data-theme-mode='dark'] .po-status-bar {
+  &.po-cancelled { background: rgba(220, 53, 69, .14); }
+  .po-step[data-state='current'] .po-dot { box-shadow: 0 0 0 3px rgba(13, 110, 253, .35); }
+}
+
+// linked-to-a-PO sits off the happy path, like cancelled (teal instead of red)
+.po-status-bar {
+  &.po-linked {
+    border-color: rgba(13, 202, 240, .55);
+    background: rgba(13, 202, 240, .08);
+    .po-linked-note { color: #0aa2c0; font-weight: 600; font-size: 1rem; flex: 1; }
+  }
+}
+[data-theme-mode='dark'] .po-status-bar.po-linked { background: rgba(13, 202, 240, .16); }

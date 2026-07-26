@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+import { formatAmount, parseAmount } from '../../../../shared/utils/amount.util';
 // Material Table imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
@@ -144,7 +145,7 @@ export class ServiceTransferRefundsComponent implements OnInit {
             InvoiceNumber: refund.invoiceNumber ?? refund.InvoiceNumber ?? '',
             CustomerName: refund.customerName ?? refund.CustomerName ?? '',
             FinancialYear: Math.floor(Number(refund.financialYear ?? refund.FinancialYear)).toString(),
-            InvoiceAmount: parseFloat(refund.invoiceAmount ?? refund.InvoiceAmount ?? 0).toFixed(this.cs.billDecimals),
+            InvoiceAmount: formatAmount(refund.invoiceAmount ?? refund.InvoiceAmount ?? 0, this.cs.billDecimals),
             IsTransferred: !!(refund.rIsTransfered ?? refund.RIsTransfered),
             RIsTransfered: !!(refund.rIsTransfered ?? refund.RIsTransfered),
             RQRCode: refund.rQRCode ?? refund.RQRCode ?? null,
@@ -243,7 +244,7 @@ export class ServiceTransferRefundsComponent implements OnInit {
             );
           case 'CustomerName': return this.compare(a.CustomerName, b.CustomerName, isAsc);
           case 'FinancialYear': return this.compare(a.FinancialYear, b.FinancialYear, isAsc);
-          case 'RefundAmount': return this.compare(parseFloat(a.InvoiceAmount), parseFloat(b.InvoiceAmount), isAsc);
+          case 'RefundAmount': return this.compare(parseAmount(a.InvoiceAmount), parseAmount(b.InvoiceAmount), isAsc);
           default: return 0;
         }
       });

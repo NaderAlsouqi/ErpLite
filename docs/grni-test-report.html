@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GRNI Purchasing Cycle — Test Report</title>
+  <style>html,body{margin:0;padding:0}body{background:#eef0f6}@media(prefers-color-scheme:dark){body{background:#10141d}}</style>
+  <style>
+    :root{
+      --paper:#eef0f6;--card:#fff;--card-2:#f7f8fc;--ink:#1a2138;--muted:#5b6479;--faint:#8a92a6;
+      --line:#dfe3ee;--navy:#26356e;--navy-ink:#26356e;--navy-soft:#e9edfa;--teal:#0f7a8b;
+      --pass:#1f7a4d;--pass-soft:#e3f3ea;--fail:#b3341f;--fail-soft:#fbe7e3;
+      --shadow:0 1px 2px rgba(26,33,56,.06),0 8px 24px rgba(26,33,56,.05);
+      --mono:ui-monospace,"Cascadia Code","SF Mono","Consolas",monospace;
+      --sans:-apple-system,"Segoe UI",system-ui,"Noto Sans Arabic","Tahoma",sans-serif;
+    }
+    @media(prefers-color-scheme:dark){:root{
+      --paper:#10141d;--card:#191f2d;--card-2:#141926;--ink:#e7eaf2;--muted:#9aa2b6;--faint:#6d7688;
+      --line:#2a3245;--navy:#8fa2de;--navy-ink:#b9c6f2;--navy-soft:#1e2740;--teal:#45b8c8;
+      --pass:#4cb681;--pass-soft:#123524;--fail:#e07a63;--fail-soft:#3a1c17;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
+    }}
+    :root[data-theme="light"]{--paper:#eef0f6;--card:#fff;--card-2:#f7f8fc;--ink:#1a2138;--muted:#5b6479;--faint:#8a92a6;--line:#dfe3ee;--navy:#26356e;--navy-ink:#26356e;--navy-soft:#e9edfa;--teal:#0f7a8b;--pass:#1f7a4d;--pass-soft:#e3f3ea;--fail:#b3341f;--fail-soft:#fbe7e3;--shadow:0 1px 2px rgba(26,33,56,.06),0 8px 24px rgba(26,33,56,.05);}
+    :root[data-theme="dark"]{--paper:#10141d;--card:#191f2d;--card-2:#141926;--ink:#e7eaf2;--muted:#9aa2b6;--faint:#6d7688;--line:#2a3245;--navy:#8fa2de;--navy-ink:#b9c6f2;--navy-soft:#1e2740;--teal:#45b8c8;--pass:#4cb681;--pass-soft:#123524;--fail:#e07a63;--fail-soft:#3a1c17;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);}
+
+    *{box-sizing:border-box}
+    body{font-family:var(--sans);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;}
+    .wrap{max-width:940px;margin:0 auto;padding:clamp(1.25rem,4vw,3rem) 1.25rem 4rem;}
+    .eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);font-weight:700;margin:0 0 .5rem;}
+    h1{font-size:clamp(1.5rem,4vw,2.2rem);line-height:1.12;margin:0 0 .4rem;font-weight:800;letter-spacing:-.01em;}
+    .meta{color:var(--muted);font-size:.9rem;margin:0 0 1.4rem;}
+    .meta code{font-family:var(--mono);background:var(--card-2);border:1px solid var(--line);padding:.05rem .4rem;border-radius:5px;color:var(--ink);}
+
+    .banner{display:flex;align-items:center;gap:.7rem;background:var(--pass-soft);border:1px solid color-mix(in srgb,var(--pass) 40%,var(--line));
+      color:var(--pass);border-radius:12px;padding:.85rem 1.1rem;font-weight:700;margin-bottom:1.4rem;box-shadow:var(--shadow);}
+    .banner .big{font-size:1.15rem;}
+    .banner .dot{width:12px;height:12px;border-radius:50%;background:var(--pass);flex:0 0 auto;}
+
+    .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:2rem;}
+    @media(max-width:640px){.tiles{grid-template-columns:repeat(2,1fr);}}
+    .tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;box-shadow:var(--shadow);}
+    .tile .n{font-size:1.7rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
+    .tile .k{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:700;margin-top:.35rem;}
+    .tile.ok .n{color:var(--pass);} .tile.bad .n{color:var(--fail);}
+
+    .sec-h{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--faint);
+      margin:2rem 0 .9rem;display:flex;align-items:center;gap:.6rem;}
+    .sec-h::after{content:"";flex:1;height:1px;background:var(--line);}
+
+    .scenario{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:1rem 1.2rem;}
+    .scenario ol{margin:.2rem 0 0;padding-inline-start:1.2rem;}
+    .scenario li{margin:.3rem 0;font-size:.92rem;}
+    .scenario code{font-family:var(--mono);font-size:.82rem;color:var(--teal);}
+    .scenario .nums{margin-top:.8rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.85rem;color:var(--muted);}
+
+    .tbl-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);background:var(--card);}
+    table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:640px;}
+    th,td{text-align:left;padding:.6rem .9rem;border-bottom:1px solid var(--line);vertical-align:middle;}
+    thead th{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:700;background:var(--card-2);}
+    tbody tr:last-child td{border-bottom:0;}
+    td.id{font-family:var(--mono);color:var(--faint);font-size:.8rem;width:2.5rem;}
+    td.exp,td.act{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;}
+    .grp td{background:var(--navy-soft);color:var(--navy-ink);font-weight:750;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;}
+    .badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:800;padding:.2rem .55rem;border-radius:999px;letter-spacing:.03em;}
+    .badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;}
+    .badge.pass{color:var(--pass);background:var(--pass-soft);}
+    .badge.fail{color:var(--fail);background:var(--fail-soft);}
+
+    .foot{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line);font-size:.8rem;color:var(--faint);}
+    .foot code{font-family:var(--mono);color:var(--muted);}
+
+    .note{background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;font-size:.86rem;color:var(--muted);margin:1rem 0 0;}
+    .note b{color:var(--ink);}
+    .vouchers{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    @media(max-width:680px){.vouchers{grid-template-columns:1fr;}}
+    .voucher{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden;}
+    .voucher .vh{padding:.7rem 1rem;background:var(--navy-soft);color:var(--navy-ink);display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;}
+    .voucher .vh .dt{font-family:var(--mono);font-size:.72rem;font-weight:700;background:var(--card);border:1px solid var(--line);padding:.1rem .45rem;border-radius:5px;color:var(--ink);}
+    .voucher .vh .nm{font-weight:750;font-size:.9rem;}
+    .voucher .vh .bal{margin-inline-start:auto;font-size:.68rem;font-weight:800;color:var(--pass);background:var(--pass-soft);padding:.12rem .5rem;border-radius:999px;white-space:nowrap;}
+    .voucher table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:0;}
+    .voucher td{padding:.45rem 1rem;border-top:1px solid var(--line);}
+    .voucher td.n{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);white-space:nowrap;}
+    .voucher .acc{font-family:var(--mono);font-size:.74rem;color:var(--faint);}
+    .voucher .dr{color:var(--pass);font-weight:800;} .voucher .cr{color:var(--fail);font-weight:800;}
+    .voucher tfoot td{background:var(--card-2);font-weight:700;border-top:2px solid var(--navy);font-size:.8rem;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">ErpLite · Purchasing Module · Automated Test</p>
+  <h1>GRNI Purchasing Cycle — Test Report</h1>
+  <p class="meta">Run against <code>SC_ERP78</code> · date <code>2026-07-26</code> · suite <code>grni-testsuite.sql</code> · 23 assertions</p>
+
+  <div class="banner">
+    <span class="dot"></span>
+    <span class="big">ALL TESTS PASSED</span>
+    <span style="color:var(--muted);font-weight:600">— the complete request → receipt → invoice cycle and its accounting verified.</span>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="n">23</div><div class="k">Assertions</div></div>
+    <div class="tile ok"><div class="n">23</div><div class="k">Passed</div></div>
+    <div class="tile bad"><div class="n">0</div><div class="k">Failed</div></div>
+    <div class="tile ok"><div class="n">100%</div><div class="k">Pass rate</div></div>
+  </div>
+
+  <div class="sec-h">Scenario — the complete cycle</div>
+  <div class="scenario">
+    <ol>
+      <li><b>Material request</b> for 30 units — <code>SP_SaveItemReq</code></li>
+      <li><b>Purchase order (pof)</b> linked to the request — <code>SP_SavePof</code></li>
+      <li><b>أمر الشراء</b> sourcing the pof — <code>SP_SavePurchOrd</code></li>
+      <li><b>Goods receipt</b> of 30 units — <code>SP_SaveGoodsReceipt</code> → auto stock-in + <code>Dr Inventory / Cr GRNI</code></li>
+      <li><b>Purchase invoice</b> with 45 VAT — <code>SP_SavePurchInv</code> → <code>Dr GRNI + Dr VAT / Cr Supplier</code></li>
+      <li><b>Reverse</b> — delete invoice, then delete receipt</li>
+      <li><b>Cleanup</b> — remove the chain, confirm the item is pristine</li>
+    </ol>
+    <div class="nums">Figures: item <code>1100006</code> · qty <b>30</b> × cost <b>10</b> = goods <b>300</b> · VAT <b>45</b> (15%) · total <b>345</b>. GRNI account <code>201002</code>, VAT-input <code>10203</code>.</div>
+  </div>
+
+  <div class="sec-h">Results</div>
+  <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>#</th><th>Check</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Quantities — on-order &amp; received tracking</td></tr>
+        <tr><td class="id">1</td><td>Material request raises on-order (invf.oq2)</td><td class="exp">30.000</td><td class="act">30.000</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">2</td><td>Purchase order does NOT change on-order</td><td class="exp">30.000</td><td class="act">30.000</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">3</td><td>Formal purchase order does NOT change on-order</td><td class="exp">30.000</td><td class="act">30.000</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">4</td><td>Goods receipt relieves on-order to zero</td><td class="exp">0.000</td><td class="act">0.000</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">5</td><td>Received qty stamped on purchase-order line (pof2.rqty)</td><td class="exp">30.000</td><td class="act">30.000</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">6</td><td>Received qty stamped on request line (ItemReq2.rqty)</td><td class="exp">30.000</td><td class="act">30.000</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">7</td><td>Stock on-hand rises by 30 (single generated inbound)</td><td class="exp">30.000</td><td class="act">30.000</td><td><span class="badge pass">PASS</span></td></tr>
+
+        <tr class="grp"><td colspan="5">Receipt GL — doctype 20 (Dr Inventory / Cr GRNI)</td></tr>
+        <tr><td class="id">8</td><td>Dr Inventory total = 300</td><td class="exp">300.00</td><td class="act">300.00</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">9</td><td>Cr GRNI (201002) = 300</td><td class="exp">300.00</td><td class="act">300.00</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">10</td><td>Entry is balanced (debits = credits)</td><td class="exp">0.00</td><td class="act">0.00</td><td><span class="badge pass">PASS</span></td></tr>
+
+        <tr class="grp"><td colspan="5">Invoice GL — doctype 30 (Dr GRNI + Dr VAT / Cr Supplier)</td></tr>
+        <tr><td class="id">11</td><td>Dr GRNI (clears the holding account) = 300</td><td class="exp">300.00</td><td class="act">300.00</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">12</td><td>Dr VAT input (10203) = 45</td><td class="exp">45.00</td><td class="act">45.00</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">13</td><td>Cr Supplier / payable = 345</td><td class="exp">345.00</td><td class="act">345.00</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">14</td><td>Entry is balanced (debits = credits)</td><td class="exp">0.00</td><td class="act">0.00</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">15</td><td>GRNI nets to zero across receipt + invoice</td><td class="exp">0.00</td><td class="act">0.00</td><td><span class="badge pass">PASS</span></td></tr>
+
+        <tr class="grp"><td colspan="5">Controls — double-post protection</td></tr>
+        <tr><td class="id">16</td><td>Receipt is stamped with the invoice no</td><td class="exp">5010</td><td class="act">5010</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">17</td><td>Deleting an invoiced receipt is blocked</td><td class="exp">yes</td><td class="act">yes</td><td><span class="badge pass">PASS</span></td></tr>
+
+        <tr class="grp"><td colspan="5">Reversal — everything undoes cleanly</td></tr>
+        <tr><td class="id">18</td><td>Deleting invoice removes its GL entry</td><td class="exp">0</td><td class="act">0</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">19</td><td>Deleting invoice un-stamps the receipt</td><td class="exp">(empty)</td><td class="act">(empty)</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">20</td><td>Deleting receipt restores on-order to 30</td><td class="exp">30.000</td><td class="act">30.000</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">21</td><td>Deleting receipt clears received qty (pof2.rqty)</td><td class="exp">0.000</td><td class="act">0.000</td><td><span class="badge pass">PASS</span></td></tr>
+        <tr><td class="id">22</td><td>Deleting receipt reverses stock to 0</td><td class="exp">0.000</td><td class="act">0.000</td><td><span class="badge pass">PASS</span></td></tr>
+
+        <tr class="grp"><td colspan="5">Cleanup</td></tr>
+        <tr><td class="id">23</td><td>Item returns to pristine state (on-order 0)</td><td class="exp">0.000</td><td class="act">0.000</td><td><span class="badge pass">PASS</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec-h">How شاشة القيود (the journal screen) is affected</div>
+  <p style="margin:.1rem 0 1rem;color:var(--muted);font-size:.9rem">
+    The cycle posts <b style="color:var(--ink)">two balanced vouchers</b>, captured live below exactly as the journal screen reads them (<code style="font-family:var(--mono)">transf1/transf2</code>). The goods-receipt document (doctype 37) posts no entry of its own — only its auto-generated inbound does — so stock and the GL move exactly once.
+  </p>
+  <div class="vouchers">
+    <div class="voucher">
+      <div class="vh"><span class="dt">DocType 20</span><span class="nm">Goods receipt → stock-in</span><span class="bal">✓ Balanced 300 = 300</span></div>
+      <table>
+        <tbody>
+          <tr><td><span class="dr">Dr</span> Inventory / store account <span class="acc">1020701</span></td><td class="n">300.00</td><td class="n">—</td></tr>
+          <tr><td><span class="cr">Cr</span> GRNI · بضاعة واردة لم تُفوتر <span class="acc">201002</span></td><td class="n">—</td><td class="n">300.00</td></tr>
+        </tbody>
+        <tfoot><tr><td>Doc&nbsp;#11 · 2 lines</td><td class="n">300.00</td><td class="n">300.00</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="voucher">
+      <div class="vh"><span class="dt">DocType 30</span><span class="nm">Purchase invoice · قيد مشتريات</span><span class="bal">✓ Balanced 345 = 345</span></div>
+      <table>
+        <tbody>
+          <tr><td><span class="dr">Dr</span> GRNI · بضاعة واردة لم تُفوتر <span class="acc">201002</span></td><td class="n">300.00</td><td class="n">—</td></tr>
+          <tr><td><span class="dr">Dr</span> VAT input · ضريبة مدخلات <span class="acc">10203</span></td><td class="n">45.00</td><td class="n">—</td></tr>
+          <tr><td><span class="cr">Cr</span> Supplier / payable · المورّد <span class="acc">20100101</span></td><td class="n">—</td><td class="n">345.00</td></tr>
+        </tbody>
+        <tfoot><tr><td>Doc&nbsp;#5020 · 3 lines</td><td class="n">345.00</td><td class="n">345.00</td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+  <p class="note">
+    <b>Net effect on the ledger:</b> GRNI (<code style="font-family:var(--mono)">201002</code>) is credited 300 by the receipt and debited 300 by the invoice, so the two vouchers cancel it to <b>zero</b>. What remains on شاشة القيود: Inventory <b>+300</b>, VAT input <b>+45</b>, Supplier payable <b>−345</b> — the correct three-way-match result. Both vouchers reverse cleanly when their documents are deleted (assertions 18–22).
+  </p>
+
+  <p class="foot">
+    Each assertion compares an <b>expected</b> value against the <b>actual</b> value read back from <code>SC_ERP78</code> after the corresponding stored procedure ran.
+    The suite is idempotent — it tidies leftovers first and cleans up after itself, leaving item <code>1100006</code> exactly as it found it (<code>oq2 = 0</code>, stock <code>0</code>).
+    Source: <code>grni-testsuite.sql</code>.
+  </p>
+
+</div>
+</body>
+</html>

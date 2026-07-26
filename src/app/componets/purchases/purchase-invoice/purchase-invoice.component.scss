@@ -1,0 +1,10 @@
+.purchase-invoice-container {
+  .nav-tabs .nav-link { cursor: pointer; }
+
+  .entry-table {
+    td, th { padding: .5rem .7rem; }
+    tfoot td { border-top: 2px solid var(--primary-color, #24336b); }
+  }
+
+  .required { color: #dc3545; }
+}

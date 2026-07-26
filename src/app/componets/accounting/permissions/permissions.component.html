@@ -122,7 +122,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let g of filteredGroups">
+                <tr *ngFor="let g of filteredGroups | paginate:page:pageSize">
                   <td class="perm-module-col">
                     <label class="form-check d-flex align-items-center gap-2 m-0">
                       <input type="checkbox" class="form-check-input flex-shrink-0"
@@ -143,6 +143,7 @@
               </tbody>
             </table>
           </div>
+          <app-paginator [total]="filteredGroups.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
 
         </div>
       </div>

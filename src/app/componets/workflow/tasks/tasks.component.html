@@ -1,0 +1,175 @@
+<app-page-header
+  [title]="'Tasks.Title' | translate"
+  [title1]="'Nav.Workflow.HeadTitle' | translate"
+  [activeTitle]="'Nav.Workflow.Tasks' | translate">
+</app-page-header>
+
+<div class="tk-page">
+  <!-- toolbar -->
+  <div class="tk-head">
+    <span class="tk-sub">{{ 'Tasks.Subtitle' | translate }}</span>
+    <div class="tk-filters">
+      <label class="tk-switch">
+        <input type="checkbox" [(ngModel)]="mine" (change)="onFilterChange()" />
+        <span>{{ 'Tasks.MineOnly' | translate }}</span>
+      </label>
+      <select [(ngModel)]="statusFilter" (change)="onFilterChange()">
+        <option [ngValue]="null">{{ 'Tasks.AllStatuses' | translate }}</option>
+        <option *ngFor="let s of statuses" [ngValue]="s">{{ statusLabel(s) }}</option>
+      </select>
+      <button class="btn btn-light btn-sm" (click)="load()"><i class="bi bi-arrow-clockwise"></i></button>
+    </div>
+  </div>
+
+  <!-- summary chips -->
+  <div class="tk-summary">
+    <div class="tk-chip" data-s="Pending"><span>{{ countBy('Pending') }}</span>{{ 'Tasks.Status.Pending' | translate }}</div>
+    <div class="tk-chip" data-s="InReview"><span>{{ countBy('InReview') }}</span>{{ 'Tasks.Status.InReview' | translate }}</div>
+    <div class="tk-chip" data-s="Approved"><span>{{ countBy('Approved') }}</span>{{ 'Tasks.Status.Approved' | translate }}</div>
+    <div class="tk-chip" data-s="Rejected"><span>{{ countBy('Rejected') }}</span>{{ 'Tasks.Status.Rejected' | translate }}</div>
+  </div>
+
+  <div class="tk-body">
+    <!-- LIST -->
+    <div class="tk-list">
+      <div *ngIf="loading" class="tk-empty">{{ 'Tasks.Loading' | translate }}</div>
+      <div *ngIf="!loading && tasks.length===0" class="tk-empty">
+        <i class="bi bi-inbox"></i>
+        <p>{{ 'Tasks.NoTasks' | translate }}</p>
+      </div>
+      <div class="tk-card" *ngFor="let t of tasks" [class.active]="selected?.TaskId===t.TaskId" (click)="open(t)">
+        <div class="tk-card-top">
+          <span class="tk-status" [attr.data-s]="t.Status">{{ statusLabel(t.Status) }}</span>
+          <span class="tk-prio" [attr.data-p]="t.Priority" *ngIf="t.Priority==='High'"><i class="bi bi-flag-fill"></i></span>
+        </div>
+        <div class="tk-card-title">{{ t.Title }}</div>
+        <div class="tk-card-meta">
+          <span><i class="bi bi-diagram-3"></i> {{ t.WorkflowName }}</span>
+          <span><i class="bi bi-person"></i> {{ t.AssignedToName || '—' }}</span>
+        </div>
+        <div class="tk-card-foot">
+          <small>{{ t.CreatedAt | date:'short' }}</small>
+          <small *ngIf="t.CommentCount"><i class="bi bi-chat-left-text"></i> {{ t.CommentCount }}</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="tk-detail">
+      <div *ngIf="!selected" class="tk-detail-empty">
+        <i class="bi bi-arrow-{{ isAr ? 'right' : 'left' }}-circle"></i>
+        <p>{{ 'Tasks.SelectHint' | translate }}</p>
+      </div>
+
+      <ng-container *ngIf="selected">
+        <div class="tk-detail-head">
+          <div>
+            <h5>{{ selected.Title }}</h5>
+            <div class="tk-detail-meta">
+              <span><i class="bi bi-diagram-3"></i> {{ selected.WorkflowName }}</span>
+              <span><i class="bi bi-person-badge"></i> {{ selected.CreatedByName || '—' }}</span>
+              <span><i class="bi bi-calendar3"></i> {{ selected.CreatedAt | date:'medium' }}</span>
+            </div>
+          </div>
+          <div class="tk-head-actions">
+            <span class="tk-status tk-status-lg" [attr.data-s]="selected.Status">{{ statusLabel(selected.Status) }}</span>
+            <button class="tk-pdf-btn" (click)="viewPdf()" [disabled]="pdfLoading" [title]="'Tasks.ViewPdf' | translate">
+              <i class="bi bi-file-earmark-pdf"></i> {{ (pdfLoading ? 'Tasks.PdfLoading' : 'Tasks.ViewPdf') | translate }}
+            </button>
+          </div>
+        </div>
+
+        <!-- captured results -->
+        <div class="tk-section">
+          <div class="tk-section-title"><i class="bi bi-card-checklist"></i> {{ 'Tasks.CapturedResults' | translate }}</div>
+          <div *ngIf="parsedSteps.length===0" class="tk-none">{{ 'Tasks.NoResults' | translate }}</div>
+          <div class="tk-step" *ngFor="let s of parsedSteps">
+            <span class="tk-step-order">{{ s.order }}</span>
+            <div class="tk-step-body">
+              <strong>{{ s.title }}</strong>
+              <span class="tk-step-action">{{ ('Workflow.Action.' + s.actionType) | translate }}</span>
+              <div class="tk-step-params" *ngIf="valueKeys(s.values).length && s.actionType !== 'list'">
+                <span *ngFor="let k of valueKeys(s.values)" class="tk-kv">{{ k }}: <b>{{ s.values[k] }}</b></span>
+              </div>
+              <div class="tk-rows" *ngIf="s.rows && s.rows.length">
+                <table>
+                  <thead><tr><th *ngFor="let c of rowCols(s.rows)">{{ c }}</th></tr></thead>
+                  <tbody><tr *ngFor="let r of s.rows"><td *ngFor="let c of rowCols(s.rows)">{{ r[c] }}</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="tk-step-side">
+              <span class="tk-step-flag" *ngIf="s.actionType === 'approve'" [attr.data-s]="approvalCls()">
+                <i class="bi" [ngClass]="approvalIcon()"></i> {{ approvalLabel() | translate }}
+              </span>
+              <span class="tk-step-flag" *ngIf="s.actionType !== 'approve'" [attr.data-s]="s.status || 'generated'">
+                <ng-container [ngSwitch]="s.status">
+                  <span *ngSwitchCase="'success'"><i class="bi bi-check-circle-fill"></i> {{ s.message }}</span>
+                  <span *ngSwitchCase="'error'"><i class="bi bi-exclamation-triangle-fill"></i> {{ (s.actionType==='post' ? 'Tasks.PostFailed' : 'Tasks.Failed') | translate }}</span>
+                  <span *ngSwitchDefault>{{ (s.actionType==='post' ? 'Tasks.WillPost' : 'Tasks.Generated') | translate }}</span>
+                </ng-container>
+              </span>
+              <small *ngIf="s.status==='error' && s.message" class="tk-step-err">{{ s.message }}</small>
+              <button *ngIf="stepRoute(s.pageKey)" class="tk-step-open" (click)="openResult(s)" [title]="openLabel(s)">
+                <i class="bi bi-box-arrow-up-right"></i> {{ openLabel(s) }}
+              </button>
+              <button *ngIf="s.actionType === 'export'" class="tk-step-open" (click)="exportStep(s)" [disabled]="pdfLoading" [title]="'Tasks.DownloadExport' | translate">
+                <i class="bi" [ngClass]="pdfLoading ? 'bi-hourglass-split' : 'bi-download'"></i> {{ 'Tasks.DownloadExport' | translate }}
+              </button>
+              <button *ngIf="s.actionType === 'print'" class="tk-step-open" (click)="printStep(s)" [disabled]="pdfLoading" [title]="'Tasks.PrintReport' | translate">
+                <i class="bi" [ngClass]="pdfLoading ? 'bi-hourglass-split' : 'bi-printer'"></i> {{ 'Tasks.PrintReport' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- per-step approvals (بوابة اعتماد / اعتماد وترحيل) -->
+        <div class="tk-section" *ngIf="selected.Approvals && selected.Approvals.length">
+          <div class="tk-section-title"><i class="bi bi-person-check"></i> {{ 'Tasks.Approvals' | translate }}</div>
+          <div class="tk-approval" *ngFor="let a of selected.Approvals">
+            <div class="tk-approval-info">
+              <strong>{{ a.Title }}</strong>
+              <span class="tk-approval-meta">
+                <i class="bi bi-person"></i> {{ a.AssignedToName || '—' }}
+                <span *ngIf="a.ReviewedByName">· <i class="bi bi-check2"></i> {{ a.ReviewedByName }}</span>
+              </span>
+            </div>
+            <span class="tk-status" [attr.data-s]="approvalCls2(a.Status)">{{ ('Tasks.Status.' + (a.Status || 'Pending')) | translate }}</span>
+            <div class="tk-approval-actions" *ngIf="canApprove(a)">
+              <button class="btn btn-success btn-sm" (click)="reviewApproval(a, 'Approved')" [title]="'Tasks.Approve' | translate"><i class="bi bi-check-lg"></i></button>
+              <button class="btn btn-danger btn-sm" (click)="reviewApproval(a, 'Rejected')" [title]="'Tasks.Reject' | translate"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+          <textarea *ngIf="hasActionableApproval()" [(ngModel)]="reviewComment" rows="1" [placeholder]="'Tasks.CommentPlaceholder' | translate"></textarea>
+        </div>
+
+        <!-- review -->
+        <div class="tk-section" *hasPermission="'Tasks.Review'">
+          <div class="tk-section-title"><i class="bi bi-check2-square"></i> {{ 'Tasks.Review' | translate }}</div>
+          <textarea [(ngModel)]="reviewComment" rows="2" [placeholder]="'Tasks.CommentPlaceholder' | translate"></textarea>
+          <div class="tk-review-actions">
+            <button class="btn btn-outline-secondary btn-sm" [disabled]="saving" (click)="review('InReview')"><i class="bi bi-eye"></i> {{ 'Tasks.MarkInReview' | translate }}</button>
+            <button class="btn btn-success btn-sm" [disabled]="saving" (click)="review('Approved')"><i class="bi bi-check-lg"></i> {{ 'Tasks.Approve' | translate }}</button>
+            <button class="btn btn-danger btn-sm" [disabled]="saving" (click)="review('Rejected')"><i class="bi bi-x-lg"></i> {{ 'Tasks.Reject' | translate }}</button>
+          </div>
+        </div>
+
+        <!-- comments -->
+        <div class="tk-section">
+          <div class="tk-section-title"><i class="bi bi-chat-dots"></i> {{ 'Tasks.Comments' | translate }}</div>
+          <div class="tk-comments">
+            <div class="tk-none" *ngIf="!selected.Comments || selected.Comments.length===0">{{ 'Tasks.NoComments' | translate }}</div>
+            <div class="tk-comment" *ngFor="let c of selected.Comments">
+              <div class="tk-comment-head"><b>{{ c.CommentByName || '—' }}</b><small>{{ c.CommentAt | date:'short' }}</small></div>
+              <div class="tk-comment-body">{{ c.Comment }}</div>
+            </div>
+          </div>
+          <div class="tk-comment-add">
+            <input type="text" [(ngModel)]="newComment" [placeholder]="'Tasks.AddComment' | translate" (keyup.enter)="addComment()" />
+            <button class="btn btn-primary btn-sm" (click)="addComment()" [disabled]="!newComment.trim()"><i class="bi bi-send"></i></button>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

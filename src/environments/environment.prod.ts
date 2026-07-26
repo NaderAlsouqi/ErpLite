@@ -18,7 +18,7 @@ export const environment = {
   //fotaraApiUrl: 'https://localhost:7293',
 
 
-  appVersion: '1.0.18',
+  appVersion: '1.0.75',
   emailJs: {
     serviceId: 'service_v6egz67',
     templateId: 'template_6sq43b8',

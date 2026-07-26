@@ -1,0 +1,79 @@
+<app-page-header
+  [title]="'ReplaceItemCode.Title' | translate"
+  [title1]="'Nav.Warehouse.InputScreens' | translate"
+  [activeTitle]="'Nav.Warehouse.ReplaceItemCode' | translate">
+</app-page-header>
+
+<div class="replace-container">
+  <div class="card custom-card">
+
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="card-title mb-0">
+        <i class="ti ti-replace me-1"></i>{{ 'ReplaceItemCode.Title' | translate }}
+      </div>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary" (click)="reset()">
+          <i class="ti ti-refresh me-1"></i>{{ 'General.New' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+        <i class="ti ti-alert-triangle"></i>
+        <span>{{ 'ReplaceItemCode.Warning' | translate }}</span>
+      </div>
+
+      <div class="row g-3">
+        <!-- Old item (to replace) -->
+        <div class="col-md-6">
+          <label class="form-label"><i class="ti ti-package"></i> {{ 'ReplaceItemCode.OldItem' | translate }} <span class="required">*</span></label>
+          <ng-select
+            [items]="items"
+            bindValue="ItemNo"
+            [typeahead]="itemInput$"
+            [loading]="itemsLoading"
+            [(ngModel)]="oldItemNo"
+            [clearable]="true"
+            (change)="onOldChange($event)"
+            [placeholder]="'ReplaceItemCode.SearchOld' | translate"
+            appendTo="body">
+            <ng-template ng-label-tmp let-item="item">
+              {{ item.ItemNo }} — {{ isAr ? item.ItemName : (item.Ename || item.ItemName) }}
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+              {{ item.ItemNo }} — {{ isAr ? item.ItemName : (item.Ename || item.ItemName) }}
+            </ng-template>
+          </ng-select>
+          <small *ngIf="selectedOld" class="text-muted">{{ isAr ? selectedOld.ItemName : (selectedOld.Ename || selectedOld.ItemName) }}</small>
+        </div>
+
+        <!-- New code -->
+        <div class="col-md-6">
+          <label class="form-label"><i class="ti ti-replace"></i> {{ 'ReplaceItemCode.NewCode' | translate }} <span class="required">*</span></label>
+          <input type="text" maxlength="50" class="form-control" [(ngModel)]="newItemNo"
+            [placeholder]="'ReplaceItemCode.EnterNewCode' | translate" />
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button *hasPermission="'ReplaceItemCode.Execute'" class="btn btn-primary"
+          (click)="attemptReplace()" [disabled]="saving || !selectedOld || !newItemNo">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <i *ngIf="!saving" class="ti ti-replace me-1"></i>{{ 'ReplaceItemCode.Replace' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'ReplaceItemCode.ConfirmTitle' | translate"
+  [message]="('ReplaceItemCode.ConfirmMsg' | translate) + ' (' + (selectedOld ? selectedOld.ItemNo : '') + ' → ' + newItemNo + ')'"
+  [confirmButtonText]="'ReplaceItemCode.Replace' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-primary"
+  [processing]="saving"
+  (confirm)="confirmReplace()">
+</app-confirmation-modal>

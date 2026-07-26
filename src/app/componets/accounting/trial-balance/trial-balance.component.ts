@@ -1,20 +1,26 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 import {
   TrialBalanceService,
   TrialBalanceFilterDto,
   TrialBalanceRowDto,
 } from '../../../shared/services/trial-balance.service';
+import { applyQueryParams } from '../../../shared/utils/query-params.util';
 
 @Component({
   selector: 'app-trial-balance',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SharedModule],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, TranslateModule, SharedModule, PaginatorComponent, PaginatePipe],
   templateUrl: './trial-balance.component.html',
   styleUrl: './trial-balance.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -41,6 +47,8 @@ export class TrialBalanceComponent implements OnInit {
   rows: TrialBalanceRowDto[] = [];
   loading = false;
   fetched = false;
+  page = 1;
+  pageSize = 10;
 
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
@@ -87,12 +95,16 @@ export class TrialBalanceComponent implements OnInit {
 
   constructor(
     private svc:         TrialBalanceService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
+    private route:       ActivatedRoute,
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Honor workflow deep-link params (?dateFrom&dateTo&level&…) and auto-run.
+    applyQueryParams(this.route, this, () => this.generate());
+  }
 
   generate(): void {
     if (!this.allBranches && (!this.branchNo || this.branchNo <= 0)) {
@@ -126,7 +138,7 @@ export class TrialBalanceComponent implements OnInit {
     this.rows = [];
 
     this.svc.getReport(filter).subscribe({
-      next: data => { this.rows = data ?? []; this.fetched = true; this.loading = false; },
+      next: data => { this.rows = data ?? []; this.page = 1; this.fetched = true; this.loading = false; },
       error: () => { this.loading = false; },
     });
   }

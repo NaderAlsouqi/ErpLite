@@ -1,0 +1,58 @@
+.rfq-container {
+  .section-title {
+    font-weight: 600;
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--default-border);
+    padding-bottom: .35rem;
+    margin: .25rem 0 .75rem;
+  }
+
+  .cmp-group {
+    border: 1px solid var(--default-border);
+    border-radius: .5rem;
+    overflow: hidden;
+
+    .cmp-head {
+      background: var(--default-background);
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--default-border);
+    }
+  }
+
+  // the cheapest offer row keeps its highlight in both themes
+  tr.table-success td { background-color: rgba(25, 135, 84, .12) !important; }
+
+  .btn-group .btn { padding-inline: .5rem; }
+}
+
+[data-theme-mode='dark'] {
+  .rfq-container {
+    .cmp-group .cmp-head { background: rgba(255, 255, 255, .04); }
+    tr.table-success td { background-color: rgba(25, 135, 84, .22) !important; }
+  }
+}
+
+// ── Best-deal headline cards ──────────────────────────────────────────────
+.rfq-container {
+  .bd-card {
+    border: 1px solid var(--default-border);
+    border-radius: .6rem;
+    padding: .85rem 1rem;
+    height: 100%;
+
+    .bd-label { font-size: .8rem; color: var(--text-muted); margin-bottom: .25rem; }
+    .bd-value { font-size: 1.5rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .bd-sub   { font-size: .8rem; color: var(--text-muted); margin-top: .15rem; }
+
+    // the recommended single-supplier award, and a positive saving
+    &.bd-win  { border-color: rgba(25, 135, 84, .55); background: rgba(25, 135, 84, .07); }
+    &.bd-save { border-color: rgba(13, 110, 253, .45); background: rgba(13, 110, 253, .06); }
+  }
+}
+
+[data-theme-mode='dark'] {
+  .rfq-container .bd-card {
+    &.bd-win  { background: rgba(25, 135, 84, .16); }
+    &.bd-save { background: rgba(13, 110, 253, .16); }
+  }
+}

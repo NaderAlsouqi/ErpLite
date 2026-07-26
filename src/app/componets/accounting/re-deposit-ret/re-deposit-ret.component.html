@@ -25,10 +25,8 @@
           </li>
         </ul>
         <ng-container *ngIf="activeTab === 'form'">
-          <button *hasPermission="'ReDepositRet.Print'" class="btn btn-sm btn-outline-primary"
-            (click)="printVoucher()" [disabled]="!docNum">
-            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-          </button>
+          <app-report-export *hasPermission="'ReDepositRet.Print'" [disabled]="!docNum" (formatSelected)="reportService.setNextFormat($event); printVoucher()"></app-report-export>
+            <app-approve-voucher></app-approve-voucher>
         </ng-container>
       </div>
 
@@ -93,10 +91,10 @@
               <input type="number" class="form-control" [(ngModel)]="brNo" readonly />
             </div>
 
-          </div>
+          
 
           <!-- ── Account & Currency ─────────────────────────────── -->
-          <div class="row g-3 mb-3">
+          
 
             <!-- الحساب الدائن -->
             <div class="col-md-6">

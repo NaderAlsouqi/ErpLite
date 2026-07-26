@@ -6,6 +6,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 import {
   BeginningBalancesService,
   BeginningBalancesFilterDto,
@@ -15,7 +18,8 @@ import {
 @Component({
   selector: 'app-beginning-balances-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, PaginatorComponent, PaginatePipe],
   templateUrl: './beginning-balances-report.component.html',
   styleUrl: './beginning-balances-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -32,6 +36,8 @@ export class BeginningBalancesReportComponent {
   rows: BeginningBalanceRowDto[] = [];
   loading = false;
   fetched = false;
+  page = 1;
+  pageSize = 10;
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
 
@@ -40,7 +46,7 @@ export class BeginningBalancesReportComponent {
 
   constructor(
     private svc:         BeginningBalancesService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -75,6 +81,7 @@ export class BeginningBalancesReportComponent {
     this.svc.getReport(filter).subscribe({
       next: data => {
         this.rows = data ?? [];
+        this.page = 1;
         this.fetched = true;
         this.loading = false;
         if (this.rows.length === 0) {

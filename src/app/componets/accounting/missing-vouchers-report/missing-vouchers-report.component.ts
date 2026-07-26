@@ -6,17 +6,21 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import {
   MissingVouchersService,
   MissingVoucherRowDto,
   UnbalancedTransactionRowDto,
 } from '../../../shared/services/missing-vouchers.service';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-missing-vouchers-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, HasPermissionDirective],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, HasPermissionDirective, PaginatorComponent, PaginatePipe],
   templateUrl: './missing-vouchers-report.component.html',
   styleUrl: './missing-vouchers-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -41,6 +45,8 @@ export class MissingVouchersReportComponent implements OnInit {
   loading = false;
   maxLoading = false;
   fetched = false;
+  page = 1;
+  pageSize = 10;
   shownType = 1;
   /** Server caps the result set; warn the user when it's hit. */
   readonly resultCap = 50000;
@@ -53,7 +59,7 @@ export class MissingVouchersReportComponent implements OnInit {
 
   constructor(
     private svc:         MissingVouchersService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -128,6 +134,7 @@ export class MissingVouchersReportComponent implements OnInit {
     }).subscribe({
       next: data => {
         this.rows = data ?? [];
+        this.page = 1;
         this.shownType = type;
         this.fetched = true;
         this.loading = false;

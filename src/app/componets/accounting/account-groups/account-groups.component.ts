@@ -8,17 +8,23 @@ import { AccountGroupDto, AccountGroupsService } from '../../../shared/services/
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-account-groups',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
     SharedModule,
     ConfirmationModalComponent,
     HasPermissionDirective,
+    PaginatorComponent,
+    PaginatePipe,
   ],
   templateUrl: './account-groups.component.html',
   styleUrl: './account-groups.component.scss',
@@ -34,6 +40,8 @@ export class AccountGroupsComponent implements OnInit {
   loading = false;
   saving = false;
   activeTab: 'form' | 'list' = 'form';
+  page = 1;
+  pageSize = 10;
 
   switchToForm(): void { this.activeTab = 'form'; }
   switchToList(): void { this.activeTab = 'list'; }
@@ -42,7 +50,7 @@ export class AccountGroupsComponent implements OnInit {
     private groupsService: AccountGroupsService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {
@@ -81,6 +89,7 @@ export class AccountGroupsComponent implements OnInit {
       g.GroupName?.toLowerCase().includes(term) ||
       g.GroupEname?.toLowerCase().includes(term)
     );
+    this.page = 1;
   }
 
   clearFilters(): void {

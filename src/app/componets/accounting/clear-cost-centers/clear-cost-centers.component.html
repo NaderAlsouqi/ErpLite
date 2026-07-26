@@ -11,10 +11,7 @@
       <div class="card-header">
         <div class="card-title">{{ 'ClearCostCenters.Title' | translate }}</div>
         <div class="card-options">
-          <button class="btn btn-outline-primary me-1" *hasPermission="'CostCenters.Print'" (click)="printTable()">
-            <i class="ti ti-printer me-1"></i>
-            {{ 'General.Print' | translate }}
-          </button>
+          <app-report-export *hasPermission="'CostCenters.Print'" (formatSelected)="reportService.setNextFormat($event); printTable()"></app-report-export>
           <button class="btn btn-outline-primary me-1" (click)="expandAll()">
             <i class="ti ti-unfold-more me-1"></i>
             {{ 'ClearCostCenters.ExpandAll' | translate }}

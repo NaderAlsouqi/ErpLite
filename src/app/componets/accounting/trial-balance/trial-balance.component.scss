@@ -1,10 +1,10 @@
 .tb-container { padding: 1rem; }
 
 .tb-filter-box {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--default-border, #cbd5e1);
   border-radius: 6px;
   padding: 8px 12px;
-  background: #f8fafc;
+  background: var(--default-background, #f8fafc);
 }
 
 .table-section {
@@ -25,7 +25,8 @@
     top: 0;
     z-index: 5;
     white-space: nowrap;
-    background-color: #cfe2ff !important;
+    background-color: var(--default-background, #cfe2ff) !important;
+    color: var(--default-text-color);
     background-clip: padding-box;
   }
 
@@ -36,7 +37,7 @@
        `Vspreview.vs2.Font.Bold = True` branch in setdata. */
     tbody > tr.fw-bold > td {
       font-weight: 700;
-      background-color: #f1f5f9;
+      background-color: rgba(var(--primary-rgb), 0.08);
     }
 
     /* Bold totals row */

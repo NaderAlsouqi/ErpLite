@@ -41,3 +41,8 @@
   padding: 0.5rem 0 1rem;
   line-height: 1.6;
 }
+
+// ── Dark mode ──
+::ng-deep [data-theme-mode="dark"] app-beginning-balances-report {
+  tbody > tr.bb-parent > td { background-color: rgba(255, 255, 255, 0.04) !important; }
+}

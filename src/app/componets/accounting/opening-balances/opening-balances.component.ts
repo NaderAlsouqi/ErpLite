@@ -10,6 +10,7 @@ import { SharedModule } from '../../../shared/common/sharedmodule';
 import { AccfDto, AccfService } from '../../../shared/services/accf.service';
 import { CurrencyDto, CurrencyService } from '../../../shared/services/currency.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { ComfService } from '../../../shared/services/comf.service';
 import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { AccountingStateService } from '../../../shared/services/accounting-state.service';
@@ -28,6 +29,7 @@ export interface AccfRow extends AccfDto {
   selector: 'app-opening-balances',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -56,7 +58,7 @@ export class OpeningBalancesComponent implements OnInit {
   constructor(
     private accfService: AccfService,
     private currencyService: CurrencyService,
-    private reportService: ReportService,
+    public reportService: ReportService,
     private comfService: ComfService,
     private accountingState: AccountingStateService,
     private toastr: ToastrService,

@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const BASE  = 'http://localhost:4200';
+const BASE  = process.env.PW_BASE || 'http://localhost:4200';
 const USER  = process.env.PW_USER || 'Nader';
 const PASS  = process.env.PW_PASS || 'Nader@12345';
 const OUT   = process.env.PW_OUT  || path.join('docs', 'screenshots');
@@ -116,6 +116,34 @@ const INFRA_URL = /@vite|@fs|@id\/|\/__vite|node_modules\/\.vite|sockjs|ws:\/\/|
         });
       } catch (e) {}
       await page.waitForTimeout(150);
+
+      // Cap long result tables to the first 10 data rows so full-page
+      // screenshots of big lists stay readable (header/paginator/totals kept).
+      try {
+        await page.evaluate(() => {
+          const LIMIT = 10;
+          const isHeaderOrNoData = el => el.matches(
+            'thead tr, .mat-header-row, [mat-header-row], .mat-mdc-header-row,' +
+            ' .mat-no-data-row, [mat-no-data-row], .mat-mdc-no-data-row, .no-data'
+          );
+          // native + material table-as-<table>
+          document.querySelectorAll('table').forEach(tbl => {
+            const body = tbl.querySelector('tbody') || tbl;
+            let kept = 0;
+            Array.from(body.children)
+              .filter(el => el.tagName === 'TR' && !isHeaderOrNoData(el))
+              .forEach(r => { kept < LIMIT ? kept++ : r.remove(); });
+          });
+          // flex-based material tables (<mat-table>)
+          document.querySelectorAll('mat-table').forEach(tbl => {
+            let kept = 0;
+            Array.from(tbl.children)
+              .filter(el => el.tagName === 'MAT-ROW' || el.classList.contains('mat-row') || el.classList.contains('mat-mdc-row'))
+              .forEach(r => { kept < LIMIT ? kept++ : r.remove(); });
+          });
+        });
+        await page.waitForTimeout(120);
+      } catch (e) {}
 
       await page.screenshot({ path: path.join(OUT, file), fullPage: true });
 

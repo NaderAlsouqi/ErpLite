@@ -11,17 +11,23 @@ import { ChartOfAccountDto, ChartOfAccountsService } from '../../../../shared/se
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { ReportService } from '../../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-voucher-serials',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
     NgSelectModule,
     SharedModule,
-    HasPermissionDirective
+    HasPermissionDirective,
+    PaginatorComponent,
+    PaginatePipe
   ],
   providers: [NgbModal],
   templateUrl: './voucher-serials.component.html',
@@ -45,6 +51,8 @@ export class VoucherSerialsComponent implements OnInit {
   currentVSerial: VoucherSerial = this.initForm();
   loading = false;
   saving = false;
+  page = 1;
+  pageSize = 10;
 
   constructor(
     private vSerialService: VoucherSerialService,
@@ -53,7 +61,7 @@ export class VoucherSerialsComponent implements OnInit {
     private toastr: ToastrService,
     private translate: TranslateService,
     private modalService: NgbModal,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {
@@ -114,6 +122,7 @@ export class VoucherSerialsComponent implements OnInit {
         (v.Sename?.toLowerCase().includes(this.filterName.toLowerCase()));
       return matchType && matchBranch && matchName;
     });
+    this.page = 1;
   }
 
   clearFilters(): void {

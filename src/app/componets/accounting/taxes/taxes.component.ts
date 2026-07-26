@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -10,11 +11,15 @@ import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/servi
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-taxes',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -22,6 +27,8 @@ import { ReportService } from '../../../shared/services/report.service';
     SharedModule,
     ConfirmationModalComponent,
     HasPermissionDirective,
+    PaginatorComponent,
+    PaginatePipe,
   ],
   templateUrl: './taxes.component.html',
   styleUrl: './taxes.component.scss',
@@ -38,19 +45,35 @@ export class TaxesComponent implements OnInit {
   loading = false;
   saving = false;
   activeTab: 'form' | 'list' = 'form';
+  page = 1;
+  pageSize = 10;
 
   switchToForm(): void { this.activeTab = 'form'; }
   switchToList(): void { this.activeTab = 'list'; }
+
+  /** Permission module prefix — 'Taxes' under Accounting, 'PurchTaxes' under
+   *  Purchases (set via route data.permPrefix). Lets one component serve both
+   *  modules with independent permission sets. */
+  permPrefix = 'Taxes';
+  get pCreate(): string { return `${this.permPrefix}.Create`; }
+  get pDelete(): string { return `${this.permPrefix}.Delete`; }
+  get pPrint(): string { return `${this.permPrefix}.Print`; }
+  /** Breadcrumb parent — reflects which module the screen is opened from. */
+  get parentTitleKey(): string {
+    return this.permPrefix === 'PurchTaxes' ? 'Nav.Purchases.InputScreens' : 'Nav.Accounting.Definitions';
+  }
 
   constructor(
     private taxService: TaxService,
     private accService: ChartOfAccountsService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
+    this.permPrefix = this.route.snapshot.data['permPrefix'] || 'Taxes';
     this.loadData();
     this.accService.getAll().subscribe(data => this.accounts = data);
   }
@@ -85,6 +108,7 @@ export class TaxesComponent implements OnInit {
       t.TaxNameA?.toLowerCase().includes(term) ||
       t.TaxNameE?.toLowerCase().includes(term)
     );
+    this.page = 1;
   }
 
   clearFilters(): void {

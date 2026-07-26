@@ -1,0 +1,58 @@
+.tax-conditions-container {
+  padding: 1rem;
+
+  .form-section {
+    .form-group {
+      margin-bottom: 1rem;
+      label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        display: block;
+        i { color: rgba(var(--primary-rgb), 1); margin-right: 0.25rem; }
+        .required { color: #dc3545; margin-left: 0.1rem; }
+      }
+    }
+  }
+
+  .table-section {
+    .table-responsive { max-height: 600px; overflow-y: auto; overflow-x: auto; }
+    .selected-row { background-color: rgba(var(--primary-rgb), 0.1); }
+    tr { cursor: pointer; &:hover { background-color: rgba(0, 0, 0, 0.02); } }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    .btn { flex: 1; display: flex; align-items: center; justify-content: center; }
+  }
+}
+
+::ng-deep [data-theme-mode="dark"] {
+  .tax-conditions-container {
+    label { color: var(--default-text-color) !important; }
+    .form-control {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+      &::placeholder { color: var(--text-muted) !important; }
+    }
+    .input-group-text {
+      background-color: var(--default-background) !important;
+      border-color: var(--input-border) !important;
+      color: var(--text-muted) !important;
+    }
+    .table                        { background: transparent !important; }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td                     { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th                     { border-color: var(--default-border) !important; }
+    .table tbody tr               { background: transparent !important; }
+    .table tbody tr:hover         { background: var(--list-hover-focus-bg) !important; }
+    .selected-row                 { background: rgba(var(--primary-rgb), 0.12) !important; }
+    .text-muted { color: var(--text-muted) !important; }
+  }
+}

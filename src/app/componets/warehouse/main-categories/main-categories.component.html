@@ -1,0 +1,162 @@
+<app-page-header
+  [title]="'MainCategories.Title' | translate"
+  [title1]="'Nav.Warehouse.InputScreens' | translate"
+  [activeTitle]="'Nav.Warehouse.EntryMainItems' | translate">
+</app-page-header>
+
+<div class="maincat-container">
+  <div class="card custom-card">
+
+    <!-- ── Tabs header ─────────────────────────────────────────── -->
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'form'"
+             (click)="switchToForm()" href="javascript:void(0)">
+            <i class="ti ti-plus me-1"></i>{{ 'MainCategories.CategoryDetails' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'"
+             (click)="switchToList()" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'MainCategories.Title' | translate }}
+          </a>
+        </li>
+      </ul>
+
+      <div class="d-flex gap-1" *ngIf="activeTab === 'list'">
+        <button class="btn btn-sm btn-outline-secondary" (click)="loadData()" title="{{ 'General.Refresh' | translate }}">
+          <i class="ti ti-refresh"></i>
+        </button>
+        <app-report-export *hasPermission="'MainCategories.Print'" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
+      </div>
+    </div>
+
+    <!-- ── Entry tab ───────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'form'" class="card-body">
+      <div class="row">
+        <div class="col-xl-8 col-lg-10">
+          <div class="form-section">
+
+            <div class="form-group">
+              <label><i class="ti ti-hash"></i> {{ 'MainCategories.No' | translate }} <span class="required">*</span></label>
+              <input type="number" class="form-control" min="1" [(ngModel)]="currentCategory.TypeNo"
+                (change)="onNoChange()" [placeholder]="'MainCategories.EnterNo' | translate" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="ti ti-language"></i> {{ 'MainCategories.ArabicName' | translate }} <span class="required">*</span></label>
+              <input type="text" class="form-control" maxlength="30" [(ngModel)]="currentCategory.TypeName"
+                [placeholder]="'MainCategories.EnterArabicName' | translate" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="ti ti-language"></i> {{ 'MainCategories.EnglishName' | translate }}</label>
+              <input type="text" class="form-control" maxlength="30" [(ngModel)]="currentCategory.Etname"
+                [placeholder]="'MainCategories.EnterEnglishName' | translate" />
+            </div>
+
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="viewMe" [(ngModel)]="currentCategory.ViewMe" />
+              <label class="form-check-label" for="viewMe">{{ 'MainCategories.Visible' | translate }}</label>
+            </div>
+
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="nonStk" [(ngModel)]="currentCategory.NonStk" />
+              <label class="form-check-label" for="nonStk">{{ 'MainCategories.NonStock' | translate }}</label>
+            </div>
+
+          </div>
+
+          <div class="action-buttons">
+            <button *hasPermission="'MainCategories.Create'" class="btn btn-primary" (click)="save()" [disabled]="saving">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+              {{ 'General.Save' | translate }}
+            </button>
+            <button class="btn btn-secondary" (click)="reset()">
+              <i class="ti ti-refresh me-1"></i>{{ 'General.New' | translate }}
+            </button>
+            <button *hasPermission="'MainCategories.Delete'" class="btn btn-danger" (click)="delete()" [disabled]="!currentCategory.TypeNo">
+              <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── List tab ────────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'list'" class="card-body">
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text"><i class="ti ti-search"></i></span>
+            <input type="text" class="form-control" [(ngModel)]="filterName" (input)="applyFilters()"
+              [placeholder]="'MainCategories.SearchPlaceholder' | translate" />
+            <button class="btn btn-outline-secondary" (click)="clearFilters()" *ngIf="filterName">
+              <i class="ti ti-x"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="d-flex justify-content-center my-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="!loading" class="table-section">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th>{{ 'MainCategories.No' | translate }}</th>
+                <th>{{ 'MainCategories.ArabicName' | translate }}</th>
+                <th>{{ 'MainCategories.EnglishName' | translate }}</th>
+                <th>{{ 'MainCategories.Visible' | translate }}</th>
+                <th>{{ 'MainCategories.NonStock' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let category of filteredCategories | paginate:page:pageSize"
+                  class="cursor-pointer"
+                  (click)="onSelectRow(category)"
+                  [class.selected-row]="currentCategory.TypeNo === category.TypeNo">
+                <td>{{ category.TypeNo }}</td>
+                <td>{{ category.TypeName }}</td>
+                <td>{{ category.Etname }}</td>
+                <td class="text-center">
+                  <i class="ti" [class.ti-check]="category.ViewMe" [class.text-success]="category.ViewMe"
+                     [class.ti-minus]="!category.ViewMe" [class.text-muted]="!category.ViewMe"></i>
+                </td>
+                <td class="text-center">
+                  <i class="ti" [class.ti-check]="category.NonStk" [class.text-success]="category.NonStk"
+                     [class.ti-minus]="!category.NonStk" [class.text-muted]="!category.NonStk"></i>
+                </td>
+              </tr>
+              <tr *ngIf="filteredCategories.length === 0">
+                <td colspan="5" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <app-paginator [total]="filteredCategories.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'MainCategories.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="confirmDelete()">
+</app-confirmation-modal>

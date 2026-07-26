@@ -25,10 +25,7 @@
           </li>
         </ul>
         <ng-container *ngIf="activeTab === 'form'">
-          <button *hasPermission="'IncomingCheq1.Print'" class="btn btn-sm btn-outline-primary"
-            (click)="printVoucher()" [disabled]="!docNum">
-            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-          </button>
+          <app-report-export *hasPermission="'IncomingCheq1.Print'" [disabled]="!docNum" (formatSelected)="reportService.setNextFormat($event); printVoucher()"></app-report-export>
         </ng-container>
       </div>
 

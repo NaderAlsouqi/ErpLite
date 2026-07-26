@@ -1,10 +1,10 @@
 .ab-container { padding: 1rem; }
 
 .ab-filter-box {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--default-border, #cbd5e1);
   border-radius: 6px;
   padding: 8px 12px;
-  background: #f8fafc;
+  background: var(--default-background, #f8fafc);
 }
 
 .table-section {

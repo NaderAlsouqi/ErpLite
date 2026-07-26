@@ -257,3 +257,22 @@ $radius: 14px;
     &:disabled { opacity: .5; cursor: default; }
   }
 }
+
+// ── Dark mode ──
+::ng-deep [data-theme-mode="dark"] app-chat-widget {
+  .chat-panel { background: var(--custom-white) !important; }
+  .chat-body  { background: var(--default-background) !important; }
+  .chat-conv  { background: var(--custom-white) !important; border-color: var(--default-border) !important; }
+  .chat-conv-name   { color: var(--default-text-color) !important; }
+  .chat-conv-tenant { color: var(--default-text-color) !important; background: rgba(255, 255, 255, 0.08) !important; }
+  .chat-conv-last   { color: var(--text-muted) !important; }
+  .chat-msg:not(.mine) .chat-bubble {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: var(--default-border) !important;
+    color: var(--default-text-color) !important;
+  }
+  .chat-input { background: var(--custom-white) !important; border-top-color: var(--default-border) !important; }
+  .chat-input input, .chat-input textarea {
+    background: var(--form-control-bg) !important; border-color: var(--input-border) !important; color: var(--default-text-color) !important;
+  }
+}

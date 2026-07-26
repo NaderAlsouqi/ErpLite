@@ -7,6 +7,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FlatpickrModule, FlatpickrDefaults } from 'angularx-flatpickr';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { ChartOfAccountsService, ChartOfAccountDto } from '../../../shared/services/chart-of-accounts.service';
 import { VoucherSerialService, VoucherSerial } from '../../../shared/services/voucher-serial.service';
@@ -31,6 +32,7 @@ interface VoucherGroup {
   selector: 'app-journal-voucher-report',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -105,7 +107,7 @@ export class JournalVoucherReportComponent implements OnInit {
 
   constructor(
     private reportSvc:   JournalVoucherReportService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
     private coaSvc:      ChartOfAccountsService,

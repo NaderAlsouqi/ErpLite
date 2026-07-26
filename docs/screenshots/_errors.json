@@ -1,0 +1,19 @@
+[
+  {
+    "route": "/accounting/receipt-vouchers",
+    "title": "Receipt Vouchers (سند قبض)",
+    "section": "Accounting · Vouchers",
+    "errors": [
+      "api: HTTP 404 https://localhost:7089/api/Invoice/GetInvoices"
+    ]
+  },
+  {
+    "route": "/sales/virtual/invoices",
+    "title": "Virtual Invoices",
+    "section": "Sales",
+    "errors": [
+      "toast: × Error The requested report was not found.",
+      "api: HTTP 404 https://localhost:7089/api/Accounts/Virtual/GetCustomers/0"
+    ]
+  }
+]

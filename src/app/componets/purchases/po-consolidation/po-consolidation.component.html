@@ -1,0 +1,359 @@
+<app-page-header
+  [title]="'PoConsolidation.Title' | translate"
+  [title1]="'Nav.Purchases.Documents' | translate"
+  [activeTitle]="'PoConsolidation.Title' | translate">
+</app-page-header>
+
+<div class="po-cons-container">
+  <div class="card custom-card">
+
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'doc'" (click)="switchTab('doc')" href="javascript:void(0)">
+            <i class="ti ti-file-text me-1"></i>{{ 'PoConsolidation.DocTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'" (click)="switchTab('list')" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'PoConsolidation.ListTab' | translate }}
+          </a>
+        </li>
+      </ul>
+      <app-report-export *hasPermission="pPrint"
+        (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
+    </div>
+
+    <!-- ════ Document tab ════ -->
+    <div *ngIf="activeTab === 'doc'" class="card-body">
+
+      <!-- ── طلب التجميع ── -->
+      <div class="section-title">{{ 'PoConsolidation.DocSection' | translate }}</div>
+      <div class="row g-2 mb-3 pc-doc">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PoConsolidation.ConsNo' | translate }} <span class="required">*</span></label>
+          <div class="input-group">
+            <input type="text" class="form-control" [(ngModel)]="doc.consNo" (change)="onDocNoChange()" />
+            <button class="btn btn-outline-secondary" (click)="newDoc()"
+                    [title]="'PoConsolidation.NewDoc' | translate"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PoConsolidation.ConsDate' | translate }}</label>
+          <input type="date" class="form-control" [(ngModel)]="doc.cdate" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PoConsolidation.ExistingDocs' | translate }}</label>
+          <ng-select [items]="docs" bindValue="ConsNo" [ngModel]="doc.consNo"
+                     (change)="openDoc($event?.ConsNo)" [clearable]="true"
+                     [placeholder]="'PoConsolidation.PickDoc' | translate" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.ConsNo }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">
+              {{ x.ConsNo }} — {{ x.OrderCount }} {{ 'PoConsolidation.Orders' | translate }}
+              <span *ngIf="x.Notes" class="text-muted">({{ x.Notes }})</span>
+            </ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PoConsolidation.Notes' | translate }}</label>
+          <input type="text" class="form-control" maxlength="250" [(ngModel)]="doc.notes" />
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <button class="btn btn-success" *hasPermission="pCreate" (click)="saveDoc()" [disabled]="saving">
+          <i class="ti ti-device-floppy me-1"></i>{{ 'General.Save' | translate }}
+        </button>
+        <button class="btn btn-outline-secondary" (click)="newDoc()">
+          <i class="ti ti-file-plus me-1"></i>{{ 'PoConsolidation.NewDoc' | translate }}
+        </button>
+        <button class="btn btn-outline-danger" *hasPermission="pDelete"
+                (click)="confirmDelete()" [disabled]="!isExistingDoc">
+          <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+        </button>
+        <span class="ms-auto pc-sel-summary" *ngIf="selectedCount">
+          <span class="badge bg-primary me-1">{{ selectedCount }}</span>
+          {{ 'PoConsolidation.SelectedSummary' | translate:{ net: (selectedNet | number:'1.0-3'), qty: (selectedRemainQty | number:'1.0-3') } }}
+        </span>
+      </div>
+
+      <!-- ── Filters ── -->
+      <div class="row g-2 mb-3">
+        <div class="col-md-2 year-field" [class.year-off]="filters.year !== currentYear">
+          <label class="form-label year-field" [class.year-off]="filters.year !== currentYear">{{ 'PoConsolidation.Year' | translate }}</label>
+          <input type="number" class="form-control year-field" [class.year-off]="filters.year !== currentYear"
+                 [(ngModel)]="filters.year" (change)="onFilterChange()" />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">{{ 'PoConsolidation.SerialType' | translate }}</label>
+          <ng-select [items]="lookups.Serials" bindValue="SerialNo" [(ngModel)]="filters.vtype"
+                     (change)="onFilterChange()" [clearable]="true"
+                     [placeholder]="'PoConsolidation.AllSerials' | translate" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.SerialNo }} — {{ isAr ? x.SName : (x.SEName || x.SName) }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.SerialNo }} — {{ isAr ? x.SName : (x.SEName || x.SName) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'PoConsolidation.Supplier' | translate }}</label>
+          <ng-select [items]="lookups.Suppliers" bindValue="VenNo" [(ngModel)]="filters.venNo"
+                     (change)="onFilterChange()" [clearable]="true"
+                     [placeholder]="'PoConsolidation.AllSuppliers' | translate" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.VenNo }} — {{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.VenNo }} — {{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+          </ng-select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">{{ 'General.DateFrom' | translate }}</label>
+          <input type="date" class="form-control" [(ngModel)]="filters.fromDate" (change)="onFilterChange()" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'General.DateTo' | translate }}</label>
+          <input type="date" class="form-control" [(ngModel)]="filters.toDate" (change)="onFilterChange()" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PoConsolidation.DealFilter' | translate }}</label>
+          <select class="form-select" [(ngModel)]="filters.dealOnly" (change)="onFilterChange()">
+            <option *ngFor="let d of dealOptions" [ngValue]="d.v">{{ d.k | translate }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mb-3">
+        <button class="btn btn-primary" (click)="search()" [disabled]="loading">
+          <i class="ti ti-search me-1"></i>{{ 'General.Search' | translate }}
+        </button>
+      </div>
+
+      <!-- ── Summary ── -->
+      <div class="row g-3 mb-3 pc-cards" *ngIf="orders.length">
+        <div class="col-md-3">
+          <div class="pc-card">
+            <div class="pc-label"><i class="ti ti-file-invoice me-1"></i>{{ 'PoConsolidation.Orders' | translate }}</div>
+            <div class="pc-value">{{ orders.length }}</div>
+            <div class="pc-sub">{{ 'PoConsolidation.FromDealsN' | translate:{ n: dealCount, m: manualCount } }}</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="pc-card">
+            <div class="pc-label"><i class="ti ti-cash me-1"></i>{{ 'PoConsolidation.TotalNet' | translate }}</div>
+            <div class="pc-value">{{ totalNet | number:'1.0-3' }}</div>
+            <div class="pc-sub">{{ 'PoConsolidation.AcrossOrders' | translate }}</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="pc-card">
+            <div class="pc-label"><i class="ti ti-discount-2 me-1"></i>{{ 'PoConsolidation.DealNetTotal' | translate }}</div>
+            <div class="pc-value">{{ totalDealNet | number:'1.0-3' }}</div>
+            <div class="pc-sub">{{ 'PoConsolidation.ApprovedDealsOnly' | translate }}</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="pc-card" [class.pc-warn]="driftedCount > 0">
+            <div class="pc-label"><i class="ti ti-alert-triangle me-1"></i>{{ 'PoConsolidation.Drifted' | translate }}</div>
+            <div class="pc-value">{{ driftedCount }}</div>
+            <div class="pc-sub">{{ 'PoConsolidation.DriftedHint' | translate }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Orders ── -->
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0 pc-grid">
+          <thead class="table-primary">
+            <tr>
+              <th style="width:36px" class="text-center">
+                <input type="checkbox" class="form-check-input" [checked]="allSelected"
+                       (change)="toggleSelectAll()" [title]="'PoConsolidation.SelectAll' | translate" />
+              </th>
+              <th style="width:36px"></th>
+              <th>{{ 'PoConsolidation.OrderNo' | translate }}</th>
+              <th>{{ 'PoConsolidation.Date' | translate }}</th>
+              <th>{{ 'PoConsolidation.Supplier' | translate }}</th>
+              <th>{{ 'PoConsolidation.MaterialReqNo' | translate }}</th>
+              <th>{{ 'PoConsolidation.Deal' | translate }}</th>
+              <th class="text-end">{{ 'PoConsolidation.DealNet' | translate }}</th>
+              <th class="text-end">{{ 'PoConsolidation.OrderNet' | translate }}</th>
+              <th class="text-end">{{ 'PoConsolidation.Variance' | translate }}</th>
+              <th class="text-end">{{ 'PoConsolidation.RemainQty' | translate }}</th>
+              <th class="text-end">{{ 'PoConsolidation.Received' | translate }}</th>
+              <th class="text-end">{{ 'PoConsolidation.RemainToReceive' | translate }}</th>
+              <th class="text-center">{{ 'PoConsolidation.Lines' | translate }}</th>
+            </tr>
+          </thead>
+
+          <ng-container *ngFor="let r of orders | paginate:page:pageSize">
+            <tbody>
+              <tr class="pc-row" [class.pc-open]="isExpanded(r)" [class.pc-picked]="isSelected(r)">
+                <td class="text-center">
+                  <input type="checkbox" class="form-check-input" [checked]="isSelected(r)"
+                         [disabled]="isLockedByOther(r)" (change)="toggleSelect(r)"
+                         [title]="isLockedByOther(r) ? ('PoConsolidation.AlreadyConsolidated' | translate:{ no: r.ConsNo }) : ''" />
+                </td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-link p-0" (click)="toggle(r)"
+                          [title]="(isExpanded(r) ? 'PoConsolidation.Collapse' : 'PoConsolidation.Expand') | translate">
+                    <i class="ti" [class.ti-chevron-down]="isExpanded(r)" [class.ti-chevron-left]="!isExpanded(r)"></i>
+                  </button>
+                </td>
+                <td>
+                  <a href="javascript:void(0)" (click)="openOrder(r)">{{ r.OrderNo }}</a>
+                </td>
+                <td>{{ (r.ODate || '') | slice:0:10 }}</td>
+                <td>{{ r.VenName }}</td>
+                <td>{{ r.ItemReq }}</td>
+                <td>
+                  <a *ngIf="r.HasDeal === 1" href="javascript:void(0)" (click)="openDeal(r)"
+                     class="badge bg-success text-decoration-none">
+                    <i class="ti ti-link me-1"></i>{{ r.QuotNo }}
+                  </a>
+                  <span *ngIf="r.HasDeal !== 1" class="badge bg-secondary">{{ 'PoConsolidation.NoDeal' | translate }}</span>
+                </td>
+                <td class="text-end">
+                  <span *ngIf="r.HasDeal === 1">{{ r.DealNet | number:'1.0-3' }}</span>
+                  <span *ngIf="r.HasDeal !== 1" class="text-muted">—</span>
+                </td>
+                <td class="text-end fw-semibold">
+                  {{ r.Net | number:'1.0-3' }} <small class="text-muted">{{ r.CurName }}</small>
+                </td>
+                <td class="text-end" [class]="varianceClass(r)">
+                  <span *ngIf="r.Variance != null">{{ r.Variance | number:'1.0-3' }}</span>
+                  <span *ngIf="r.Variance == null" class="text-muted">—</span>
+                </td>
+                <td class="text-end">
+                  <ng-container *ngIf="r.RemainQty != null">
+                    {{ r.RemainQty | number:'1.0-3' }}
+                    <small class="text-muted d-block">
+                      {{ 'PoConsolidation.QuotedVsOrdered' | translate:{ q: (r.QuotQty | number:'1.0-3'), o: (r.TotalQty | number:'1.0-3') } }}
+                    </small>
+                  </ng-container>
+                  <span *ngIf="r.RemainQty == null" class="text-muted"
+                        [title]="'PoConsolidation.NoQuotedQty' | translate">—</span>
+                </td>
+                <td class="text-end">{{ r.RecvQty | number:'1.0-3' }}</td>
+                <td class="text-end fw-semibold" [class.text-success]="r.RemainToReceive <= 0"
+                    [class.text-warning]="r.RemainToReceive > 0">{{ r.RemainToReceive | number:'1.0-3' }}</td>
+                <td class="text-center">{{ r.LineCount }}</td>
+              </tr>
+
+              <!-- the order's items -->
+              <tr *ngIf="isExpanded(r)" class="pc-detail">
+                <td></td>
+                <td></td>
+                <td colspan="11">
+                  <table class="table table-sm table-bordered mb-0">
+                    <thead>
+                      <tr>
+                        <th>{{ 'PoConsolidation.ItemNo' | translate }}</th>
+                        <th>{{ 'PoConsolidation.ItemName' | translate }}</th>
+                        <th>{{ 'PoConsolidation.UnitName' | translate }}</th>
+                        <th class="text-end">{{ 'PoConsolidation.Qty' | translate }}</th>
+                        <th class="text-end">{{ 'PoConsolidation.QuotQty' | translate }}</th>
+                        <th class="text-end">{{ 'PoConsolidation.RemainQty' | translate }}</th>
+                        <th class="text-end">{{ 'PoConsolidation.Received' | translate }}</th>
+                        <th class="text-end">{{ 'PoConsolidation.RemainToReceive' | translate }}</th>
+                        <th class="text-end">{{ 'PoConsolidation.Cost' | translate }}</th>
+                        <th class="text-end">{{ 'PoConsolidation.Total' | translate }}</th>
+                        <th>{{ 'PoConsolidation.Store' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let l of linesOf(r)">
+                        <td>{{ l.ItemNo }}</td>
+                        <td>{{ l.ItemName }}</td>
+                        <td>{{ l.UnitName }}</td>
+                        <td class="text-end">{{ l.Qty | number:'1.0-3' }}</td>
+                        <td class="text-end text-muted">
+                          <span *ngIf="l.QuotQty != null">{{ l.QuotQty | number:'1.0-3' }}</span>
+                          <span *ngIf="l.QuotQty == null">—</span>
+                        </td>
+                        <td class="text-end fw-semibold" [class.text-success]="l.RemainQty === 0">
+                          <span *ngIf="l.RemainQty != null">{{ l.RemainQty | number:'1.0-3' }}</span>
+                          <span *ngIf="l.RemainQty == null" class="text-muted fw-normal">—</span>
+                        </td>
+                        <td class="text-end text-muted">{{ l.RecvQty | number:'1.0-3' }}</td>
+                        <td class="text-end fw-semibold" [class.text-success]="l.RemainToReceive <= 0"
+                            [class.text-warning]="l.RemainToReceive > 0">{{ l.RemainToReceive | number:'1.0-3' }}</td>
+                        <td class="text-end">{{ l.Cost | number:'1.0-3' }}</td>
+                        <td class="text-end fw-semibold">{{ l.LineTotal | number:'1.0-3' }}</td>
+                        <td>{{ l.StoreName }}</td>
+                      </tr>
+                      <tr *ngIf="!linesOf(r).length">
+                        <td colspan="11" class="text-center text-muted py-2">{{ 'General.NoRecordsFound' | translate }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </ng-container>
+
+          <tbody *ngIf="!orders.length">
+            <tr><td colspan="14" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td></tr>
+          </tbody>
+
+          <tfoot *ngIf="orders.length">
+            <tr>
+              <td colspan="7" class="text-end fw-bold">{{ 'General.Total' | translate }}</td>
+              <td class="text-end fw-bold">{{ totalDealNet | number:'1.0-3' }}</td>
+              <td class="text-end fw-bold">{{ totalNet | number:'1.0-3' }}</td>
+              <td class="text-end fw-bold">{{ totalVariance | number:'1.0-3' }}</td>
+              <td class="text-end fw-bold">{{ totalRemainQty | number:'1.0-3' }}</td>
+              <td class="text-end fw-bold">{{ totalRecvQty | number:'1.0-3' }}</td>
+              <td class="text-end fw-bold">{{ totalRemainToReceive | number:'1.0-3' }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <app-paginator [total]="orders.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+
+    </div>
+
+    <!-- ════ Consolidations list tab ════ -->
+    <div *ngIf="activeTab === 'list'" class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th>{{ 'PoConsolidation.ConsNo' | translate }}</th>
+              <th>{{ 'PoConsolidation.ConsDate' | translate }}</th>
+              <th class="text-center">{{ 'PoConsolidation.Orders' | translate }}</th>
+              <th class="text-end">{{ 'PoConsolidation.TotalNet' | translate }}</th>
+              <th class="text-end">{{ 'PoConsolidation.RemainQty' | translate }}</th>
+              <th>{{ 'PoConsolidation.Notes' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of docs | paginate:docPage:docPageSize" class="cursor-pointer"
+                (click)="openDocFromList(d)">
+              <td>{{ d.ConsNo }}</td>
+              <td>{{ (d.CDate || '') | slice:0:10 }}</td>
+              <td class="text-center"><span class="badge bg-primary">{{ d.OrderCount }}</span></td>
+              <td class="text-end fw-semibold">{{ d.Net | number:'1.0-3' }}</td>
+              <td class="text-end">{{ d.RemainQty | number:'1.0-3' }}</td>
+              <td>{{ d.Notes }}</td>
+            </tr>
+            <tr *ngIf="!docs.length">
+              <td colspan="6" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <app-paginator [total]="docs.length" [(page)]="docPage" [(pageSize)]="docPageSize"></app-paginator>
+    </div>
+
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'PoConsolidation.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="doDelete()">
+</app-confirmation-modal>

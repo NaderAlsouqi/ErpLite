@@ -64,10 +64,10 @@
               <textarea class="form-control" rows="3"
                 [(ngModel)]="newRow.Description"></textarea>
             </div>
-          </div>
+          
 
           <!-- Payment Method Field -->
-          <div class="row mb-3">
+          
             <div class="col-md-6" *ngIf="!Quotation">
               <label class="form-label">{{ 'AddInvoicePage.PaymentMethod' | translate }}</label>
               <select class="form-select" [(ngModel)]="newRow.CashPay">
@@ -108,11 +108,11 @@
       </div>
     </div>
   </div>
-</div>
+
 <!-- End::row-1 -->
 
 <!-- Start::row-2 -->
-<div class="row">
+
   <div class="col-xl-12">
     <div class="card custom-card mb-4">
       <div class="card-header">

@@ -28,9 +28,7 @@
         <button class="btn btn-sm btn-outline-secondary" (click)="loadData()" title="{{ 'General.Refresh' | translate }}">
           <i class="ti ti-refresh"></i>
         </button>
-        <button *hasPermission="'Banks.Print'" class="btn btn-sm btn-outline-primary" (click)="print()">
-          <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-        </button>
+        <app-report-export *hasPermission="'Banks.Print'" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
       </div>
     </div>
 
@@ -133,7 +131,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let bank of filteredBanks"
+              <tr *ngFor="let bank of filteredBanks | paginate:page:pageSize"
                   class="cursor-pointer"
                   (click)="onSelectRow(bank)"
                   [class.selected-row]="currentBank.bank_num === bank.bank_num">
@@ -148,6 +146,7 @@
             </tbody>
           </table>
         </div>
+        <app-paginator [total]="filteredBanks.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
       </div>
 
     </div>

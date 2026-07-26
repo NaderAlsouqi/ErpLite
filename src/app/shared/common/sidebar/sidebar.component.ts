@@ -11,6 +11,7 @@ import { checkHoriMenu } from './sidebar';
 import { AuthService } from '../../services/auth.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AppStateService } from '../../services/app-state.service';
+import { CompanyLogoService } from '../../services/company-logo.service';
 
 
 @Component({
@@ -62,7 +63,8 @@ export class SidebarComponent {
     private cd: ChangeDetectorRef,
     public auth: AuthService,
     public translate: TranslateService,
-    private appStateService: AppStateService
+    private appStateService: AppStateService,
+    public companyLogo: CompanyLogoService
   ) {
   }
 
@@ -124,6 +126,8 @@ export class SidebarComponent {
     });
   }
   ngOnInit() {
+    this.companyLogo.load();
+
     this.menuitemsSubscribe$ = this.navServices.items.subscribe((items) => {
       this.menuItems = items;
       this.buildDisplay();

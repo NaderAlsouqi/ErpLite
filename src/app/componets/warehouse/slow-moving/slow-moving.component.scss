@@ -1,0 +1,27 @@
+.slm-container {
+  .form-label { font-weight: 500; margin-bottom: 0.25rem; }
+  .form-check { margin-bottom: 0.15rem; }
+
+  .table {
+    th, td { white-space: nowrap; vertical-align: middle; }
+  }
+  .table-responsive { max-height: 65vh; overflow: auto; }
+
+  /* Opaque sticky header — Bootstrap's --bs-table-bg resolves to transparent on
+     individual cells, so without an explicit background the scrolled rows bleed
+     through the header. #cfe2ff is the default .table-primary tone. */
+  thead.table-primary > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: #cfe2ff !important;
+    background-clip: padding-box;
+  }
+
+  /* Opaque body/footer cells so scrolled-under rows can't show through the header. */
+  tbody > tr > td       { background-color: var(--bs-body-bg, #fff); }
+  tbody > tr:hover > td { background-color: var(--bs-table-hover-bg, rgba(0,0,0,0.0375)); }
+  tfoot > tr > td       { background-color: #eef2f7; }
+
+  ::ng-deep .ng-select .ng-select-container { min-height: 38px; }
+}

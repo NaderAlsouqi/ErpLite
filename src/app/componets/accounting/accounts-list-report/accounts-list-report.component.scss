@@ -48,3 +48,8 @@
   font-size: 1.05rem;
   padding: 0.5rem 0 1rem;
 }
+
+// ── Dark mode ──
+::ng-deep [data-theme-mode="dark"] app-accounts-list-report {
+  tbody > tr.alr-parent > td { background-color: rgba(255, 255, 255, 0.04) !important; }
+}

@@ -8,17 +8,23 @@ import { CurrencyDto, CurrencyService } from '../../../shared/services/currency.
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-currencies',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
     SharedModule,
     ConfirmationModalComponent,
     HasPermissionDirective,
+    PaginatorComponent,
+    PaginatePipe,
   ],
   templateUrl: './currencies.component.html',
   styleUrl: './currencies.component.scss',
@@ -34,6 +40,8 @@ export class CurrenciesComponent implements OnInit {
   loading = false;
   saving = false;
   activeTab: 'form' | 'list' = 'form';
+  page = 1;
+  pageSize = 10;
 
   switchToForm(): void { this.activeTab = 'form'; }
   switchToList(): void { this.activeTab = 'list'; }
@@ -42,7 +50,7 @@ export class CurrenciesComponent implements OnInit {
     private currencyService: CurrencyService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {
@@ -64,6 +72,7 @@ export class CurrenciesComponent implements OnInit {
       next: (data) => {
         this.currencies = data;
         this.applyFilters();
+        this.page = 1;
         this.setNextNo();
         this.loading = false;
       },

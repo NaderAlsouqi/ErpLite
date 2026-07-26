@@ -28,9 +28,7 @@
         <button class="btn btn-sm btn-outline-secondary" (click)="loadGroups()" title="{{ 'General.Refresh' | translate }}">
           <i class="ti ti-refresh"></i>
         </button>
-        <button *hasPermission="'AccountGroups.Print'" class="btn btn-sm btn-outline-primary" (click)="print()">
-          <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-        </button>
+        <app-report-export *hasPermission="'AccountGroups.Print'" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
       </div>
     </div>
 
@@ -148,7 +146,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let group of filteredGroups"
+              <tr *ngFor="let group of filteredGroups | paginate:page:pageSize"
                   class="cursor-pointer"
                   (click)="onSelectGroup(group)"
                   [class.selected-row]="currentGroup.GroupNo === group.GroupNo">
@@ -164,6 +162,7 @@
             </tbody>
           </table>
         </div>
+        <app-paginator [total]="filteredGroups.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
       </div>
 
     </div>

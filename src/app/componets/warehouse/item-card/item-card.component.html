@@ -1,0 +1,321 @@
+<app-page-header
+  [title]="'ItemCard.Title' | translate"
+  [title1]="parentTitleKey | translate"
+  [activeTitle]="'ItemCard.Title' | translate">
+</app-page-header>
+
+<div class="item-card-container">
+  <div class="card custom-card">
+
+    <!-- ── Tabs + export (print / word / excel) ───────────────── -->
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'info'" (click)="switchTab('info')" href="javascript:void(0)">
+            <i class="ti ti-id me-1"></i>{{ 'ItemCard.InfoTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'units'" (click)="switchTab('units')" href="javascript:void(0)">
+            <i class="ti ti-ruler-2 me-1"></i>{{ 'ItemCard.UnitsTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'" (click)="switchTab('list')" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'ItemCard.ListTab' | translate }}
+          </a>
+        </li>
+      </ul>
+      <ng-container *ngIf="exportVisible">
+        <app-report-export *hasPermission="pPrint" [disabled]="!canExport"
+          [label]="'ItemCard.Print'" (formatSelected)="export($event)"></app-report-export>
+      </ng-container>
+    </div>
+
+    <div class="card-body">
+
+      <!-- ════ Tab 1: معلومات المادة ════ -->
+      <div *ngIf="activeTab === 'info'">
+
+        <div class="row g-3 mb-2">
+          <!-- category first — selecting it generates the item code -->
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ItemCard.Category' | translate }} <span class="required">*</span></label>
+            <ng-select [items]="lookups.Categories" bindValue="TypeNo" [(ngModel)]="current.TypeNo"
+              (change)="onCategoryChange()" [clearable]="true" [placeholder]="'General.Select' | translate" appendTo="body">
+              <ng-template ng-option-tmp let-c="item">{{ c.TypeNo }} — {{ isAr ? c.TypeName : (c.Etname || c.TypeName) }}</ng-template>
+              <ng-template ng-label-tmp let-c="item">{{ c.TypeNo }} — {{ isAr ? c.TypeName : (c.Etname || c.TypeName) }}</ng-template>
+            </ng-select>
+          </div>
+          <!-- item code: free entry (auto-filled from the category; type to override / load existing) -->
+          <div class="col-md-4">
+            <label class="form-label text-danger fw-bold">{{ 'ItemCard.ItemNo' | translate }} <span class="required">*</span></label>
+            <div class="input-group">
+              <input type="text" class="form-control" maxlength="50" [(ngModel)]="current.ItemNo"
+                (change)="onItemCodeChange()" [placeholder]="'ItemCard.ItemNo' | translate" />
+              <button class="btn btn-outline-secondary" type="button" (click)="switchTab('list')"
+                [title]="'ItemCard.ListTab' | translate"><i class="ti ti-search"></i></button>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ItemCard.NameAr' | translate }} <span class="required">*</span></label>
+            <input type="text" class="form-control" maxlength="250" [(ngModel)]="current.ItemName" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ItemCard.NameEn' | translate }}</label>
+            <input type="text" class="form-control" maxlength="250" [(ngModel)]="current.Ename" />
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ItemCard.Origin' | translate }}</label>
+            <ng-select [items]="lookups.Origins" bindValue="OriginNo" [(ngModel)]="current.OriginNo"
+              [clearable]="true" [placeholder]="'General.Select' | translate" appendTo="body">
+              <ng-template ng-option-tmp let-o="item">{{ o.OriginNo }} — {{ isAr ? o.OriginName : (o.OriginEname || o.OriginName) }}</ng-template>
+              <ng-template ng-label-tmp let-o="item">{{ o.OriginNo }} — {{ isAr ? o.OriginName : (o.OriginEname || o.OriginName) }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ItemCard.Brand' | translate }}</label>
+            <ng-select [items]="lookups.Brands" bindValue="BrandNo" [(ngModel)]="current.BrandNo"
+              [clearable]="true" [placeholder]="'General.Select' | translate" appendTo="body">
+              <ng-template ng-option-tmp let-b="item">{{ b.BrandNo }} — {{ isAr ? b.BrandName : (b.BrandEname || b.BrandName) }}</ng-template>
+              <ng-template ng-label-tmp let-b="item">{{ b.BrandNo }} — {{ isAr ? b.BrandName : (b.BrandEname || b.BrandName) }}</ng-template>
+            </ng-select>
+          </div>
+        
+
+        <!-- flags / tax -->
+        
+          <div class="col-md-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="taxCheck" [(ngModel)]="current.TaxCheck" (change)="onTaxCheck()" />
+              <label class="form-check-label" for="taxCheck">{{ 'ItemCard.Taxable' | translate }}</label>
+            </div>
+          </div>
+          <div class="col-md-3" *ngIf="current.TaxCheck">
+            <label class="form-label">{{ 'ItemCard.Tax' | translate }}</label>
+            <ng-select [items]="lookups.Taxes" bindValue="TaxNo" [(ngModel)]="current.TaxNo"
+              (change)="onTaxChange()" [clearable]="true" [placeholder]="'General.Select' | translate" appendTo="body">
+              <ng-template ng-option-tmp let-t="item">{{ t.TaxNo }} — {{ isAr ? t.TaxNameA : (t.TaxNameE || t.TaxNameA) }} ({{ t.TaxPerc }}%)</ng-template>
+              <ng-template ng-label-tmp let-t="item">{{ t.TaxNo }} — {{ isAr ? t.TaxNameA : (t.TaxNameE || t.TaxNameA) }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-2" *ngIf="current.TaxCheck">
+            <label class="form-label">{{ 'ItemCard.TaxPerc' | translate }}</label>
+            <input type="text" class="form-control" [value]="(current.TaxPerc ?? 0)" readonly />
+          </div>
+          <div class="col-md-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="stopped" [(ngModel)]="current.Stopped" />
+              <label class="form-check-label" for="stopped">{{ 'ItemCard.Stopped' | translate }}</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="expired" [(ngModel)]="current.Expired" />
+              <label class="form-check-label" for="expired">{{ 'ItemCard.Expired' | translate }}</label>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- numbers -->
+        <div class="row g-3">
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.OrderLimit' | translate }}</label><input type="number" class="form-control" [(ngModel)]="current.OrderLimit" /></div>
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.OrderQty' | translate }}</label><input type="number" class="form-control" [(ngModel)]="current.OrderQty" /></div>
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.SalePrice' | translate }}</label><input type="number" class="form-control" [(ngModel)]="current.Price" /></div>
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.Cost' | translate }}</label><input type="text" class="form-control" [value]="(current.Cost ?? 0)" readonly /></div>
+
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.Place' | translate }}</label><input type="text" class="form-control" maxlength="25" [(ngModel)]="current.Place" /></div>
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.Weight' | translate }}</label><input type="number" class="form-control" [(ngModel)]="current.ItemWeight" /></div>
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.Barcode' | translate }}</label><input type="text" class="form-control" maxlength="50" [(ngModel)]="current.Barcode" /></div>
+
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.Pack40' | translate }}</label><input type="number" class="form-control" [(ngModel)]="current.Pack40" /></div>
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.Pack20' | translate }}</label><input type="number" class="form-control" [(ngModel)]="current.Pack20" /></div>
+        </div>
+
+        <!-- أبعاد الحاوية -->
+        <h6 class="section-title"><i class="ti ti-box me-1"></i>{{ 'ItemCard.ContainerDims' | translate }}</h6>
+        <div class="row g-3">
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.Length' | translate }}</label><input type="number" class="form-control" [(ngModel)]="current.ContLength" /></div>
+          <div class="col-md-3"><label class="form-label">{{ 'ItemCard.Width' | translate }}</label><input type="number" class="form-control" [(ngModel)]="current.ContWidth" /></div>
+        </div>
+      </div>
+
+      <!-- ════ Tab 2: الوحدات و فئات الاسعار ════ -->
+      <div *ngIf="activeTab === 'units'">
+
+        <!-- Units -->
+        <h6 class="section-title"><i class="ti ti-ruler-2 me-1"></i>{{ 'ItemCard.Units' | translate }}</h6>
+        <div class="dgrid units-grid mb-2">
+          <div class="dgrid-head">
+            <div>{{ 'ItemCard.UnitNo' | translate }}</div>
+            <div>{{ 'ItemCard.UnitName' | translate }}</div>
+            <div>{{ 'ItemCard.Operand' | translate }}</div>
+            <div>{{ 'ItemCard.MinUnit' | translate }}</div>
+            <div>{{ 'ItemCard.UnitPrice' | translate }}</div>
+            <div>{{ 'ItemCard.Barcode' | translate }}</div>
+            <div></div>
+          </div>
+          <div class="dgrid-row" *ngFor="let u of current.Units; let i = index">
+            <ng-select [items]="lookups.Units" bindValue="UnitNo" [(ngModel)]="u.UnitNo"
+              (change)="onUnitChange(u)" [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-x="item">{{ x.UnitNo }} — {{ isAr ? x.UnitName : (x.UnitEname || x.UnitName) }}</ng-template>
+              <ng-template ng-label-tmp let-x="item">{{ x.UnitNo }} — {{ isAr ? x.UnitName : (x.UnitEname || x.UnitName) }}</ng-template>
+            </ng-select>
+            <input type="text" class="form-control form-control-sm" [value]="u.UnitName || ''" readonly />
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="u.Operand" [disabled]="u.IsMin" />
+            <div class="text-center"><input type="checkbox" class="form-check-input" [(ngModel)]="u.IsMin" (change)="onMinChange(u)" /></div>
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="u.Price" />
+            <input type="text" class="form-control form-control-sm" maxlength="50" [(ngModel)]="u.Barcode" />
+            <button class="btn btn-sm btn-outline-danger" (click)="removeUnit(i)"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary mb-3" (click)="addUnit()"><i class="ti ti-plus me-1"></i>{{ 'ItemCard.AddRow' | translate }}</button>
+
+        <!-- Price categories -->
+        <h6 class="section-title"><i class="ti ti-tag me-1"></i>{{ 'ItemCard.PriceCategories' | translate }}</h6>
+        <div class="dgrid cat-grid mb-2">
+          <div class="dgrid-head">
+            <div>{{ 'ItemCard.CategNo' | translate }}</div>
+            <div>{{ 'ItemCard.CategName' | translate }}</div>
+            <div>{{ 'ItemCard.CategPrice' | translate }}</div>
+            <div>{{ 'ItemCard.MinPrice' | translate }}</div>
+            <div>{{ 'ItemCard.Discount' | translate }}</div>
+            <div>{{ 'ItemCard.Bonus' | translate }}</div>
+            <div></div>
+          </div>
+          <div class="dgrid-row" *ngFor="let c of current.Categs; let i = index">
+            <ng-select [items]="lookups.PriceCategories" bindValue="CategNo" [(ngModel)]="c.CategNo"
+              (change)="onCategRowChange(c)" [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-x="item">{{ x.CategNo }} — {{ isAr ? x.CatName : (x.CateEname || x.CatName) }}</ng-template>
+              <ng-template ng-label-tmp let-x="item">{{ x.CategNo }} — {{ isAr ? x.CatName : (x.CateEname || x.CatName) }}</ng-template>
+            </ng-select>
+            <input type="text" class="form-control form-control-sm" [value]="c.CatName || ''" readonly />
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="c.Price" />
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="c.MinPrice" />
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="c.Dis" />
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="c.Bonus" />
+            <button class="btn btn-sm btn-outline-danger" (click)="removeCateg(i)"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary mb-3" (click)="addCateg()"><i class="ti ti-plus me-1"></i>{{ 'ItemCard.AddRow' | translate }}</button>
+
+        <!-- Alternatives -->
+        <h6 class="section-title"><i class="ti ti-arrows-exchange me-1"></i>{{ 'ItemCard.Alternatives' | translate }}</h6>
+        <div class="dgrid alt-grid mb-2">
+          <div class="dgrid-head">
+            <div>{{ 'ItemCard.AltCode' | translate }}</div>
+            <div>{{ 'ItemCard.AltName' | translate }}</div>
+            <div></div>
+          </div>
+          <div class="dgrid-row" *ngFor="let a of current.Alts; let i = index">
+            <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="a.InstedItem"
+              [searchFn]="altSearchFn" (change)="onAltSelect(a)" [clearable]="true" [loading]="listLoading"
+              appendTo="body" [placeholder]="'ItemCard.SearchItem' | translate">
+              <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+              <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }}<span *ngIf="x.ItemName"> — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</span></ng-template>
+            </ng-select>
+            <input type="text" class="form-control form-control-sm" [value]="a.InstedName || ''" readonly />
+            <button class="btn btn-sm btn-outline-danger" (click)="removeAlt(i)"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" (click)="addAlt()"><i class="ti ti-plus me-1"></i>{{ 'ItemCard.AddRow' | translate }}</button>
+      </div>
+
+      <!-- ════ Tab 3: قائمة المواد ════ -->
+      <div *ngIf="activeTab === 'list'">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-search"></i></span>
+              <input type="text" class="form-control" [(ngModel)]="listFilter" [placeholder]="'ItemCard.SearchItem' | translate" />
+              <button class="btn btn-outline-secondary" (click)="listFilter=''" *ngIf="listFilter"><i class="ti ti-x"></i></button>
+            </div>
+          </div>
+          <div class="col-md-6 d-flex align-items-center justify-content-md-end small text-muted">
+            {{ filteredItems.length }} / {{ allItems.length }}
+          </div>
+        </div>
+
+        <div *ngIf="listLoading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">{{ 'General.Loading' | translate }}</span></div>
+        </div>
+
+        <div *ngIf="!listLoading" class="table-responsive item-list">
+          <table class="table table-bordered table-hover table-sm mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th>{{ 'ItemCard.ItemNo' | translate }}</th>
+                <th>{{ 'ItemCard.NameAr' | translate }}</th>
+                <th>{{ 'ItemCard.NameEn' | translate }}</th>
+                <th>{{ 'ItemCard.Category' | translate }}</th>
+                <th>{{ 'ItemCard.SalePrice' | translate }}</th>
+                <th>{{ 'ItemCard.Barcode' | translate }}</th>
+                <th style="width:40px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of filteredItems" class="cursor-pointer" (click)="openItem(r)" [class.text-muted]="r.Stopped">
+                <td>{{ r.ItemNo }}</td>
+                <td>{{ r.ItemName }}</td>
+                <td>{{ r.Ename }}</td>
+                <td>{{ r.CategoryName }}</td>
+                <td>{{ r.Price }}</td>
+                <td>{{ r.Barcode }}</td>
+                <td class="text-center"><i class="ti ti-pencil text-primary"></i></td>
+              </tr>
+              <tr *ngIf="filteredItems.length === 0">
+                <td colspan="7" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Actions ─────────────────────────────────────────── -->
+      <div class="action-buttons" *ngIf="activeTab !== 'list'">
+        <button *hasPermission="pCreate" class="btn btn-primary" (click)="save()" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>{{ 'General.Save' | translate }}
+        </button>
+        <button *hasPermission="pDelete" class="btn btn-danger" (click)="delete()" [disabled]="!isExisting">
+          <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+        </button>
+        <button class="btn btn-info" (click)="goToBarcode()" [disabled]="!isExisting"
+          [title]="isExisting ? ('ItemCard.Barcodes' | translate) : ('ItemCard.SaveFirst' | translate)">
+          <i class="ti ti-barcode me-1"></i>{{ 'ItemCard.Barcodes' | translate }}
+        </button>
+        <button class="btn btn-secondary" (click)="reset()">
+          <i class="ti ti-refresh me-1"></i>{{ 'General.New' | translate }}
+        </button>
+
+        <!-- Excel import (bulk create/update) -->
+        <ng-container *hasPermission="pImport">
+          <input type="file" #importInput hidden accept=".xlsx,.xls" (change)="onImportFile($event)" />
+          <button class="btn btn-success" (click)="triggerImport(importInput)" [disabled]="importing"
+            [title]="'ItemCard.Import' | translate">
+            <span *ngIf="importing" class="spinner-border spinner-border-sm me-1" role="status"></span>
+            <i *ngIf="!importing" class="ti ti-file-spreadsheet me-1"></i>{{ 'ItemCard.Import' | translate }}
+          </button>
+          <button class="btn btn-outline-success" (click)="downloadTemplate()"
+            [title]="'ItemCard.DownloadTemplate' | translate">
+            <i class="ti ti-download me-1"></i>{{ 'ItemCard.DownloadTemplate' | translate }}
+          </button>
+        </ng-container>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'ItemCard.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="confirmDelete()">
+</app-confirmation-modal>

@@ -11,4 +11,9 @@ export const homeRoutes: Routes = [
     loadComponent: () =>
       import('../home2/home2.component').then(m => m.Home2Component),
   },
+  {
+    path: 'dashboard-builder',
+    loadComponent: () =>
+      import('../dashboard-builder/dashboard-builder.component').then(m => m.DashboardBuilderComponent),
+  },
 ];

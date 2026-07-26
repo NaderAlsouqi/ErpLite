@@ -1,0 +1,36 @@
+.barcode-container {
+  padding: 1rem;
+
+  .form-label {
+    font-weight: 500;
+    i { color: rgba(var(--primary-rgb), 1); margin-right: 0.25rem; }
+    .required { color: #dc3545; margin-left: 0.1rem; }
+  }
+
+  .barcodes-section {
+    .table-responsive { max-height: 55vh; overflow: auto; }
+  }
+}
+
+::ng-deep [data-theme-mode="dark"] {
+  .barcode-container {
+    .form-label, h6 { color: var(--default-text-color) !important; }
+    .form-control {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+      &::placeholder { color: var(--text-muted) !important; }
+      &[readonly] { opacity: 0.85; }
+    }
+    .table                        { background: transparent !important; }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td                     { border-color: var(--default-border) !important; color: var(--default-text-color) !important; }
+    .table th                     { border-color: var(--default-border) !important; }
+    .table tr.table-light         { background: var(--default-background) !important; }
+    .text-muted { color: var(--text-muted) !important; }
+  }
+}

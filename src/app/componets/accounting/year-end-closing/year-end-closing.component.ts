@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ApproveVoucherComponent } from '../../../shared/components/approve-voucher/approve-voucher.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -15,7 +16,8 @@ import {
 @Component({
   selector: 'app-year-end-closing',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SharedModule, NgSelectModule, ConfirmationModalComponent, HasPermissionDirective],
+  imports: [
+    ApproveVoucherComponent,CommonModule, FormsModule, TranslateModule, SharedModule, NgSelectModule, ConfirmationModalComponent, HasPermissionDirective],
   templateUrl: './year-end-closing.component.html',
   styleUrl: './year-end-closing.component.scss',
   encapsulation: ViewEncapsulation.None,

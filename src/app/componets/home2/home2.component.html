@@ -32,6 +32,76 @@
               <option *ngFor="let o of POST_OPTIONS" [ngValue]="o.value">{{ o.label | translate }}</option>
             </select>
           </div>
+
+          <div class="col-6 col-md-3">
+            <label class="form-label">{{ 'Home2.SerialNo' | translate }}</label>
+            <ng-select [items]="serialOptions" bindValue="SerialNo" [(ngModel)]="serialNo"
+                       [clearable]="true" (change)="onSerialChange()"
+                       [placeholder]="'Home2.All' | translate" appendTo="body">
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.SerialNo }}{{ item.SerialName ? ' — ' + item.SerialName : '' }}
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                {{ item.SerialNo }}{{ item.SerialName ? ' — ' + item.SerialName : '' }}
+              </ng-template>
+            </ng-select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">{{ 'Home2.DocNo' | translate }}</label>
+            <ng-select [items]="docNoOptions" [(ngModel)]="docNo"
+                       [clearable]="true" (change)="onFilterChange()"
+                       [placeholder]="'Home2.All' | translate" appendTo="body">
+            </ng-select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">{{ 'Home2.AmtFrom' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="amtFrom" (change)="onFilterChange()"
+                   [placeholder]="'Home2.AmtFrom' | translate" />
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">{{ 'Home2.AmtTo' | translate }}</label>
+            <input type="number" class="form-control" [(ngModel)]="amtTo" (change)="onFilterChange()"
+                   [placeholder]="'Home2.AmtTo' | translate" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── My Dashboard (custom charts built in the Dashboard Builder) ───────── -->
+    <div class="mb-3">
+      <div class="h2-section-title mb-2 d-flex align-items-center justify-content-between">
+        <span><i class="ti ti-layout-dashboard me-2"></i>{{ 'Home2.MyDashboard' | translate }}</span>
+        <button class="btn btn-sm btn-primary" (click)="navigate('/dashboard-builder')">
+          <i class="ti ti-layout-grid-add me-1"></i>{{ 'Home2.Customize' | translate }}
+        </button>
+      </div>
+
+      <div *ngIf="customBoxes.length" class="row g-3">
+        <div class="col-xl-6" *ngFor="let cb of customBoxes">
+          <div class="card custom-card h-100 h2-voucher-card" [style.border-top]="'3px solid ' + cb.color">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="card-title mb-0"><i [class]="cb.icon + ' me-2'" [style.color]="cb.color"></i>{{ cb.titleKey | translate }}</div>
+              <button type="button" class="btn btn-sm btn-light h2-open-btn" (click)="navigate(cb.route)"
+                      [title]="'Home2.OpenPage' | translate">
+                {{ 'Home2.OpenPage' | translate }}<i class="ti ti-arrow-up-left ms-1"></i>
+              </button>
+            </div>
+            <div class="card-body">
+              <apx-chart *ngIf="cb.box.show"
+                [series]="cb.box.series" [chart]="cb.box.chart" [xaxis]="cb.box.xaxis" [yaxis]="cb.box.yaxis"
+                [labels]="cb.box.labels" [colors]="cb.box.colors" [dataLabels]="cb.box.dataLabels" [stroke]="cb.box.stroke"
+                [plotOptions]="cb.box.plotOptions" [markers]="cb.box.markers" [tooltip]="cb.box.tooltip"
+                [legend]="cb.box.legend" [fill]="cb.box.fill" [grid]="cb.box.grid" [responsive]="cb.box.responsive">
+              </apx-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!customBoxes.length" class="card custom-card">
+        <div class="card-body text-center text-muted py-4">
+          <i class="ti ti-layout-dashboard fs-3 d-block mb-2"></i>
+          {{ 'Home2.NoCustomCharts' | translate }}
         </div>
       </div>
     </div>
@@ -90,83 +160,6 @@
       </div>
     </div>
     </ng-container>
-
-    <!-- ── Voucher analytics (one card + chart per voucher type) ─────────────── -->
-    <div class="row g-3 mb-3">
-      <div class="col-xl-6" *ngFor="let c of cards">
-        <div class="card custom-card h-100 h2-voucher-card" [style.border-top]="'3px solid ' + c.color">
-          <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="card-title mb-0">
-              <i [class]="c.icon + ' me-2'" [style.color]="c.color"></i>{{ c.titleKey | translate }}
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <div class="h2-switch btn-group btn-group-sm" role="group">
-                <button *ngFor="let ct of CHART_TYPES" type="button" class="btn"
-                        [class.active]="c.kind === ct.value" (click)="setCardType(c, ct.value)"
-                        [title]="ct.labelKey | translate">
-                  <i [class]="ct.icon"></i>
-                </button>
-              </div>
-              <span class="badge h2-year-badge" [style.background]="c.color + '1f'" [style.color]="c.color">{{ year }}</span>
-            </div>
-          </div>
-
-          <div class="card-body">
-            <!-- KPIs -->
-            <div class="h2-kpis">
-              <div class="h2-kpi">
-                <span class="h2-kpi-val">{{ c.totalCount | number }}</span>
-                <span class="h2-kpi-lbl">{{ 'Home2.TotalCount' | translate }}</span>
-              </div>
-              <div class="h2-kpi">
-                <span class="h2-kpi-val" [style.color]="c.color">{{ c.totalAmount | number:'1.0-0' }}</span>
-                <span class="h2-kpi-lbl">{{ 'Home2.TotalAmount' | translate }}</span>
-              </div>
-              <div class="h2-kpi">
-                <span class="h2-kpi-val">{{ c.latestCount | number }}</span>
-                <span class="h2-kpi-lbl">{{ 'Home2.LatestCount' | translate }}</span>
-              </div>
-            </div>
-
-            <div *ngIf="loading" class="d-flex justify-content-center py-5">
-              <div class="spinner-border text-primary" role="status"></div>
-            </div>
-
-            <ng-container *ngIf="!loading">
-              <!-- Sample data grid (the data behind the chart) -->
-              <div class="table-responsive h2-data-grid">
-                <table class="table table-bordered table-hover table-sm mb-2">
-                  <thead class="table-primary">
-                    <tr>
-                      <th>{{ 'Home2.Month' | translate }}</th>
-                      <th *ngFor="let m of c.months" class="text-center">{{ m }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="h2-rowlbl">{{ 'Home2.Amount' | translate }}</td>
-                      <td *ngFor="let a of c.amounts" class="text-end">{{ a ? (a | number:'1.0-0') : '—' }}</td>
-                    </tr>
-                    <tr>
-                      <td class="h2-rowlbl">{{ 'Home2.Count' | translate }}</td>
-                      <td *ngFor="let n of c.counts" class="text-center">{{ n || '—' }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- Monthly amount — chart type chosen by the user -->
-              <apx-chart *ngIf="c.show"
-                [series]="c.series" [chart]="c.chart" [xaxis]="c.xaxis" [yaxis]="c.yaxis"
-                [labels]="c.labels" [colors]="c.colors" [dataLabels]="c.dataLabels" [stroke]="c.stroke"
-                [plotOptions]="c.plotOptions" [markers]="c.markers" [tooltip]="c.tooltip"
-                [legend]="c.legend" [fill]="c.fill" [grid]="c.grid" [responsive]="c.responsive">
-              </apx-chart>
-            </ng-container>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- ── Page shortcuts (same as Home) ─────────────────────────────────────── -->
     <div *ngFor="let group of groups" class="card custom-card mb-3">

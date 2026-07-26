@@ -7,6 +7,9 @@ import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 import {
   OutwardChequesService,
   OutwardChequeRowDto,
@@ -16,7 +19,8 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
 @Component({
   selector: 'app-cheques-to-beneficiary-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective, PaginatorComponent, PaginatePipe],
   templateUrl: './cheques-to-beneficiary-report.component.html',
   styleUrl: './cheques-to-beneficiary-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -37,13 +41,15 @@ export class ChequesToBeneficiaryReportComponent implements OnInit {
   loading = false;
   fetched = false;
   shownBeneficiary = '';
+  page = 1;
+  pageSize = 10;
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
   get totalLocal(): number { return this.rows.reduce((s, r) => s + r.LocalAmount, 0); }
 
   constructor(
     private svc:         OutwardChequesService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -85,6 +91,7 @@ export class ChequesToBeneficiaryReportComponent implements OnInit {
     }).subscribe({
       next: data => {
         this.rows = data ?? [];
+        this.page = 1;
         this.shownBeneficiary = ben;
         this.fetched = true;
         this.loading = false;

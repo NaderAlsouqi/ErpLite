@@ -14,9 +14,7 @@
           {{ 'InwardCheques.Title' | translate }}
         </div>
         <div class="d-flex gap-2">
-          <button *hasPermission="'InwardCheques.Print'" class="btn btn-outline-primary" (click)="print()" [disabled]="!fetched || rows.length === 0">
-            <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-          </button>
+          <app-report-export *hasPermission="'InwardCheques.Print'" [disabled]="!fetched || rows.length === 0" (formatSelected)="reportPrint.setNextFormat($event); print()"></app-report-export>
           <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
             <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
             <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
@@ -56,10 +54,10 @@
               <label class="btn btn-outline-primary" for="dbRec">{{ 'InwardCheques.ReceiptDate' | translate }}</label>
             </div>
           </div>
-        </div>
+        
 
         <!-- Date / cheque / amount ranges -->
-        <div class="row g-3 align-items-end mb-3">
+        
           <div class="col-md-2">
             <label class="form-label">{{ 'General.DateFrom' | translate }}</label>
             <input type="date" class="form-control" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
@@ -88,10 +86,10 @@
             <input type="number" min="1" step="any" class="form-control" [(ngModel)]="amtTo"
                    (keypress)="onlyNumber($event)" (change)="sanitizeAmt('to')" />
           </div>
-        </div>
+        
 
         <!-- Status + cheque type -->
-        <div class="row g-3 align-items-end mb-3">
+        
           <div class="col-md-5">
             <label class="form-label">{{ 'InwardCheques.StatusCol' | translate }}</label>
             <select class="form-select" [(ngModel)]="status" (change)="onFilterChange()">
@@ -111,10 +109,10 @@
               <label class="btn btn-outline-primary" for="ctBeg">{{ 'InwardCheques.Beginning' | translate }}</label>
             </div>
           </div>
-        </div>
+        
 
         <!-- Bank account + customer account + drawer -->
-        <div class="row g-3 align-items-end mb-3">
+        
           <div class="col-md-2">
             <label class="form-label d-block">{{ 'InwardCheques.BankAcc' | translate }}</label>
             <div class="btn-group btn-group-sm" role="group">
@@ -151,9 +149,9 @@
               <ng-template ng-option-tmp let-item="item">{{ item.no }} — {{ isAr ? item.name : item.Ename }}</ng-template>
             </ng-select>
           </div>
-        </div>
+        
 
-        <div class="row g-3 align-items-end mb-3">
+        
           <div class="col-md-5">
             <label class="form-label">{{ 'InwardCheques.DrawerName' | translate }}</label>
             <input type="text" class="form-control" [(ngModel)]="drawer" (change)="onFilterChange()" />
@@ -206,7 +204,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let r of rows">
+                    <tr *ngFor="let r of rows | paginate:page:pageSize">
                       <td class="text-center iwc-mono">{{ r.ChequeNum }}</td>
                       <td class="text-center">{{ dateBasis === 'RECEIPT' ? r.ReceiptDate : r.DueDate }}</td>
                       <td *ngIf="viewAllStatus">{{ statusLabel(r.Status) }}</td>
@@ -228,6 +226,7 @@
                   </tfoot>
                 </table>
               </div>
+              <app-paginator [total]="rows.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
             </div>
           </div>
         </ng-container>

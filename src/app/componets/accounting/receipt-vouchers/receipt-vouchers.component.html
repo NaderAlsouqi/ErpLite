@@ -368,6 +368,7 @@
             (click)="printActiveList()">
             <i class="ti ti-printer me-1"></i>{{ 'ReceiptVoucher.PrintList' | translate }}
           </button>
+          <app-approve-voucher [fromDate]="startDate" [toDate]="endDate"></app-approve-voucher>
         </div>
 
         <!-- Loading indicator -->

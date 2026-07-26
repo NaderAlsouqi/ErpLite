@@ -1,0 +1,89 @@
+<app-page-header
+  [title]="'DashboardBuilder.Title' | translate"
+  [title1]="'Home2.Title' | translate"
+  [activeTitle]="'DashboardBuilder.Title' | translate">
+</app-page-header>
+
+<div class="row db-container g-3">
+
+  <!-- ── Palette (draggable chart sources) ── -->
+  <div class="col-xl-3">
+    <div class="card custom-card h-100">
+      <div class="card-header">
+        <div class="card-title mb-0"><i class="ti ti-charts me-1"></i>{{ 'DashboardBuilder.Palette' | translate }}</div>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">{{ 'DashboardBuilder.PaletteHint' | translate }}</p>
+        <div class="db-palette" cdkDropList [cdkDropListData]="palette"
+             [cdkDropListConnectedTo]="canvasIds" [cdkDropListSortingDisabled]="true">
+          <div class="db-chip" *ngFor="let s of palette" cdkDrag [cdkDragData]="s"
+               (dblclick)="add(s)" [title]="'DashboardBuilder.AddHint' | translate">
+            <i [class]="s.icon" [style.color]="s.color"></i>
+            <span class="db-chip-lbl">{{ s.titleKey | translate }}</span>
+            <i class="ti ti-plus db-chip-add"></i>
+            <div class="db-chip-preview" *cdkDragPreview>
+              <i [class]="s.icon" [style.color]="s.color"></i> {{ s.titleKey | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Canvas (the user's dashboard) ── -->
+  <div class="col-xl-9">
+    <div class="card custom-card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0"><i class="ti ti-layout-dashboard me-1"></i>{{ 'DashboardBuilder.Canvas' | translate }}</div>
+        <div class="d-flex gap-2">
+          <span class="badge bg-success-transparent align-self-center"><i class="ti ti-check me-1"></i>{{ 'DashboardBuilder.AutoSaved' | translate }}</span>
+          <button type="button" class="btn btn-light btn-sm" (click)="clearAll()" [disabled]="!widgets.length">
+            <i class="ti ti-trash me-1"></i>{{ 'DashboardBuilder.ClearAll' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" (click)="goHome()">
+            <i class="ti ti-eye me-1"></i>{{ 'DashboardBuilder.ViewOnHome' | translate }}
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div *ngIf="loading" class="d-flex justify-content-center py-5"><div class="spinner-border text-primary"></div></div>
+
+        <div class="db-canvas" cdkDropList id="dashCanvas" [cdkDropListData]="widgets" (cdkDropListDropped)="onDrop($event)"
+             [class.is-empty]="!widgets.length">
+
+          <div *ngIf="!widgets.length && !loading" class="db-empty">
+            <i class="ti ti-drag-drop"></i>
+            <div>{{ 'DashboardBuilder.EmptyHint' | translate }}</div>
+          </div>
+
+          <div class="db-widget" *ngFor="let w of widgets; let i = index" cdkDrag
+               [style.border-top]="'3px solid ' + (srcOf(w)?.color || '#6366f1')">
+            <div class="db-widget-head">
+              <span class="db-drag" cdkDragHandle title="drag"><i class="ti ti-grip-vertical"></i></span>
+              <i [class]="(srcOf(w)?.icon || '') + ' me-1'" [style.color]="srcOf(w)?.color"></i>
+              <span class="db-widget-title">{{ (srcOf(w)?.titleKey || '') | translate }}</span>
+              <span class="flex-grow-1"></span>
+              <div class="btn-group btn-group-sm db-typeswitch" role="group">
+                <button *ngFor="let ct of CHART_TYPES" type="button" class="btn"
+                        [class.active]="w.chartType === ct.value" (click)="setType(w, ct.value)"
+                        [title]="ct.labelKey | translate"><i [class]="ct.icon"></i></button>
+              </div>
+              <button type="button" class="btn btn-sm btn-icon btn-outline-danger ms-1" (click)="remove(i)" [title]="'General.Delete' | translate">
+                <i class="ti ti-x"></i>
+              </button>
+            </div>
+            <div class="db-widget-body">
+              <apx-chart *ngIf="boxes[w.id]?.show"
+                [series]="boxes[w.id].series" [chart]="boxes[w.id].chart" [xaxis]="boxes[w.id].xaxis" [yaxis]="boxes[w.id].yaxis"
+                [labels]="boxes[w.id].labels" [colors]="boxes[w.id].colors" [dataLabels]="boxes[w.id].dataLabels" [stroke]="boxes[w.id].stroke"
+                [plotOptions]="boxes[w.id].plotOptions" [markers]="boxes[w.id].markers" [tooltip]="boxes[w.id].tooltip"
+                [legend]="boxes[w.id].legend" [fill]="boxes[w.id].fill" [grid]="boxes[w.id].grid" [responsive]="boxes[w.id].responsive">
+              </apx-chart>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

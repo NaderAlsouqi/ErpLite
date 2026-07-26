@@ -1,6 +1,7 @@
 import {
   Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation
 } from '@angular/core';
+import { ApproveVoucherComponent } from '../../../shared/components/approve-voucher/approve-voucher.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -14,7 +15,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Sort } from '@angular/material/sort';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 
 import {
   ServBillService,
@@ -34,6 +35,7 @@ import { TaxService, TaxDto } from '../../../shared/services/tax.service';
 import { VoucherSerialService, VoucherSerial } from '../../../shared/services/voucher-serial.service';
 import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 
 export interface BillLine {
   des:     string;
@@ -47,6 +49,8 @@ export interface BillLine {
   selector: 'app-serv-bill',
   standalone: true,
   imports: [
+    ReportExportComponent,
+    ApproveVoucherComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -182,6 +186,24 @@ export class ServBillComponent implements OnInit {
   }
   closeGLEntry(): void { this.glEntryOpen = false; this.glEntry = null; this.glEntryBill = null; }
 
+  /** عرض المستند — open the bill's GL voucher in the journal page using its ACTUAL
+   *  keys (doctype varies per bill / serial config, so we can't hardcode it). */
+  openDocument(row: ServBillListItemDto): void {
+    this.sbService.getGLEntry(row.BillNo, row.MyYear, row.VType).subscribe({
+      next: e => {
+        const h = e?.Header;
+        if (!h || !h.TransNum) {
+          this.toastr.info(this.translate.instant('JournalVoucher.VoucherNotFound'));
+          return;
+        }
+        this.router.navigate(['/accounting/vouchers/journal'], {
+          queryParams: { docNum: h.DocNum, year: row.MyYear, vType: h.VType, docType: h.DocType },
+        });
+      },
+      error: () => this.toastr.error(this.translate.instant('General.Error')),
+    });
+  }
+
   totalItems = 0;
   pageSize = 20;
   pageIndex = 0;
@@ -218,17 +240,28 @@ export class ServBillComponent implements OnInit {
     private clusefService: ClusefService,
     private voucherSerialService: VoucherSerialService,
     public  cs: CompanySettingsService,
-    private reportService: ReportService,
+    public reportService: ReportService,
+    private router: Router,
+    private route: ActivatedRoute,
   ) {
     this.modalConfig.backdrop = 'static';
     this.modalConfig.keyboard = false;
   }
 
+  private _pendingVType: number | null = null;
+  private _pendingBillNo: number | null = null;
+
   ngOnInit(): void {
     const user = this.authService.currentUserValue;
     if (user) this.userName = user.DeliveryName ?? '';
+    // Capture workflow deep-link; applied after the serials load (async) so the
+    // serial-load default doesn't clobber ?vType=. Init runs after serials load.
+    const qp = this.route.snapshot.queryParamMap;
+    if (qp.has('year')) this.myYear = Number(qp.get('year')) || this.myYear;
+    this._pendingVType  = qp.has('vType') ? (Number(qp.get('vType')) || null) : null;
+    const bn = Number(qp.get('docNum'));
+    this._pendingBillNo = (qp.has('docNum') && bn > 0) ? bn : null;
     this.loadLookups();
-    this.initNewVoucher();
   }
 
   // ─── Lookups ─────────────────────────────────────────────────
@@ -255,14 +288,19 @@ export class ServBillComponent implements OnInit {
     this.voucherSerialService.getAll().subscribe({
       next: d => {
         this.voucherSerials = d.filter(s => s.VtypeNo === 45);
-        const first = this.voucherSerials[0];
-        if (first) {
-          this.vType   = first.VSerialNo;
-          this.brNo    = first.BR_No;
-          this.docType = first.VtypeNo;
+        let chosen = this.voucherSerials[0];
+        if (this._pendingVType != null) { const m = this.voucherSerials.find(s => s.VSerialNo === this._pendingVType); if (m) chosen = m; }
+        if (chosen) {
+          this.vType   = chosen.VSerialNo;
+          this.brNo    = chosen.BR_No;
+          this.docType = chosen.VtypeNo;
         }
+        // serials ready → open the deep-linked bill, else start a new one
+        if (this._pendingBillNo != null) { this.billNo = this._pendingBillNo; this.loadVoucher(this._pendingBillNo); }
+        else this.initNewVoucher();
+        this._pendingVType = null; this._pendingBillNo = null;
       },
-      error: () => {},
+      error: () => { this.initNewVoucher(); },
     });
     this.costCenterService.getAll().subscribe({
       next: d => { this.costCenters = d; },
@@ -705,7 +743,9 @@ export class ServBillComponent implements OnInit {
   clusefSearchFn(term: string, item: ClusefDto): boolean {
     if (!term) return true;
     term = term.toLowerCase();
-    return item.Des.toLowerCase().includes(term) || item.Clename.toLowerCase().includes(term) || item.No.toString().includes(term);
+    return (item.ArabicName?.toLowerCase().includes(term) ?? false)
+        || (item.EnglishName?.toLowerCase().includes(term) ?? false)
+        || (item.Id?.toString().includes(term) ?? false);
   }
 
   private today(): string {

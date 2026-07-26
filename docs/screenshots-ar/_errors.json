@@ -1,20 +1,10 @@
 [
   {
-    "route": "/sales/service/invoice",
-    "title": "فواتير الخدمات",
-    "section": "المبيعات",
+    "route": "/accounting/receipt-vouchers",
+    "title": "Receipt Vouchers (سند قبض)",
+    "section": "Accounting · Vouchers",
     "errors": [
-      "toast: × خطأ فشل في تحميل الفواتير",
-      "api: HTTP 500 https://localhost:7089/api/ServiceInvoice/GetInvoicesMainData/0"
-    ]
-  },
-  {
-    "route": "/sales/virtual/invoices",
-    "title": "الفواتير الافتراضية",
-    "section": "المبيعات",
-    "errors": [
-      "toast: × خطأ لم يتم العثور على التقرير المطلوب.",
-      "api: HTTP 404 https://localhost:7089/api/Accounts/Virtual/GetCustomers/0"
+      "api: HTTP 404 https://localhost:7089/api/Invoice/GetInvoices"
     ]
   }
 ]

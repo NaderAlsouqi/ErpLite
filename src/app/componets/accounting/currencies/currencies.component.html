@@ -28,9 +28,7 @@
         <button class="btn btn-sm btn-outline-secondary" (click)="loadData()" title="{{ 'General.Refresh' | translate }}">
           <i class="ti ti-refresh"></i>
         </button>
-        <button *hasPermission="'Currencies.Print'" class="btn btn-sm btn-outline-primary" (click)="print()">
-          <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-        </button>
+        <app-report-export *hasPermission="'Currencies.Print'" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
       </div>
     </div>
 
@@ -148,7 +146,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let cur of filteredCurrencies"
+              <tr *ngFor="let cur of filteredCurrencies | paginate:page:pageSize"
                   class="cursor-pointer"
                   (click)="onSelectRow(cur)"
                   [class.selected-row]="currentCurrency.cur_no === cur.cur_no">
@@ -164,6 +162,7 @@
             </tbody>
           </table>
         </div>
+        <app-paginator [total]="filteredCurrencies.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
       </div>
 
     </div>

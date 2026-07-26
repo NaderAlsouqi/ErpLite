@@ -1,0 +1,177 @@
+<app-page-header
+  [title]="'ClientMovement.Title' | translate"
+  [title1]="'Nav.Warehouse.Reports' | translate"
+  [activeTitle]="'ClientMovement.Title' | translate">
+</app-page-header>
+
+<div class="row cm-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">{{ 'ClientMovement.Title' | translate }}</div>
+        <div class="d-flex gap-2">
+          <app-report-export [disabled]="!fetched" (formatSelected)="reportPrint.setNextFormat($event); onExport()"></app-report-export>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Voucher type (input / output / both) ──────── -->
+        <div class="row g-3 align-items-center mb-3">
+          <div class="col-md-9">
+            <label class="form-label d-block">{{ 'ClientMovement.VoucherType' | translate }}</label>
+            <div class="d-flex gap-3 flex-wrap align-items-center">
+              <div class="form-check"><input class="form-check-input" type="radio" id="kIn" name="kind" [value]="1" [(ngModel)]="kind" [disabled]="both" (change)="onKindChange()" /><label class="form-check-label" for="kIn">{{ 'ClientMovement.Input' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" id="kOut" name="kind" [value]="2" [(ngModel)]="kind" [disabled]="both" (change)="onKindChange()" /><label class="form-check-label" for="kOut">{{ 'ClientMovement.Output' | translate }}</label></div>
+              <div class="form-check ms-3"><input class="form-check-input" type="checkbox" id="both" [(ngModel)]="both" (change)="onBothChange()" /><label class="form-check-label" for="both">{{ 'ClientMovement.Both' | translate }}</label></div>
+            </div>
+          </div>
+        
+
+        <!-- ── Client range ──────────────────────────────── -->
+        
+          <div class="col-md-3">
+            <div class="form-check"><input class="form-check-input" type="radio" id="cliAll" [value]="true" [(ngModel)]="clientAll" name="cliMode" (change)="onClientModeChange()" />
+              <label class="form-check-label" for="cliAll">{{ 'ClientMovement.AllClients' | translate }}</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" id="cliRange" [value]="false" [(ngModel)]="clientAll" name="cliMode" (change)="onClientModeChange()" />
+              <label class="form-check-label" for="cliRange">{{ 'ClientMovement.ClientRange' | translate }}</label></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ClientMovement.ClientFrom' | translate }}</label>
+            <ng-select [items]="clients" bindValue="ClientNo" [(ngModel)]="clientFrom" [searchFn]="clientSearchFn" [disabled]="clientAll"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-c="item">{{ c.ClientNo }} — {{ isAr ? c.Name : (c.EName || c.Name) }}</ng-template>
+              <ng-template ng-option-tmp let-c="item">{{ c.ClientNo }} — {{ isAr ? c.Name : (c.EName || c.Name) }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ClientMovement.ClientTo' | translate }}</label>
+            <ng-select [items]="clients" bindValue="ClientNo" [(ngModel)]="clientTo" [searchFn]="clientSearchFn" [disabled]="clientAll"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-c="item">{{ c.ClientNo }} — {{ isAr ? c.Name : (c.EName || c.Name) }}</ng-template>
+              <ng-template ng-option-tmp let-c="item">{{ c.ClientNo }} — {{ isAr ? c.Name : (c.EName || c.Name) }}</ng-template>
+            </ng-select>
+          </div>
+        
+
+        <!-- ── Entity (جهة) — output only ────────────────── -->
+        
+          <div class="col-md-3">
+            <div class="form-check"><input class="form-check-input" type="radio" id="entAll" [value]="true" [(ngModel)]="entityAll" name="entMode" (change)="onEntityModeChange()" />
+              <label class="form-check-label" for="entAll">{{ 'ClientMovement.AllEntities' | translate }}</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" id="entOne" [value]="false" [(ngModel)]="entityAll" name="entMode" (change)="onEntityModeChange()" />
+              <label class="form-check-label" for="entOne">{{ 'ClientMovement.ByEntity' | translate }}</label></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'ClientMovement.Entity' | translate }}</label>
+            <ng-select [items]="entities" bindValue="EntityNo" [(ngModel)]="entityNo" [searchFn]="entitySearchFn" [disabled]="entityAll"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-e="item">{{ e.EntityNo }} — {{ isAr ? e.Name : (e.EName || e.Name) }}</ng-template>
+              <ng-template ng-option-tmp let-e="item">{{ e.EntityNo }} — {{ isAr ? e.Name : (e.EName || e.Name) }}</ng-template>
+            </ng-select>
+          </div>
+        
+
+        <!-- ── Item range ────────────────────────────────── -->
+        
+          <div class="col-md-3">
+            <div class="form-check"><input class="form-check-input" type="radio" id="itmAll" [value]="true" [(ngModel)]="itemAll" name="itmMode" (change)="onItemModeChange()" />
+              <label class="form-check-label" for="itmAll">{{ 'ClientMovement.AllItems' | translate }}</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" id="itmRange" [value]="false" [(ngModel)]="itemAll" name="itmMode" (change)="onItemModeChange()" />
+              <label class="form-check-label" for="itmRange">{{ 'ClientMovement.ItemRange' | translate }}</label></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ClientMovement.ItemFrom' | translate }}</label>
+            <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="itemFrom" [searchFn]="itemSearchFn" [disabled]="itemAll"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+              <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ClientMovement.ItemTo' | translate }}</label>
+            <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="itemTo" [searchFn]="itemSearchFn" [disabled]="itemAll"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+              <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+            </ng-select>
+          </div>
+        
+
+        <!-- ── Period ────────────────────────────────────── -->
+        
+          <div class="col-md-3">
+            <label class="form-label">{{ 'ClientMovement.DateFrom' | translate }} <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'ClientMovement.DateTo' | translate }} <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="dateTo" (change)="onFilterChange()" />
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5"><div class="spinner-border text-primary" role="status"></div></div>
+
+        <!-- Results (grouped by client) -->
+        <ng-container *ngIf="!loading && fetched">
+          <div *ngIf="rows.length === 0" class="alert alert-info text-center">{{ 'ClientMovement.NoData' | translate }}</div>
+
+          <div *ngIf="rows.length > 0" class="table-responsive">
+            <table class="table table-bordered table-hover table-sm mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th>{{ 'ClientMovement.VoucherType' | translate }}</th>
+                  <th>{{ 'ClientMovement.ItemNo' | translate }}</th>
+                  <th>{{ 'ClientMovement.ItemName' | translate }}</th>
+                  <th>{{ 'ClientMovement.Unit' | translate }}</th>
+                  <th class="text-end">{{ 'ClientMovement.Qty' | translate }}</th>
+                  <th>{{ 'ClientMovement.Store' | translate }}</th>
+                  <th class="text-end" *ngIf="canViewCost">{{ 'ClientMovement.AvgCost' | translate }}</th>
+                  <th class="text-end" *ngIf="canViewCost">{{ 'ClientMovement.Total' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let g of groups">
+                  <tr class="cm-client-row">
+                    <td [attr.colspan]="canViewCost ? 8 : 6">{{ clientLabel(g) }}</td>
+                  </tr>
+                  <tr *ngFor="let r of g.rows">
+                    <td>{{ kindLabel(r.Kind) }}</td>
+                    <td>{{ r.ItemNo }}</td>
+                    <td>{{ isAr ? r.ItemName : (r.ItemEName || r.ItemName) }}</td>
+                    <td>{{ isAr ? r.UnitName : (r.UnitEName || r.UnitName) }}</td>
+                    <td class="text-end">{{ r.TotQty | number:numFmt }}</td>
+                    <td>{{ isAr ? r.StoreName : (r.StoreEName || r.StoreName) }}</td>
+                    <td class="text-end" *ngIf="canViewCost">{{ r.AvgCost | number:numFmt }}</td>
+                    <td class="text-end fw-semibold" *ngIf="canViewCost">{{ r.TotalPrice | number:numFmt }}</td>
+                  </tr>
+                  <tr class="cm-subtotal-row fw-bold">
+                    <td colspan="4">{{ 'ClientMovement.ClientTotal' | translate }}</td>
+                    <td class="text-end">{{ groupQty(g) | number:numFmt }}</td>
+                    <td></td>
+                    <td *ngIf="canViewCost"></td>
+                    <td class="text-end" *ngIf="canViewCost">{{ groupTotal(g) | number:numFmt }}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+              <tfoot class="fw-bold table-light" *ngIf="canViewCost">
+                <tr>
+                  <td colspan="7">{{ 'General.Total' | translate }}</td>
+                  <td class="text-end">{{ grandTotal | number:numFmt }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

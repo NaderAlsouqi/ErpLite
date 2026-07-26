@@ -1,6 +1,7 @@
 import {
   Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation
 } from '@angular/core';
+import { ApproveVoucherComponent } from '../../../shared/components/approve-voucher/approve-voucher.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -30,6 +31,7 @@ import { CurrencyService, CurrencyDto } from '../../../shared/services/currency.
 import { VoucherSerialService, VoucherSerial } from '../../../shared/services/voucher-serial.service';
 import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 
 export interface ChequeWithdrawalLine {
   cheqNum: string;
@@ -47,6 +49,8 @@ export interface ChequeWithdrawalLine {
   selector: 'app-cheque-withdrawal',
   standalone: true,
   imports: [
+    ReportExportComponent,
+    ApproveVoucherComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -190,7 +194,7 @@ export class ChequeWithdrawalComponent implements OnInit {
     private currencyService: CurrencyService,
     private voucherSerialService: VoucherSerialService,
     public cs: CompanySettingsService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {
     this.modalConfig.backdrop = 'static';
     this.modalConfig.keyboard = false;

@@ -7,6 +7,9 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { AccfService, AccfDto } from '../../../shared/services/accf.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 import {
   AccBelongReportService,
   AccBelongFilterDto,
@@ -19,7 +22,8 @@ type ReportMode = 'summary' | 'detail' | 'monthly' | 'analysis';
 @Component({
   selector: 'app-acc-belong-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SharedModule, NgSelectModule],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, TranslateModule, SharedModule, NgSelectModule, PaginatorComponent, PaginatePipe],
   templateUrl: './acc-belong-report.component.html',
   styleUrl: './acc-belong-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -44,6 +48,8 @@ export class AccBelongReportComponent implements OnInit {
   monthlyRows: AccBelongMonthlyRowDto[] = [];
   loading  = false;
   fetched  = false;
+  page = 1;
+  pageSize = 10;
 
   readonly months   = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   readonly monthKeys = ['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'] as const;
@@ -83,7 +89,7 @@ export class AccBelongReportComponent implements OnInit {
   constructor(
     private svc:         AccBelongReportService,
     private accfSvc:     AccfService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -134,12 +140,12 @@ export class AccBelongReportComponent implements OnInit {
 
     if (this.reportMode === 'monthly') {
       this.svc.getMonthly(filter).subscribe({
-        next: data => { this.monthlyRows = data; this.fetched = true; this.loading = false; },
+        next: data => { this.monthlyRows = data; this.page = 1; this.fetched = true; this.loading = false; },
         error: () => { this.loading = false; },
       });
     } else {
       this.svc.getReport(filter).subscribe({
-        next: data => { this.rows = data; this.fetched = true; this.loading = false; },
+        next: data => { this.rows = data; this.page = 1; this.fetched = true; this.loading = false; },
         error: () => { this.loading = false; },
       });
     }

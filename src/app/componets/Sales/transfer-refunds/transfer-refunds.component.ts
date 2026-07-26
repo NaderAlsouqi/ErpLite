@@ -9,6 +9,8 @@ import { SharedModule } from "../../../shared/common/sharedmodule";
 import { FotaraService, TransferRefundInvoiceData, FotaraApiResponse } from "../../../shared/services/fotara.service";
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../shared/services/auth.service';
+import { CompanySettingsService } from '../../../shared/services/company-settings.service';
+import { formatAmount, parseAmount } from '../../../shared/utils/amount.util';
 // Material Table imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
@@ -75,7 +77,8 @@ export class TransferRefundsComponent implements OnInit {
     private authService: AuthService,
     private translate: TranslateService,
     private toastr: ToastrService,
-    private router: Router
+    private router: Router,
+    private cs: CompanySettingsService
   ) {
     this.dataSource.filterPredicate = (data: any, filter: string) => {
       return data.DocumentNumber.toLowerCase().includes(filter) ||
@@ -133,7 +136,7 @@ export class TransferRefundsComponent implements OnInit {
           InvoiceNumber: refund.InvoiceNumber || '',
           CustomerName: refund.CustomerName,
           FinancialYear: Math.floor(Number(refund.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(3),
+          InvoiceAmount: formatAmount(refund.InvoiceAmount, this.cs.billDecimals),
         }));
 
         // Store all data
@@ -229,7 +232,7 @@ export class TransferRefundsComponent implements OnInit {
             );
           case 'CustomerName': return this.compare(a.CustomerName, b.CustomerName, isAsc);
           case 'FinancialYear': return this.compare(a.FinancialYear, b.FinancialYear, isAsc);
-          case 'RefundAmount': return this.compare(parseFloat(a.InvoiceAmount), parseFloat(b.InvoiceAmount), isAsc);
+          case 'RefundAmount': return this.compare(parseAmount(a.InvoiceAmount), parseAmount(b.InvoiceAmount), isAsc);
           default: return 0;
         }
       });

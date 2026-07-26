@@ -2,6 +2,8 @@ import { Component, ElementRef, Renderer2 } from '@angular/core';
 import { Menu, NavService } from '../../services/navservice';
 // import { Menu } from 'smart-webcomponents-angular';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
   selector: 'app-main-layout',
@@ -11,9 +13,13 @@ import { Subscription } from 'rxjs';
 export class MainLayoutComponent {
   menuItems!:Menu[];
   menuitemsSubscribe$!:Subscription
+  routerSub$!:Subscription
+  /** Per-page key for the global attachments panel (derived from the route). */
+  attachmentKey = '';
   constructor(
     private navServices: NavService,
-    private elementRef: ElementRef,private renderer:Renderer2
+    private elementRef: ElementRef,private renderer:Renderer2,
+    private router: Router
   ) {
     const htmlElement =
     this.elementRef.nativeElement.ownerDocument.documentElement;
@@ -32,6 +38,18 @@ export class MainLayoutComponent {
     this.menuitemsSubscribe$ = this.navServices.items.subscribe((items: any) => {
       this.menuItems = items;
     });
+
+    this.attachmentKey = this.toAttachmentKey(this.router.url);
+    this.routerSub$ = this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e: any) => {
+        this.attachmentKey = this.toAttachmentKey(e.urlAfterRedirects || this.router.url);
+      });
+  }
+
+  /** Stable per-page key from a route URL (drop query/fragment + edge slashes). */
+  private toAttachmentKey(url: string): string {
+    return (url || '').split('?')[0].split('#')[0].replace(/^\/+|\/+$/g, '') || 'home';
   }
 
   clearNavDropdown() {
@@ -64,6 +82,7 @@ export class MainLayoutComponent {
 
   ngOnDestroy() {
     this.menuitemsSubscribe$.unsubscribe();
+    this.routerSub$?.unsubscribe();
   }
   clearToggle() {
     let html = this.elementRef.nativeElement.ownerDocument.documentElement;

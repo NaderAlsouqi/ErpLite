@@ -47,10 +47,8 @@
               <i class="ti ti-player-skip-forward"></i>
             </button>
             <div class="vr mx-1"></div>
-            <button *hasPermission="'ServBill.Print'" class="btn btn-sm btn-outline-primary"
-              (click)="printVoucher()" [disabled]="!billNo || loading">
-              <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-            </button>
+            <app-report-export *hasPermission="'ServBill.Print'" [disabled]="!billNo || loading" (formatSelected)="reportService.setNextFormat($event); printVoucher()"></app-report-export>
+            <app-approve-voucher></app-approve-voucher>
           </div>
         </ng-container>
       </div>
@@ -113,10 +111,10 @@
               <label class="form-label">{{ 'ServBill.BrNo' | translate }}</label>
               <input type="number" class="form-control" [(ngModel)]="brNo" readonly />
             </div>
-          </div>
+          
 
           <!-- ── Header row 2 ───────────────────────────────── -->
-          <div class="row g-3 mb-3">
+          
 
             <!-- العميل -->
             <div class="col-md-5">
@@ -170,20 +168,20 @@
               </div>
             </div>
 
-            <!-- نوع الضريبة -->
+            <!-- نوع الضريبة (clusef) -->
             <div class="col-md-4">
               <label class="form-label">{{ 'ServBill.Tax' | translate }}</label>
               <ng-select
                 [items]="clusefItems"
-                bindValue="No"
+                bindValue="Id"
                 [(ngModel)]="taxNo"
                 (change)="onClusefSelected()"
                 [searchFn]="clusefSearchFn"
                 [searchable]="true"
                 [clearable]="true"
                 [placeholder]="'ServBill.Tax' | translate">
-                <ng-template ng-label-tmp let-c="item">{{ c.No }} — {{ c.Des }}</ng-template>
-                <ng-template ng-option-tmp let-c="item">{{ c.No }} — {{ c.Des }}</ng-template>
+                <ng-template ng-label-tmp let-c="item">{{ c.Id }} — {{ c.ArabicName }}</ng-template>
+                <ng-template ng-option-tmp let-c="item">{{ c.Id }} — {{ c.ArabicName }}</ng-template>
               </ng-select>
             </div>
 
@@ -199,14 +197,14 @@
                 [searchable]="true"
                 [clearable]="true"
                 [placeholder]="'ServBill.TaxGroup' | translate">
-                <ng-template ng-label-tmp let-t="item">{{ t.TaxNo }} — {{ t.TaxNameA }}</ng-template>
-                <ng-template ng-option-tmp let-t="item">{{ t.TaxNo }} — {{ t.TaxNameA }}</ng-template>
+                <ng-template ng-label-tmp let-t="item">{{ t.TaxNo }} — {{ t.TaxNameA }} ({{ t.TaxPerc }}%)</ng-template>
+                <ng-template ng-option-tmp let-t="item">{{ t.TaxNo }} — {{ t.TaxNameA }} ({{ t.TaxPerc }}%)</ng-template>
               </ng-select>
             </div>
-          </div>
+          
 
           <!-- ── Header row 3: CashPay / SalNo / Des ─ -->
-          <div class="row g-3 mb-3">
+          
 
             <!-- نقدي -->
             <div class="col-md-2 d-flex align-items-end">
@@ -271,10 +269,10 @@
                 <ng-template ng-option-tmp let-c="item">{{ c.CcntrNo }} — {{ c.CcAname }}</ng-template>
               </ng-select>
             </div>
-          </div>
+          
 
           <!-- ── Header row 4: ContactP / DelvTerm / PoNumber ─── -->
-          <div class="row g-3 mb-3">
+          
 
             <!-- الشخص المسؤل -->
             <div class="col-md-4">
@@ -296,10 +294,10 @@
               <input type="text" class="form-control" [(ngModel)]="poNumber"
                 [placeholder]="'ServBill.PoNumber' | translate" />
             </div>
-          </div>
+          
 
           <!-- ── Bank details ───────────────────────────────────── -->
-          <div class="row g-3 mb-3">
+          
 
             <!-- اسم البنك -->
             <div class="col-md-3">
@@ -430,13 +428,17 @@
 
           <!-- ── Action buttons ─────────────────────────────── -->
           <div class="d-flex gap-2 flex-wrap">
-            <button *hasPermission="'ServBill.Save'" class="btn btn-primary" (click)="save()"
+            <button *hasPermission="['ServBill.Save', 'ServBill.Create']" class="btn btn-success" (click)="initNewVoucher()"
+              [disabled]="saving || loading">
+              <i class="ti ti-file-plus me-1"></i>{{ 'General.New' | translate }}
+            </button>
+            <button *hasPermission="['ServBill.Save', 'ServBill.Create']" class="btn btn-primary" (click)="save()"
               [disabled]="saving || loading">
               <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
               <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
               {{ 'General.Save' | translate }}
             </button>
-            <button *hasPermission="'ServBill.Save'" class="btn btn-outline-secondary" (click)="duplicate()"
+            <button *hasPermission="['ServBill.Save', 'ServBill.Create']" class="btn btn-outline-secondary" (click)="duplicate()"
               [disabled]="!_loadedBillNo || duplicating || saving || loading"
               [title]="'ServBill.Duplicate' | translate">
               <span *ngIf="duplicating" class="spinner-border spinner-border-sm me-1" role="status"></span>
@@ -511,9 +513,7 @@
                         <i class="ti ti-book me-1"></i>{{ 'ServBill.ViewEntry' | translate }}
                       </button>
                       <button class="btn btn-sm btn-outline-secondary ms-1"
-                        [routerLink]="['/accounting/vouchers/journal']"
-                        [queryParams]="{ docNum: row.BillNo, year: row.MyYear, vType: row.VType, docType: 1 }"
-                        (click)="$event.stopPropagation()">
+                        (click)="openDocument(row); $event.stopPropagation()">
                         <i class="ti ti-file-text me-1"></i>{{ 'General.ViewDocument' | translate }}
                       </button>
                     </td>

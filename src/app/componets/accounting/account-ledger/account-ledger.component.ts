@@ -7,6 +7,9 @@ import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 import { ChartOfAccountsService, ChartOfAccountDto } from '../../../shared/services/chart-of-accounts.service';
 import {
   AccountLedgerService,
@@ -17,7 +20,8 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
 @Component({
   selector: 'app-account-ledger',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective, PaginatorComponent, PaginatePipe],
   templateUrl: './account-ledger.component.html',
   styleUrl: './account-ledger.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -37,6 +41,8 @@ export class AccountLedgerComponent implements OnInit {
   loading = false;
   fetched = false;
   shownAcc: ChartOfAccountDto | null = null;
+  page = 1;
+  pageSize = 10;
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
   get rows() { return this.result?.Rows ?? []; }
@@ -51,7 +57,7 @@ export class AccountLedgerComponent implements OnInit {
   constructor(
     private svc:         AccountLedgerService,
     private accountsSvc: ChartOfAccountsService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
     private router:      Router,
@@ -103,6 +109,7 @@ export class AccountLedgerComponent implements OnInit {
       next: data => {
         this.result = data ?? { OpeningBalance: 0, FinalBalance: 0, Rows: [] };
         this.shownAcc = acc;
+        this.page = 1;
         this.fetched = true;
         this.loading = false;
         if (this.rows.length === 0) {

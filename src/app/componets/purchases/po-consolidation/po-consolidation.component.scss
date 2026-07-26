@@ -1,0 +1,57 @@
+.po-cons-container {
+
+  // summary cards
+  .pc-card {
+    border: 1px solid var(--default-border);
+    border-radius: .6rem;
+    padding: .8rem 1rem;
+    height: 100%;
+
+    .pc-label { font-size: .8rem; color: var(--text-muted); margin-bottom: .2rem; }
+    .pc-value { font-size: 1.4rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .pc-sub   { font-size: .78rem; color: var(--text-muted); margin-top: .1rem; }
+
+    // orders that no longer match the deal they came from
+    &.pc-warn { border-color: rgba(255, 193, 7, .6); background: rgba(255, 193, 7, .08); }
+  }
+
+  .pc-grid {
+    td, th { vertical-align: middle; }
+    // numbers line up column-wise when scanning values
+    td.text-end { font-variant-numeric: tabular-nums; }
+
+    .pc-row.pc-open > td { background: rgba(13, 110, 253, .05); }
+
+    .pc-detail > td {
+      background: rgba(0, 0, 0, .02);
+      padding: .5rem .75rem;
+    }
+  }
+}
+
+[data-theme-mode='dark'] {
+  .po-cons-container {
+    .pc-card.pc-warn { background: rgba(255, 193, 7, .16); }
+    .pc-grid {
+      .pc-row.pc-open > td { background: rgba(13, 110, 253, .14); }
+      .pc-detail > td { background: rgba(255, 255, 255, .04); }
+    }
+  }
+}
+
+// ── طلب التجميع document bar + selection ─────────────────────────────────
+.po-cons-container {
+  .pc-doc { border-inline-start: 3px solid var(--primary-color); padding-inline-start: .75rem; }
+
+  .pc-sel-summary { font-size: .85rem; }
+
+  // orders ticked into the current consolidation
+  .pc-grid tr.pc-picked > td { background: rgba(25, 135, 84, .07); }
+
+  // a disabled tick means another consolidation already owns that order
+  .pc-grid input.form-check-input:disabled { opacity: .45; cursor: not-allowed; }
+}
+
+[data-theme-mode='dark'] .po-cons-container .pc-grid tr.pc-picked > td {
+  background: rgba(25, 135, 84, .18);
+}

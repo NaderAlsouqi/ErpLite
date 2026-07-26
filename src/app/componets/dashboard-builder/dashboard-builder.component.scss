@@ -1,0 +1,58 @@
+.db-container {
+  .card-title { font-weight: 600; }
+
+  /* ── palette ── */
+  .db-palette { display: flex; flex-direction: column; gap: 8px; }
+  .db-chip {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--bs-border-color, #e2e8f0); border-radius: 8px;
+    padding: 9px 12px; cursor: grab; background: var(--bs-body-bg, #fff);
+    transition: box-shadow .15s, border-color .15s;
+    i:first-child { font-size: 1.1rem; }
+    .db-chip-lbl { font-size: .82rem; font-weight: 500; flex-grow: 1; }
+    .db-chip-add { color: #94a3b8; }
+    &:hover { border-color: var(--primary-color, #1b2b4a); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    &:active { cursor: grabbing; }
+  }
+  .db-chip-preview {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    background: var(--primary-color, #1b2b4a); color: #fff; border-radius: 8px;
+    font-size: .82rem; box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  }
+
+  /* ── canvas ── */
+  .db-canvas {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;
+    min-height: 320px;
+    &.is-empty { display: block; }
+  }
+  .db-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    min-height: 300px; color: #94a3b8; text-align: center;
+    border: 2px dashed var(--bs-border-color, #cbd5e1); border-radius: 12px;
+    i { font-size: 2.4rem; }
+  }
+  .db-widget {
+    border: 1px solid var(--bs-border-color, #e2e8f0); border-radius: 10px;
+    background: var(--bs-body-bg, #fff); overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .db-widget-head {
+    display: flex; align-items: center; gap: 4px; padding: 7px 10px;
+    border-bottom: 1px solid var(--bs-border-color, #eef2f7);
+    .db-widget-title { font-size: .82rem; font-weight: 600; white-space: nowrap; }
+    .db-drag { cursor: grab; color: #94a3b8; }
+  }
+  .db-widget-body { padding: 6px 8px 2px; }
+  .db-typeswitch .btn { padding: 2px 6px; }
+  .db-typeswitch .btn.active { background: var(--primary-color, #1b2b4a); color: #fff; border-color: var(--primary-color, #1b2b4a); }
+
+  /* CDK drag visuals */
+  .cdk-drag-preview { z-index: 3000; }
+  .cdk-drag-placeholder { opacity: .4; }
+  .db-canvas.cdk-drop-list-dragging .db-widget:not(.cdk-drag-placeholder) { transition: transform .2s; }
+}
+
+@media (max-width: 991.98px) {
+  .db-container .db-canvas { grid-template-columns: 1fr; }
+}

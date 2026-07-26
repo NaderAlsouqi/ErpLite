@@ -1,0 +1,342 @@
+<app-page-header
+  [title]="'Rfq.Title' | translate"
+  [title1]="'Nav.Purchases.Documents' | translate"
+  [activeTitle]="'Rfq.Title' | translate">
+</app-page-header>
+
+<div class="rfq-container">
+  <div class="card custom-card">
+
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'offers'" (click)="switchTab('offers')" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'Rfq.OffersTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'compare'" (click)="switchTab('compare')" href="javascript:void(0)">
+            <i class="ti ti-arrows-left-right me-1"></i>{{ 'Rfq.ComparisonTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'best'" (click)="switchTab('best')" href="javascript:void(0)">
+            <i class="ti ti-trophy me-1"></i>{{ 'Rfq.BestDealTab' | translate }}
+          </a>
+        </li>
+      </ul>
+      <app-report-export *hasPermission="pPrint"
+        (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
+    </div>
+
+    <div class="card-body">
+
+      <!-- ── Filters ── -->
+      <div class="row g-2 mb-3">
+        <div class="col-md-2 year-field" [class.year-off]="filters.year !== currentYear">
+          <label class="form-label year-field" [class.year-off]="filters.year !== currentYear">{{ 'SupplierQuotation.Year' | translate }}</label>
+          <input type="number" class="form-control year-field" [class.year-off]="filters.year !== currentYear"
+                 [(ngModel)]="filters.year" (change)="onFilterChange()" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.Status' | translate }}</label>
+          <select class="form-select" [(ngModel)]="filters.status" (change)="onFilterChange()">
+            <option *ngFor="let s of statusOptions" [ngValue]="s.v">{{ s.k | translate }}</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'SupplierQuotation.Supplier' | translate }}</label>
+          <ng-select [items]="lookups.Suppliers" bindValue="VenNo" [(ngModel)]="filters.venNo"
+                     (change)="onFilterChange()" [clearable]="true"
+                     [placeholder]="'Rfq.AllSuppliers' | translate" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.VenNo }} — {{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.VenNo }} — {{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'SupplierQuotation.MaterialReqNo' | translate }}</label>
+          <ng-select [items]="lookups.MaterialRequests" bindValue="ReqNo" [(ngModel)]="filters.itemReq"
+                     (change)="onFilterChange()" [clearable]="true"
+                     [placeholder]="'Rfq.AllRequests' | translate" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.ReqNo }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.ReqNo }}<span *ngIf="x.Section"> — {{ x.Section }}</span></ng-template>
+          </ng-select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">{{ 'General.DateFrom' | translate }}</label>
+          <input type="date" class="form-control" [(ngModel)]="filters.fromDate" (change)="onFilterChange()" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'General.DateTo' | translate }}</label>
+          <input type="date" class="form-control" [(ngModel)]="filters.toDate" (change)="onFilterChange()" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'Rfq.PoSerial' | translate }}</label>
+          <ng-select [items]="lookups.PoSerials" bindValue="SerialNo" [(ngModel)]="poSerial"
+                     [clearable]="false" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.SerialNo }} — {{ isAr ? x.SName : (x.SEName || x.SName) }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.SerialNo }} — {{ isAr ? x.SName : (x.SEName || x.SName) }}</ng-template>
+          </ng-select>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mb-3">
+        <button class="btn btn-primary" (click)="search()" [disabled]="loading">
+          <i class="ti ti-search me-1"></i>{{ 'General.Search' | translate }}
+        </button>
+      </div>
+
+      <!-- ════ Offers tab ════ -->
+      <ng-container *ngIf="activeTab === 'offers'">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th>{{ 'SupplierQuotation.QuotNo' | translate }}</th>
+                <th>{{ 'SupplierQuotation.Date' | translate }}</th>
+                <th>{{ 'SupplierQuotation.Supplier' | translate }}</th>
+                <th>{{ 'SupplierQuotation.MaterialReqNo' | translate }}</th>
+                <th>{{ 'SupplierQuotation.ValidUntil' | translate }}</th>
+                <th class="text-end">{{ 'SupplierQuotation.Net' | translate }}</th>
+                <th class="text-center">{{ 'Rfq.Lines' | translate }}</th>
+                <th>{{ 'SupplierQuotation.Status' | translate }}</th>
+                <th>{{ 'SupplierQuotation.PurchaseOrder' | translate }}</th>
+                <th class="text-center" style="width:16%">{{ 'Rfq.Actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of offers | paginate:page:pageSize">
+                <td>{{ r.QuotNo }}</td>
+                <td>{{ (r.QDate || '') | slice:0:10 }}</td>
+                <td>{{ r.VenName }}</td>
+                <td>{{ r.ItemReq }}</td>
+                <td>
+                  {{ (r.ValidUntil || '') | slice:0:10 }}
+                  <span *ngIf="r.Expired === 1" class="badge bg-warning text-dark ms-1">{{ 'Rfq.Expired' | translate }}</span>
+                </td>
+                <td class="text-end fw-semibold">{{ r.Net | number:'1.0-3' }} <small class="text-muted">{{ r.CurName }}</small></td>
+                <td class="text-center">{{ r.LineCount }}</td>
+                <td><span [class]="statusClass(r.Status)">{{ statusKey(r.Status) | translate }}</span></td>
+                <td>
+                  <a *ngIf="r.PONo" href="javascript:void(0)" (click)="openPurchaseOrder(r)">{{ r.PONo }}</a>
+                </td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm" *hasPermission="pApprove">
+                    <button class="btn btn-outline-success" (click)="approve(r)"
+                            [disabled]="r.Status === SQ.Approved"
+                            [title]="'Rfq.Approve' | translate">
+                      <i class="ti ti-check"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" (click)="unapprove(r)"
+                            [disabled]="r.Status !== SQ.Approved"
+                            [title]="'Rfq.Unapprove' | translate">
+                      <i class="ti ti-arrow-back-up"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" (click)="reject(r, 1)"
+                            [disabled]="r.Status !== SQ.New"
+                            [title]="'Rfq.Reject' | translate">
+                      <i class="ti ti-x"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" (click)="reject(r, 0)"
+                            [disabled]="r.Status !== SQ.Rejected"
+                            [title]="'Rfq.Reopen' | translate">
+                      <i class="ti ti-refresh"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="offers.length === 0">
+                <td colspan="10" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <app-paginator [total]="offers.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+      </ng-container>
+
+      <!-- ════ Comparison tab ════ -->
+      <ng-container *ngIf="activeTab === 'compare'">
+        <p class="text-muted small mb-3">
+          <i class="ti ti-info-circle me-1"></i>{{ 'Rfq.ComparisonHint' | translate }}
+        </p>
+
+        <div *ngIf="itemGroups.length === 0" class="text-center text-muted py-4">
+          {{ 'General.NoRecordsFound' | translate }}
+        </div>
+
+        <div *ngFor="let g of itemGroups" class="mb-4 cmp-group">
+          <div class="cmp-head">
+            <span class="fw-bold">{{ g.itemNo }}</span> — {{ g.itemName }}
+            <span class="badge bg-info ms-2">{{ 'Rfq.OfferCount' | translate:{ n: g.rows.length } }}</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th>{{ 'SupplierQuotation.Supplier' | translate }}</th>
+                  <th>{{ 'SupplierQuotation.QuotNo' | translate }}</th>
+                  <th class="text-end">{{ 'SupplierQuotation.Qty' | translate }}</th>
+                  <th>{{ 'SupplierQuotation.UnitName' | translate }}</th>
+                  <th class="text-end">{{ 'Rfq.NetPrice' | translate }}</th>
+                  <th class="text-end">{{ 'SupplierQuotation.Total' | translate }}</th>
+                  <th class="text-center">{{ 'SupplierQuotation.DelvDays' | translate }}</th>
+                  <th>{{ 'SupplierQuotation.Status' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of g.rows" [class.table-success]="r.IsLowest === 1">
+                  <td>
+                    <i *ngIf="r.IsLowest === 1" class="ti ti-star-filled text-warning me-1"
+                       [title]="'Rfq.Lowest' | translate"></i>{{ r.VenName }}
+                  </td>
+                  <td>{{ r.QuotNo }}</td>
+                  <td class="text-end">{{ r.Qty | number:'1.0-3' }}</td>
+                  <td>{{ r.UnitName }}</td>
+                  <td class="text-end fw-semibold">{{ r.NetPrice | number:'1.0-3' }}</td>
+                  <td class="text-end">{{ r.LineTotal | number:'1.0-3' }}</td>
+                  <td class="text-center">{{ r.DelvDays }}</td>
+                  <td><span [class]="statusClass(r.Status)">{{ statusKey(r.Status) | translate }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </ng-container>
+
+
+      <!-- best deal: award everything to one supplier, or split it per item -->
+      <ng-container *ngIf="activeTab === 'best'">
+        <div *ngIf="!bestDeal || !bestDeal.Suppliers.length" class="text-center text-muted py-4">
+          {{ 'General.NoRecordsFound' | translate }}
+        </div>
+
+        <ng-container *ngIf="bestDeal && bestDeal.Suppliers.length">
+          <div class="row g-3 mb-3 bd-cards">
+            <div class="col-md-4">
+              <div class="bd-card" [class.bd-win]="!noCompleteOffer">
+                <div class="bd-label"><i class="ti ti-building-store me-1"></i>{{ 'Rfq.BestSingle' | translate }}</div>
+                <div class="bd-value" *ngIf="!noCompleteOffer">{{ bestDeal.Totals.BestSingleTotal | number:'1.0-3' }}</div>
+                <div class="bd-value text-muted" *ngIf="noCompleteOffer">&mdash;</div>
+                <div class="bd-sub" *ngIf="!noCompleteOffer">
+                  {{ bestDeal.Totals.BestSingleVenName }}
+                  <span class="text-muted">({{ bestDeal.Totals.BestSingleQuotNo }})</span>
+                </div>
+                <div class="bd-sub text-warning" *ngIf="noCompleteOffer">{{ 'Rfq.NoCompleteOffer' | translate }}</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="bd-card">
+                <div class="bd-label"><i class="ti ti-arrows-split me-1"></i>{{ 'Rfq.SplitAward' | translate }}</div>
+                <div class="bd-value">{{ bestDeal.Totals.SplitTotal | number:'1.0-3' }}</div>
+                <div class="bd-sub">{{ 'Rfq.AcrossSuppliers' | translate:{ n: splitSupplierCount } }}</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="bd-card" [class.bd-save]="(bestDeal.Totals.Savings || 0) > 0">
+                <div class="bd-label"><i class="ti ti-pig-money me-1"></i>{{ 'Rfq.Savings' | translate }}</div>
+                <div class="bd-value" *ngIf="!noCompleteOffer">
+                  {{ bestDeal.Totals.Savings | number:'1.0-3' }}
+                  <small *ngIf="savingsPct">({{ savingsPct }}%)</small>
+                </div>
+                <div class="bd-value text-muted" *ngIf="noCompleteOffer">&mdash;</div>
+                <div class="bd-sub">{{ 'Rfq.SavingsHint' | translate }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">{{ 'Rfq.SupplierStanding' | translate }}</div>
+          <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm align-middle mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th>{{ 'SupplierQuotation.Supplier' | translate }}</th>
+                  <th>{{ 'SupplierQuotation.QuotNo' | translate }}</th>
+                  <th class="text-center">{{ 'Rfq.Coverage' | translate }}</th>
+                  <th class="text-end">{{ 'SupplierQuotation.Total' | translate }}</th>
+                  <th class="text-end">{{ 'SupplierQuotation.Discount' | translate }}</th>
+                  <th class="text-end">{{ 'SupplierQuotation.Net' | translate }}</th>
+                  <th class="text-center">{{ 'SupplierQuotation.DelvDays' | translate }}</th>
+                  <th>{{ 'SupplierQuotation.Status' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of bestDeal.Suppliers" [class.table-success]="r.IsBestSingle === 1">
+                  <td>
+                    <i *ngIf="r.IsBestSingle === 1" class="ti ti-trophy text-warning me-1"
+                       [title]="'Rfq.BestSingle' | translate"></i>{{ r.VenName }}
+                  </td>
+                  <td>{{ r.QuotNo }}</td>
+                  <td class="text-center">
+                    <span [class]="r.IsComplete === 1 ? 'badge bg-success' : 'badge bg-warning text-dark'"
+                          [title]="(r.IsComplete === 1 ? 'Rfq.CoversAll' : 'Rfq.PartialOffer') | translate">
+                      {{ r.ItemsQuoted }}/{{ r.ItemsInScope }}
+                    </span>
+                  </td>
+                  <td class="text-end">{{ r.LineTotal | number:'1.0-3' }}</td>
+                  <td class="text-end">{{ r.DisAmt | number:'1.0-3' }}</td>
+                  <td class="text-end fw-semibold">{{ r.Net | number:'1.0-3' }} <small class="text-muted">{{ r.CurName }}</small></td>
+                  <td class="text-center">{{ r.MaxDelvDays }}</td>
+                  <td><span [class]="statusClass(r.Status)">{{ statusKey(r.Status) | translate }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section-title">{{ 'Rfq.SplitAwardDetail' | translate }}</div>
+          <p class="text-muted small mb-2"><i class="ti ti-info-circle me-1"></i>{{ 'Rfq.BestDealHint' | translate }}</p>
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th>{{ 'SupplierQuotation.ItemNo' | translate }}</th>
+                  <th>{{ 'SupplierQuotation.ItemName' | translate }}</th>
+                  <th class="text-end">{{ 'SupplierQuotation.Qty' | translate }}</th>
+                  <th>{{ 'SupplierQuotation.UnitName' | translate }}</th>
+                  <th>{{ 'Rfq.Winner' | translate }}</th>
+                  <th class="text-end">{{ 'Rfq.NetPrice' | translate }}</th>
+                  <th class="text-end">{{ 'SupplierQuotation.Total' | translate }}</th>
+                  <th class="text-center">{{ 'SupplierQuotation.DelvDays' | translate }}</th>
+                  <th class="text-center">{{ 'Rfq.Offers' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of bestDeal.SplitAward">
+                  <td>{{ r.ItemNo }}</td>
+                  <td>{{ r.ItemName }}</td>
+                  <td class="text-end">{{ r.Qty | number:'1.0-3' }}</td>
+                  <td>{{ r.UnitName }}</td>
+                  <td class="fw-semibold">{{ r.VenName }} <small class="text-muted">({{ r.QuotNo }})</small></td>
+                  <td class="text-end">{{ r.EffPrice | number:'1.0-3' }}</td>
+                  <td class="text-end fw-semibold">{{ r.LineTotal | number:'1.0-3' }}</td>
+                  <td class="text-center">{{ r.DelvDays }}</td>
+                  <td class="text-center">{{ r.OfferCount }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6" class="text-end fw-bold">{{ 'Rfq.SplitAward' | translate }}</td>
+                  <td class="text-end fw-bold">{{ bestDeal.Totals.SplitTotal | number:'1.0-3' }}</td>
+                  <td colspan="2"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </ng-container>
+      </ng-container>
+
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="confirmTitle"
+  [message]="confirmMessage"
+  [details]="confirmDetails"
+  [confirmButtonText]="confirmButtonText"
+  [cancelButtonText]="'General.Cancel' | translate"
+  [confirmButtonClass]="confirmButtonClass"
+  (confirm)="onConfirmed()">
+</app-confirmation-modal>

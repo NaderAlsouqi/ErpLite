@@ -11,6 +11,8 @@ import {
 } from '../../../shared/services/permission.service';
 import { AuthService } from '../../../shared/services/auth.service';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 interface PermissionGroup {
   module: string;
@@ -27,19 +29,21 @@ interface SystemDef {
 
 const SYSTEMS: SystemDef[] = [
   { key: 'Sales',      labelKey: 'Nav.Sales.Title',             modules: ['Invoices', 'ServiceInvoices', 'VirtualInvoices', 'Refunds'] },
-  { key: 'Accounting', labelKey: 'Nav.Accounting.Title',        modules: ['ChartOfAccounts', 'JournalVouchers', 'CashPayment', 'IncomingCheq1', 'OutgoingCheq1', 'ChequeDeposit', 'Cheques', 'CostCenters', 'CenterBal', 'Accounts', 'AccountGroups', 'Receipts', 'Banks', 'Currencies', 'Taxes', 'Stamps', 'VoucherSerials', 'Branches', 'CheckPayment', 'CheqDeposit', 'CheqTracking', 'ChequeCollection', 'ChequeReturn', 'ChequeWithdrawal', 'ChequeEndorsement', 'ReDepositRet', 'CostCenterAccBalances', 'CostCenterTransactions', 'IncomingChequeMovement', 'InwardCheques', 'OutwardCheques', 'ChequesToBeneficiary', 'PaymentVouchers', 'AccountLedger', 'MissingVouchers', 'YearEndClosing', 'ServBill'] },
+  { key: 'Accounting', labelKey: 'Nav.Accounting.Title',        modules: ['ChartOfAccounts', 'JournalVouchers', 'CashPayment', 'IncomingCheq1', 'OutgoingCheq1', 'ChequeDeposit', 'Cheques', 'CostCenters', 'CenterBal', 'Accounts', 'AccountGroups', 'Receipts', 'Banks', 'Currencies', 'Taxes', 'Stamps', 'VoucherSerials', 'Branches', 'CheckPayment', 'CheqDeposit', 'CheqTracking', 'ChequeCollection', 'ChequeReturn', 'ChequeWithdrawal', 'ChequeEndorsement', 'ReDepositRet', 'CostCenterAccBalances', 'CostCenterTransactions', 'IncomingChequeMovement', 'InwardCheques', 'OutwardCheques', 'ChequesToBeneficiary', 'PaymentVouchers', 'AccountLedger', 'MissingVouchers', 'YearEndClosing', 'ServBill', 'Vouchers', 'Attachments'] },
   { key: 'Contacts',   labelKey: 'Nav.Accounting.Contacts',     modules: ['Customers', 'Vendors'] },
   { key: 'Inventory',  labelKey: 'Nav.Inventory.Title',         modules: ['Items'] },
+  { key: 'Warehouse',  labelKey: 'Nav.Warehouse.Title',         modules: ['Units', 'Stores', 'OriginCountry', 'PriceCategory', 'DisbursementEntities', 'MainCategories', 'SubCategories', 'ItemCard', 'ItemBarcode', 'ReplaceItemCode', 'Brands', 'Inbound', 'Outbound'] },
   { key: 'Settings',   labelKey: 'Nav.Settings.Title',          modules: ['Accf', 'Comf'] },
   { key: 'Reports',    labelKey: 'Nav.Reports.Title',           modules: ['Reports'] },
   { key: 'Files',      labelKey: 'Nav.Files.Title',             modules: ['Notes', 'Images'] },
   { key: 'Admin',      labelKey: 'Nav.Accounting.Admin',        modules: ['Admin'] },
+  { key: 'Workflow',   labelKey: 'Nav.Workflow.Title',          modules: ['Workflow', 'Tasks'] },
 ];
 
 @Component({
   selector: 'app-permissions',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SharedModule, NgSelectModule],
+  imports: [CommonModule, FormsModule, TranslateModule, SharedModule, NgSelectModule, PaginatorComponent, PaginatePipe],
   templateUrl: './permissions.component.html',
   styleUrl: './permissions.component.scss',
   encapsulation: ViewEncapsulation.None
@@ -58,6 +62,8 @@ export class PermissionsComponent implements OnInit {
   tableColumns: string[] = [];
   loading = false;
   saving = false;
+  page = 1;
+  pageSize = 10;
 
   userSearchFn = (term: string, item: AdminUserDto): boolean => {
     const t = term.toLowerCase();
@@ -66,7 +72,8 @@ export class PermissionsComponent implements OnInit {
   };
 
   private readonly COLUMN_ORDER = [
-    'View', 'Create', 'Edit', 'Delete', 'Print', 'Export',
+    'View', 'Create', 'Save', 'Edit', 'Delete', 'Print', 'Export',
+    'Run', 'Review',
     'Transfer', 'Refund', 'GenerateQR', 'Rename', 'Statement',
     'Link', 'LinkAccounts', 'Units', 'StoreQuantity', 'Clear',
     'Adjust', 'Upload', 'AccountStatement', 'InvoicesReport',
@@ -211,6 +218,7 @@ export class PermissionsComponent implements OnInit {
     }
 
     this.filteredGroups = filtered;
+    this.page = 1;
     this.rebuildTableColumns();
   }
 
@@ -284,7 +292,22 @@ export class PermissionsComponent implements OnInit {
       'Banks': this.translate.instant('Banks.Title') || 'Banks',
       'Currencies': this.translate.instant('Currencies.Title') || 'Currencies',
       'Taxes': this.translate.instant('Taxes.Title') || 'Taxes',
+      'Units': this.translate.instant('Units.Title') || 'Units',
+      'Stores': this.translate.instant('Stores.Title') || 'Warehouses',
+      'OriginCountry': this.translate.instant('OriginCountry.Title') || 'Countries of Origin',
+      'PriceCategory': this.translate.instant('PriceCategory.Title') || 'Price Categories',
+      'DisbursementEntities': this.translate.instant('DisbursementEntities.Title') || 'Disbursement Entities',
+      'MainCategories': this.translate.instant('MainCategories.Title') || 'Main Categories',
+      'SubCategories': this.translate.instant('SubCategories.Title') || 'Sub-Categories',
+      'ItemCard': this.translate.instant('ItemCard.Title') || 'Item Card',
+      'Inbound': this.translate.instant('Inbound.Title') || 'Stock-in Voucher',
+      'Outbound': this.translate.instant('Outbound.Title') || 'Stock-out Voucher',
+      'ItemBarcode': this.translate.instant('ItemBarcode.Title') || 'Barcode Entry',
+      'ReplaceItemCode': this.translate.instant('ReplaceItemCode.Title') || 'Replace Item Code',
+      'Brands': this.translate.instant('Brands.Title') || 'Brands',
       'Stamps': this.translate.instant('Stamps.Title') || 'Stamps',
+      'Vouchers': this.translate.instant('Vouchers.Approve') || 'Vouchers Posting',
+      'Attachments': this.translate.instant('Attachments.Title') || 'Attachments',
       'CostCenters': this.translate.instant('CostCenters.Title') || 'Cost Centers',
       'JournalVouchers': this.translate.instant('Nav.Accounting.JournalVouchers') || 'Journal Vouchers',
       'ChartOfAccounts': this.translate.instant('ChartOfAccounts.Title') || 'Chart of Accounts',
@@ -324,7 +347,11 @@ export class PermissionsComponent implements OnInit {
       'AccountLedger': this.translate.instant('Nav.Accounting.AccountLedger') || 'كشف حركات ورصيد حساب',
       'MissingVouchers': this.translate.instant('Nav.Accounting.MissingVouchers') || 'كشف حركات السندات المفقودة',
       'YearEndClosing': this.translate.instant('Nav.Accounting.YearEndClosing') || 'الاقفال السنوي',
-      'ServBill': this.translate.instant('Nav.Accounting.ServBill') || 'فاتورة خدمات'
+      'ServBill': this.translate.instant('Nav.Accounting.ServBill') || 'فاتورة خدمات',
+
+      // ── Workflow automation ─────────────────────────────────────────
+      'Workflow': this.translate.instant('Workflow.Title') || 'Workflow Builder',
+      'Tasks': this.translate.instant('Tasks.Title') || 'Tasks'
     };
     return map[mod] || mod;
   }

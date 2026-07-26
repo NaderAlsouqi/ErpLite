@@ -1,9 +1,11 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, BehaviorSubject, fromEvent } from 'rxjs';
 import { takeUntil, debounceTime } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from './auth.service';
+import { WorkflowService } from './workflow.service';
+import { filter } from 'rxjs/operators';
 
 // Menu
 export interface Menu {
@@ -57,10 +59,15 @@ export class NavService implements OnDestroy {
   public fullScreen = false;
   active: any;
 
+  // Pending-tasks badge on the المهمات nav item
+  public pendingTasks = 0;
+  private badgeTimer: any;
+
   constructor(
     private router: Router,
     private translateService: TranslateService,
-    private authService: AuthService // Inject AuthService
+    private authService: AuthService, // Inject AuthService
+    private workflowSvc: WorkflowService,
   ) {
     this.setScreenWidth(window.innerWidth);
     fromEvent(window, 'resize')
@@ -98,10 +105,40 @@ export class NavService implements OnDestroy {
     // Subscribe to auth changes to update menu when user logs in/out
     this.authService.currentUser$.subscribe(() => {
       this.updateMenuItems();
+      this.refreshTaskBadge();
     });
 
     // Set initial menu items
     this.updateMenuItems();
+
+    // Keep the قيد الانتظار badge fresh: on load, on each navigation, and periodically.
+    this.refreshTaskBadge();
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd), takeUntil(this.unsubscriber))
+      .subscribe(() => this.refreshTaskBadge());
+    this.badgeTimer = setInterval(() => this.refreshTaskBadge(), 60000);
+  }
+
+  /** Fetch the current user's pending-tasks count and stamp it on the المهمات item. */
+  refreshTaskBadge(): void {
+    if (!this.authService.currentUserValue) { this.pendingTasks = 0; this.applyTaskBadge(this.MENUITEMS); this.items.next(this.MENUITEMS); return; }
+    this.workflowSvc.listTasks(true, 'Pending').subscribe({
+      next: (r) => {
+        this.pendingTasks = (r || []).length;
+        this.applyTaskBadge(this.MENUITEMS);
+        this.items.next(this.MENUITEMS);
+      },
+      error: () => {},
+    });
+  }
+
+  private applyTaskBadge(items: Menu[]): void {
+    (items || []).forEach(it => {
+      if (it.path === '/workflow/tasks') {
+        it.badgeValue = this.pendingTasks > 0 ? String(this.pendingTasks) : undefined;
+        it.badgeClass = 'nav-badge-danger';
+      }
+      if (it.children && it.children.length) this.applyTaskBadge(it.children);
+    });
   }
 
   private updateLayoutDirection(lang: string) {
@@ -113,6 +150,7 @@ export class NavService implements OnDestroy {
   ngOnDestroy() {
     this.unsubscriber.next;
     this.unsubscriber.complete();
+    if (this.badgeTimer) clearInterval(this.badgeTimer);
   }
 
   private setScreenWidth(width: number): void {
@@ -141,6 +179,16 @@ export class NavService implements OnDestroy {
       active: false,
       selected: false,
       path: '/dashboard',
+    },
+    {
+      title: 'Dashboard Builder',
+      translationKey: 'Nav.DashboardBuilder',
+      icon: 'bi-grid-1x2',
+      dirchange: false,
+      type: 'link',
+      active: false,
+      selected: false,
+      path: '/dashboard-builder',
     },
     { headTitle: 'Nav.Accounting.Title' },
     {
@@ -179,6 +227,7 @@ export class NavService implements OnDestroy {
                 { title: 'سندات القيد',  translationKey: 'Nav.Accounting.JournalVouchers', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/vouchers/journal' },
                 { title: 'زمر الحسابات', translationKey: 'Nav.Accounting.AccountGroups',  dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/account-groups' },
                 { title: 'الضراىب',      translationKey: 'Nav.Accounting.Taxes',           dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/taxes' },
+                { title: 'ادخال شروط الضريبة (خاص بالفوترة)', translationKey: 'Nav.Accounting.TaxConditions', dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/tax-conditions' },
                 { title: 'مراكز الكلف',  translationKey: 'Nav.Accounting.CostCenters',     dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/cost-centers' },
                 { title: 'البنوك',        translationKey: 'Nav.Accounting.Banks',           dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/banks' },
                 { title: 'العملات',       translationKey: 'Nav.Accounting.Currencies',      dirchange: false, type: 'link', active: false, selected: false, path: '/accounting/definitions/currencies' },
@@ -373,7 +422,74 @@ export class NavService implements OnDestroy {
       dirchange: false,
       type: 'sub',
       active: false,
-      children: []
+      children: [
+        {
+          title: 'السندات',
+          translationKey: 'Nav.Warehouse.Vouchers',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            { title: 'سندات الإدخال',      translationKey: 'Nav.Warehouse.InboundVouchers',   dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/vouchers/inbound' },
+            { title: 'سندات الإخراج',      translationKey: 'Nav.Warehouse.OutboundVouchers',  dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/vouchers/outbound' },
+            { title: 'سندات الإتلاف',      translationKey: 'Nav.Warehouse.DamageVouchers',     dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/vouchers/damage' },
+            { title: 'سندات النقل',        translationKey: 'Nav.Warehouse.TransferVouchers',   dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/vouchers/transfer' },
+            { title: 'تسوية الجرد',        translationKey: 'Nav.Warehouse.InventoryAdjustment', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/vouchers/inventory-adjustment' },
+            { title: 'طباعة الباركود',     translationKey: 'Nav.Warehouse.BarcodePrinting',    dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/vouchers/barcode-print' },
+            { title: 'إقفال الكلف الشهري', translationKey: 'Nav.Warehouse.MonthlyCostClosing', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/vouchers/monthly-cost-closing' },
+          ]
+        },
+        {
+          title: 'شاشات الإدخال',
+          translationKey: 'Nav.Warehouse.InputScreens',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            { title: 'ادخال الوحدات',          translationKey: 'Nav.Warehouse.EntryUnits',                dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/units' },
+            { title: 'ادخال المستودعات',       translationKey: 'Nav.Warehouse.EntryWarehouses',           dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/warehouses' },
+            { title: 'ادخال الموردين',         translationKey: 'Nav.Warehouse.EntrySuppliers',            dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/suppliers' },
+            { title: 'ادخال جهات الصرف',       translationKey: 'Nav.Warehouse.EntryDisbursementEntities', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/disbursement-entities' },
+            { title: 'ادخال بلد المنشأ',       translationKey: 'Nav.Warehouse.EntryOriginCountry',        dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/origin-country' },
+            { title: 'ادخال فئات الأسعار',     translationKey: 'Nav.Warehouse.EntryPriceCategories',      dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/price-categories' },
+            { title: 'إدخال الأصناف الرئيسية', translationKey: 'Nav.Warehouse.EntryMainItems',            dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/main-items' },
+            { title: 'تفريع الأصناف الرئيسية', translationKey: 'Nav.Warehouse.EntrySubItems',             dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/sub-items' },
+            { title: 'بطاقة المادة',           translationKey: 'Nav.Warehouse.ItemCard',                  dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/item-card' },
+            { title: 'ادخال عروض المواد',      translationKey: 'Nav.Warehouse.MaterialOffers',            dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/material-offers' },
+            { title: 'ادخال الباركود',         translationKey: 'Nav.Warehouse.EntryBarcode',              dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/barcode' },
+            { title: 'استبدال رمز مادة',       translationKey: 'Nav.Warehouse.ReplaceItemCode',           dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/replace-item-code' },
+            { title: 'ادخال الماركات',         translationKey: 'Nav.Warehouse.Brands',                    dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/entry/brands' },
+          ]
+        },
+        {
+          title: 'التقارير',
+          translationKey: 'Nav.Warehouse.Reports',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            { title: 'كشف أرصدة المواد', translationKey: 'Nav.Warehouse.MaterialBalances', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/material-balances' },
+            { title: 'المواد الواصلة حد الطلب', translationKey: 'Nav.Warehouse.ReorderLevel', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/reorder-level' },
+            { title: 'كشف حركات مادة', translationKey: 'Nav.Warehouse.MaterialMovement', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/material-movement' },
+            { title: 'كشف الجرد', translationKey: 'Nav.Warehouse.StockList', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/stock-list' },
+            { title: 'كشف المواد المصفرة', translationKey: 'Nav.Warehouse.ZeroedItems', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/zeroed-items' },
+            { title: 'كشف فئات أسعار المواد', translationKey: 'Nav.Warehouse.ItemPrices', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/item-prices' },
+            { title: 'كشف المواد وأسعارها', translationKey: 'Nav.Warehouse.ItemsPricing', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/items-pricing' },
+            { title: 'كشف الباتش وتاريخ الصلاحية', translationKey: 'Nav.Warehouse.BatchExpiry', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/batch-expiry' },
+            { title: 'كشف حركات المستودع', translationKey: 'Nav.Warehouse.StoreMovements', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/store-movements' },
+            { title: 'طباعة سند إدخال', translationKey: 'Nav.Warehouse.InboundPrint', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/inbound-print' },
+            { title: 'طباعة سند إخراج', translationKey: 'Nav.Warehouse.OutboundPrint', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/outbound-print' },
+            { title: 'طباعة سند إتلاف', translationKey: 'Nav.Warehouse.DamagePrint', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/damage-print' },
+            { title: 'طباعة سند نقل', translationKey: 'Nav.Warehouse.TransferPrint', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/transfer-print' },
+            { title: 'كشف أصناف المواد', translationKey: 'Nav.Warehouse.CategoriesList', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/categories-list' },
+            { title: 'كشف المواد الراكدة', translationKey: 'Nav.Warehouse.StagnantItems', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/stagnant-items' },
+            { title: 'كشف المواد بطيئة الحركة', translationKey: 'Nav.Warehouse.SlowMoving', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/slow-moving' },
+            { title: 'كشف حركة صرف المواد', translationKey: 'Nav.Warehouse.DisbursementMovement', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/disbursement-movement' },
+            { title: 'كشف حركة العميل التفصيلي', translationKey: 'Nav.Warehouse.ClientMovement', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/client-movement' },
+            { title: 'كشف حركة الصرف للاصناف', translationKey: 'Nav.Warehouse.CategoryDisbursement', dirchange: false, type: 'link', active: false, selected: false, path: '/warehouse/reports/category-disbursement' },
+          ]
+        },
+      ]
     },
     { headTitle: 'Nav.Purchases.Title' },
     {
@@ -383,7 +499,42 @@ export class NavService implements OnDestroy {
       dirchange: false,
       type: 'sub',
       active: false,
-      children: []
+      children: [
+        {
+          title: 'شاشات الإدخال',
+          translationKey: 'Nav.Purchases.InputScreens',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            { title: 'بطاقة المادة', translationKey: 'Nav.Purchases.ItemCard', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/entry/item-card' },
+            { title: 'ادخال الموردين', translationKey: 'Nav.Purchases.EntrySuppliers', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/entry/suppliers' },
+            { title: 'ادخال شروط الدفع', translationKey: 'Nav.Purchases.PaymentTerms', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/entry/payment-terms' },
+            { title: 'ادخال مصاريف الشراء', translationKey: 'Nav.Purchases.PurchaseExpenses', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/entry/purchase-expenses' },
+            { title: 'سند الادخال', translationKey: 'Nav.Purchases.Inbound', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/entry/inbound' },
+            { title: 'سند الاخراج', translationKey: 'Nav.Purchases.Outbound', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/entry/outbound' },
+            { title: 'ادخال الضرائب', translationKey: 'Nav.Purchases.Taxes', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/entry/taxes' },
+            { title: 'ادخال شروط الضريبة (خاص بالفوترة)', translationKey: 'Nav.Purchases.TaxConditions', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/entry/tax-conditions' },
+          ]
+        },
+        {
+          title: 'المستندات',
+          translationKey: 'Nav.Purchases.Documents',
+          dirchange: false,
+          type: 'sub',
+          active: false,
+          children: [
+            { title: 'طلب مواد شراء', translationKey: 'Nav.Purchases.MaterialRequest', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/documents/material-request' },
+            { title: 'طلب شراء المواد', translationKey: 'Nav.Purchases.PurchaseOrder', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/documents/purchase-order' },
+            { title: 'عرض سعر', translationKey: 'Nav.Purchases.SupplierQuotation', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/documents/supplier-quotation' },
+            { title: 'طلب عروض الأسعار', translationKey: 'Nav.Purchases.Rfq', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/documents/rfq' },
+            { title: 'تجميع طلبات شراء المواد', translationKey: 'Nav.Purchases.PoConsolidation', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/documents/po-consolidation' },
+            { title: 'أمر الشراء', translationKey: 'Nav.Purchases.PurchaseOrderDoc', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/documents/purchase-order-doc' },
+            { title: 'سند استلام بضاعة', translationKey: 'Nav.Purchases.GoodsReceipt', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/documents/goods-receipt' },
+            { title: 'فاتورة مشتريات', translationKey: 'Nav.Purchases.PurchaseInvoice', dirchange: false, type: 'link', active: false, selected: false, path: '/purchases/documents/purchase-invoice' },
+          ]
+        },
+      ]
     },
     { headTitle: 'Nav.Sales.Title' },
     {
@@ -697,6 +848,19 @@ export class NavService implements OnDestroy {
       active: false,
       children: []
     },
+    { headTitle: 'Nav.Workflow.HeadTitle' },
+    {
+      title: 'Workflow Automation',
+      translationKey: 'Nav.Workflow.Title',
+      icon: 'bi-diagram-3',
+      dirchange: false,
+      type: 'sub',
+      active: false,
+      children: [
+        { title: 'Workflow Builder', translationKey: 'Nav.Workflow.Builder', dirchange: false, type: 'link', active: false, selected: false, path: '/workflow/builder' },
+        { title: 'Tasks',            translationKey: 'Nav.Workflow.Tasks',   dirchange: false, type: 'link', active: false, selected: false, path: '/workflow/tasks' },
+      ]
+    },
     { headTitle: 'Nav.Reports.Title' },
     {
       title: 'Reports',
@@ -805,6 +969,13 @@ export class NavService implements OnDestroy {
           active: false,
         },
         {
+          title: 'Report Print Settings',
+          translationKey: 'Nav.Settings.ReportPrint',
+          type: 'link',
+          path: '/accounting/settings/report-print',
+          active: false,
+        },
+        {
           title: 'Permissions',
           translationKey: 'Nav.Settings.Permissions',
           type: 'link',
@@ -843,36 +1014,17 @@ export class NavService implements OnDestroy {
 
     // Update the menu items
     this.MENUITEMS = cleanedMenu;
+    this.applyTaskBadge(this.MENUITEMS);
     this.items.next(this.MENUITEMS);
   }
 
-  // New method to filter menu by user roles
+  // Role-based menu filtering has been removed. Page/feature access is now
+  // governed entirely by the fine-grained permission system (the *hasPermission
+  // directive on buttons/sections, managed from accounting/admin/permissions).
+  // Menu items are no longer hidden by role, so a user is not required to be
+  // Admin/Manager/etc. to reach a page — the permissions decide what they can do.
   private filterMenuByRoles(items: Menu[]): Menu[] {
-    return items.filter(item => {
-      // If no roles are specified, keep the item
-      if (!item.roles || item.roles.length === 0) {
-        // Still filter children if present
-        if (item.children && item.children.length > 0) {
-          item.children = this.filterMenuByRoles(item.children);
-        }
-        return true;
-      }
-
-      // Check if user has any of the required roles
-      const hasAccess = this.authService.hasAnyRole(item.roles);
-
-      if (hasAccess && item.children && item.children.length > 0) {
-        // Filter children recursively
-        item.children = this.filterMenuByRoles(item.children);
-
-        // Remove parent if all children were filtered out and it's a submenu
-        if (item.children.length === 0 && item.type === 'sub') {
-          return false;
-        }
-      }
-
-      return hasAccess;
-    });
+    return items;
   }
 
   // Clean up empty sections (headers with no items)

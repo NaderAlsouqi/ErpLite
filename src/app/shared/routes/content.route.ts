@@ -8,6 +8,9 @@ import { dashboardRoutes } from '../../componets/dashboard/dashboard.route';
 import { dashboard2Routes } from '../../componets/dashboard2/dashboard2.route';
 import { activityLogRoutes } from '../../componets/activity-log/activity-log.route';
 import { homeRoutes } from '../../componets/home/home.route';
+import { warehouseRoutes } from '../../componets/warehouse/warehouse.route';
+import { purchasesRoutes } from '../../componets/purchases/purchases.route';
+import { workflowRoutes } from '../../componets/workflow/workflow.route';
 
 
 export const content: Routes = [
@@ -21,7 +24,10 @@ export const content: Routes = [
       ...salesRoutingModule.routes,
       ...reportsRoutingModule.routes,
       ...accountingsRoutingModule.routes,
-      ...resellerRoutingModule.routes
+      ...resellerRoutingModule.routes,
+      ...warehouseRoutes,
+      ...purchasesRoutes,
+      ...workflowRoutes
     ],
   },
 ];

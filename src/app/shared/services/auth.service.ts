@@ -114,7 +114,8 @@ export class AuthService {
   }
 
   login(loginRequest: LoginRequest, rememberMe: boolean = true): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/Login`, loginRequest)
+    // Send RememberMe so the server issues a long-lived token (not the 1h default).
+    return this.http.post<LoginResponse>(`${this.apiUrl}/Login`, { ...loginRequest, RememberMe: rememberMe })
       .pipe(
         tap(response => {
           if (response.Token) {

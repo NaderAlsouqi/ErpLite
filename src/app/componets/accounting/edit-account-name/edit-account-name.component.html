@@ -85,9 +85,7 @@
         <div class="card-header">
           <div class="card-title">{{ 'EditAccountName.Title' | translate }}</div>
           <div class="card-options">
-            <button *hasPermission="'Accf.Print'" class="btn btn-outline-primary" (click)="printTable()">
-              <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-            </button>
+            <app-report-export *hasPermission="'Accf.Print'" (formatSelected)="reportService.setNextFormat($event); printTable()"></app-report-export>
           </div>
         </div>
         <div class="card-body">

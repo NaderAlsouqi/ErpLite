@@ -1,0 +1,176 @@
+<app-page-header
+  [title]="'ReportPrintSettings.Title' | translate"
+  [title1]="'Nav.Settings.Title' | translate"
+  [activeTitle]="'ReportPrintSettings.Title' | translate">
+</app-page-header>
+
+<div class="row rps-container">
+  <!-- ── Controls ── -->
+  <div class="col-xl-7">
+    <div class="card custom-card">
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0"><i class="ti ti-printer me-1"></i>{{ 'ReportPrintSettings.Title' | translate }}</div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-light" (click)="resetDefaults()">
+            <i class="ti ti-refresh me-1"></i>{{ 'ReportPrintSettings.ResetDefaults' | translate }}
+          </button>
+          <button *hasPermission="'Comf.Edit'" type="button" class="btn btn-primary" (click)="save()" [disabled]="saving || loading">
+            <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>{{ 'ReportPrintSettings.Save' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body" *ngIf="!loading">
+
+        <!-- Colors -->
+        <div class="rps-section-title"><i class="ti ti-palette me-1"></i>{{ 'ReportPrintSettings.Colors' | translate }}</div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ReportPrintSettings.HeaderBg' | translate }}</label>
+            <div class="input-group"><input type="color" class="form-control form-control-color" [(ngModel)]="form.HeaderBg" name="HeaderBg" /><input type="text" class="form-control" [(ngModel)]="form.HeaderBg" name="HeaderBgHex" dir="ltr" /></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ReportPrintSettings.HeaderTextColor' | translate }}</label>
+            <div class="input-group"><input type="color" class="form-control form-control-color" [(ngModel)]="form.HeaderTextColor" name="HeaderTextColor" /><input type="text" class="form-control" [(ngModel)]="form.HeaderTextColor" name="HeaderTextColorHex" dir="ltr" /></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ReportPrintSettings.TitleColor' | translate }}</label>
+            <div class="input-group"><input type="color" class="form-control form-control-color" [(ngModel)]="form.TitleColor" name="TitleColor" /><input type="text" class="form-control" [(ngModel)]="form.TitleColor" name="TitleColorHex" dir="ltr" /></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ReportPrintSettings.BorderColor' | translate }}</label>
+            <div class="input-group"><input type="color" class="form-control form-control-color" [(ngModel)]="form.BorderColor" name="BorderColor" /><input type="text" class="form-control" [(ngModel)]="form.BorderColor" name="BorderColorHex" dir="ltr" /></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ReportPrintSettings.ZebraColor' | translate }}</label>
+            <div class="input-group"><input type="color" class="form-control form-control-color" [(ngModel)]="form.ZebraColor" name="ZebraColor" /><input type="text" class="form-control" [(ngModel)]="form.ZebraColor" name="ZebraColorHex" dir="ltr" /></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ReportPrintSettings.BodyTextColor' | translate }}</label>
+            <div class="input-group"><input type="color" class="form-control form-control-color" [(ngModel)]="form.BodyTextColor" name="BodyTextColor" /><input type="text" class="form-control" [(ngModel)]="form.BodyTextColor" name="BodyTextColorHex" dir="ltr" /></div>
+          </div>
+        </div>
+
+        <!-- Fonts -->
+        <div class="rps-section-title"><i class="ti ti-typography me-1"></i>{{ 'ReportPrintSettings.Fonts' | translate }}</div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">{{ 'ReportPrintSettings.FontFamily' | translate }}</label>
+            <select class="form-select" [(ngModel)]="form.FontFamily" name="FontFamily">
+              <option *ngFor="let f of fontOptions" [value]="f.value">{{ f.label }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'ReportPrintSettings.BaseFontSize' | translate }}</label>
+            <input type="number" min="6" max="40" class="form-control" [(ngModel)]="form.BaseFontSize" name="BaseFontSize" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'ReportPrintSettings.TitleFontSize' | translate }}</label>
+            <input type="number" min="8" max="60" class="form-control" [(ngModel)]="form.TitleFontSize" name="TitleFontSize" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'ReportPrintSettings.HeaderFontSize' | translate }}</label>
+            <input type="number" min="8" max="40" class="form-control" [(ngModel)]="form.HeaderFontSize" name="HeaderFontSize" />
+          </div>
+        </div>
+
+        <!-- Header content -->
+        <div class="rps-section-title"><i class="ti ti-layout-navbar me-1"></i>{{ 'ReportPrintSettings.HeaderContent' | translate }}</div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-8">
+            <div class="d-flex gap-3 flex-wrap">
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="scn" [(ngModel)]="form.ShowCompanyName" name="ShowCompanyName" /><label class="form-check-label" for="scn">{{ 'ReportPrintSettings.ShowCompanyName' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="sad" [(ngModel)]="form.ShowAddress" name="ShowAddress" /><label class="form-check-label" for="sad">{{ 'ReportPrintSettings.ShowAddress' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="stx" [(ngModel)]="form.ShowTaxNumber" name="ShowTaxNumber" /><label class="form-check-label" for="stx">{{ 'ReportPrintSettings.ShowTaxNumber' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="stl" [(ngModel)]="form.ShowTel" name="ShowTel" /><label class="form-check-label" for="stl">{{ 'ReportPrintSettings.ShowTel' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="slg" [(ngModel)]="form.ShowLogo" name="ShowLogo" /><label class="form-check-label" for="slg">{{ 'ReportPrintSettings.ShowLogo' | translate }}</label></div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ReportPrintSettings.TitleAlign' | translate }}</label>
+            <select class="form-select" [(ngModel)]="form.TitleAlign" name="TitleAlign">
+              <option value="left">{{ 'ReportPrintSettings.AlignLeft' | translate }}</option>
+              <option value="center">{{ 'ReportPrintSettings.AlignCenter' | translate }}</option>
+              <option value="right">{{ 'ReportPrintSettings.AlignRight' | translate }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Custom text + page setup -->
+        <div class="rps-section-title"><i class="ti ti-file-description me-1"></i>{{ 'ReportPrintSettings.CustomPage' | translate }}</div>
+        <div class="row g-3 mb-2">
+          <div class="col-md-6">
+            <label class="form-label">{{ 'ReportPrintSettings.CustomHeader' | translate }}</label>
+            <input type="text" class="form-control" [(ngModel)]="form.CustomHeader" name="CustomHeader" [placeholder]="'ReportPrintSettings.CustomHeaderPh' | translate" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'ReportPrintSettings.CustomFooter' | translate }}</label>
+            <input type="text" class="form-control" [(ngModel)]="form.CustomFooter" name="CustomFooter" [placeholder]="'ReportPrintSettings.CustomFooterPh' | translate" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ReportPrintSettings.Orientation' | translate }}</label>
+            <select class="form-select" [(ngModel)]="form.Orientation" name="Orientation">
+              <option value="portrait">{{ 'ReportPrintSettings.Portrait' | translate }}</option>
+              <option value="landscape">{{ 'ReportPrintSettings.Landscape' | translate }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ReportPrintSettings.MarginPx' | translate }}</label>
+            <input type="number" min="0" max="80" class="form-control" [(ngModel)]="form.MarginPx" name="MarginPx" />
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card-body" *ngIf="loading">
+        <div class="d-flex justify-content-center my-5"><div class="spinner-border text-primary" role="status"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Live preview ── -->
+  <div class="col-xl-5">
+    <div class="card custom-card position-sticky" style="top: 1rem;">
+      <div class="card-header"><div class="card-title mb-0"><i class="ti ti-eye me-1"></i>{{ 'ReportPrintSettings.Preview' | translate }}</div></div>
+      <div class="card-body">
+        <div class="rps-preview" [style.font-family]="form.FontFamily" [style.color]="form.BodyTextColor"
+             [style.direction]="previewDir" [style.padding.px]="form.MarginPx">
+
+          <div *ngIf="form.CustomHeader" class="rps-custom-head" [style.color]="form.TitleColor">{{ form.CustomHeader }}</div>
+
+          <div class="rps-head">
+            <div class="rps-head-info" *ngIf="form.ShowCompanyName || form.ShowAddress || form.ShowTaxNumber || form.ShowTel">
+              <div *ngIf="form.ShowCompanyName" class="rps-co-name" [style.font-size.px]="form.HeaderFontSize" [style.color]="form.TitleColor">{{ isAr ? 'شركة نموذجية' : 'Sample Company' }}</div>
+              <div *ngIf="form.ShowAddress" class="rps-co-detail">{{ isAr ? 'العنوان: عمّان' : 'Address: Amman' }}</div>
+              <div *ngIf="form.ShowTaxNumber" class="rps-co-detail">{{ isAr ? 'الرقم الضريبي' : 'Tax No' }}: 123456</div>
+              <div *ngIf="form.ShowTel" class="rps-co-detail">{{ isAr ? 'التليفون' : 'Tel' }}: 06-1234567</div>
+            </div>
+            <div class="rps-title" [style.text-align]="form.TitleAlign" [style.font-size.px]="form.TitleFontSize" [style.color]="form.TitleColor">
+              {{ isAr ? 'عنوان التقرير' : 'Report Title' }}
+            </div>
+            <div class="rps-logo" *ngIf="form.ShowLogo"><span class="rps-logo-box">LOGO</span></div>
+          </div>
+
+          <table class="rps-table" [style.font-size.px]="form.BaseFontSize">
+            <thead>
+              <tr [style.background]="form.HeaderBg">
+                <th [style.color]="form.HeaderTextColor" [style.border-color]="form.BorderColor" [style.text-align]="previewAlign">{{ isAr ? 'المادة' : 'Item' }}</th>
+                <th [style.color]="form.HeaderTextColor" [style.border-color]="form.BorderColor" [style.text-align]="previewAlign">{{ isAr ? 'الكمية' : 'Qty' }}</th>
+                <th [style.color]="form.HeaderTextColor" [style.border-color]="form.BorderColor" [style.text-align]="previewAlign">{{ isAr ? 'الإجمالي' : 'Total' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td [style.border-color]="form.BorderColor">A</td><td [style.border-color]="form.BorderColor">10</td><td [style.border-color]="form.BorderColor">200</td></tr>
+              <tr [style.background]="form.ZebraColor"><td [style.border-color]="form.BorderColor">B</td><td [style.border-color]="form.BorderColor">5</td><td [style.border-color]="form.BorderColor">75</td></tr>
+              <tr><td [style.border-color]="form.BorderColor">C</td><td [style.border-color]="form.BorderColor">8</td><td [style.border-color]="form.BorderColor">160</td></tr>
+            </tbody>
+          </table>
+
+          <div class="rps-footer" *ngIf="form.CustomFooter">{{ form.CustomFooter }}</div>
+          <div class="rps-orient-note text-muted">{{ (form.Orientation === 'landscape' ? 'ReportPrintSettings.Landscape' : 'ReportPrintSettings.Portrait') | translate }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

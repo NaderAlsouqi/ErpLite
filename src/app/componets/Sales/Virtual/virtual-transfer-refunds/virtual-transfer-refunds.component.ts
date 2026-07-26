@@ -10,6 +10,7 @@ import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from "../../../../shared/common/sharedmodule";
 import { FotaraService, TransferRefundInvoiceData, FotaraApiResponse } from "../../../../shared/services/fotara.service";
 import { firstValueFrom } from 'rxjs';
+import { formatAmount, parseAmount } from '../../../../shared/utils/amount.util';
 
 // Material Table imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -128,7 +129,7 @@ export class VirtualTransferRefundsComponent implements OnInit {
           InvoiceNumber: refund.InvoiceNumber || '',
           CustomerName: refund.CustomerName,
           FinancialYear: Math.floor(Number(refund.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(this.cs.billDecimals),
+          InvoiceAmount: formatAmount(refund.InvoiceAmount, this.cs.billDecimals),
         }));
 
         // Store all data
@@ -224,7 +225,7 @@ export class VirtualTransferRefundsComponent implements OnInit {
             );
           case 'CustomerName': return this.compare(a.CustomerName, b.CustomerName, isAsc);
           case 'FinancialYear': return this.compare(a.FinancialYear, b.FinancialYear, isAsc);
-          case 'RefundAmount': return this.compare(parseFloat(a.InvoiceAmount), parseFloat(b.InvoiceAmount), isAsc);
+          case 'RefundAmount': return this.compare(parseAmount(a.InvoiceAmount), parseAmount(b.InvoiceAmount), isAsc);
           default: return 0;
         }
       });
@@ -441,7 +442,7 @@ export class VirtualTransferRefundsComponent implements OnInit {
               InvoiceNumber: refund.InvoiceNumber || '',
               CustomerName: refund.CustomerName,
               FinancialYear: Math.floor(Number(refund.FinancialYear)).toString(),
-              InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(this.cs.billDecimals),
+              InvoiceAmount: formatAmount(refund.InvoiceAmount, this.cs.billDecimals),
             }));
 
             // Store all data

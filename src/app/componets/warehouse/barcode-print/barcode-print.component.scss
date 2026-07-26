@@ -1,0 +1,34 @@
+.barcode-print-container {
+  padding: 1rem;
+
+  .form-label { font-weight: 500; margin-bottom: 0.25rem; }
+
+  .labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .label {
+      width: 48mm;
+      border: 1px solid var(--default-border, #dee2e6);
+      border-radius: 4px;
+      padding: 4px 5px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #fff;
+
+      .nm { font-size: 10px; font-weight: 600; white-space: nowrap; overflow: hidden; max-width: 100%; color: #000; }
+      .pr { font-size: 11px; font-weight: 700; color: #000; }
+      svg { max-width: 100%; }
+    }
+  }
+}
+
+::ng-deep [data-theme-mode="dark"] {
+  .barcode-print-container {
+    .form-label, .form-check-label { color: var(--default-text-color) !important; }
+    .labels .label { background: #fff; }   /* labels always print on white */
+  }
+}

@@ -8,17 +8,23 @@ import { Branch, BranchesService } from '../../../../shared/services/branches.se
 import { ConfirmationModalComponent } from '../../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { ReportService } from '../../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-branches',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
     SharedModule,
     ConfirmationModalComponent,
-    HasPermissionDirective
+    HasPermissionDirective,
+    PaginatorComponent,
+    PaginatePipe
   ],
   templateUrl: './branches.component.html',
   styleUrl: './branches.component.scss'
@@ -33,12 +39,14 @@ export class BranchesComponent implements OnInit {
   currentBranch: Branch = this.initForm();
   loading = false;
   saving = false;
+  page = 1;
+  pageSize = 10;
 
   constructor(
     private branchesService: BranchesService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {
@@ -83,6 +91,7 @@ export class BranchesComponent implements OnInit {
         b.BranchNo.toString().includes(term)
       );
     });
+    this.page = 1;
   }
 
   clearFilters(): void {

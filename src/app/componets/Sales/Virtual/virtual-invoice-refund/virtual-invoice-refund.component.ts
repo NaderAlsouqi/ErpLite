@@ -21,6 +21,8 @@ import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } f
 // NgSelect import
 import { NgSelectModule } from '@ng-select/ng-select';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+import { CompanySettingsService } from '../../../../shared/services/company-settings.service';
+import { formatAmount, parseAmount } from '../../../../shared/utils/amount.util';
 
 // Customer interface
 export interface Customer {
@@ -138,7 +140,8 @@ export class VirtualInvoiceRefundComponent implements OnInit {
     private authService: AuthService,
     private translate: TranslateService,
     private toastr: ToastrService,
-    private router: Router
+    private router: Router,
+    private cs: CompanySettingsService
   ) {}
   
   ngOnInit(): void {
@@ -194,7 +197,7 @@ export class VirtualInvoiceRefundComponent implements OnInit {
           InvoiceNumber: refund.InvoiceNumber,
           CustomerName: refund.CustomerName,
           FinancialYear: Math.floor(Number(refund.FinancialYear)).toString(),
-          InvoiceAmount:refund.InvoiceAmount.toLocaleString('en-US', {maximumFractionDigits:2}),          
+          InvoiceAmount:formatAmount(refund.InvoiceAmount, this.cs.billDecimals),          
           // Fix the transfer status mapping
           IsTransferred: refund.IsTransfered === 1 || refund.IsTransfered === true || refund.IsTransferred === 1 || refund.IsTransferred === true
         }));
@@ -280,7 +283,7 @@ export class VirtualInvoiceRefundComponent implements OnInit {
             case 'InvoiceNumber': return this.compare(a.InvoiceNumber, b.InvoiceNumber, isAsc);
             case 'CustomerName': return this.compare(a.CustomerName, b.CustomerName, isAsc);
             case 'FinancialYear': return this.compare(a.FinancialYear, b.FinancialYear, isAsc);
-            case 'InvoiceAmount': return this.compare(parseFloat(a.InvoiceAmount), parseFloat(b.InvoiceAmount), isAsc);
+            case 'InvoiceAmount': return this.compare(parseAmount(a.InvoiceAmount), parseAmount(b.InvoiceAmount), isAsc);
             case 'IsTransferred': return this.compare(a.IsTransferred ? 1 : 0, b.IsTransferred ? 1 : 0, isAsc);
             default: return 0;
           }
@@ -641,11 +644,8 @@ export class VirtualInvoiceRefundComponent implements OnInit {
   }
 
    private calculateFinalBalance(): void {
-        debugger;
         this.finalBalance = 0;    
-        this.allData.forEach((item) => {
-        var InvoiceAmount : number  = Number(parseFloat(item.InvoiceAmount.replace(',','.').replace(' ','')));
-        if(item.InvoiceAmount){ this.finalBalance +=  InvoiceAmount }});
+        this.allData.forEach((item) => { this.finalBalance += parseAmount(item.InvoiceAmount); });
    }
 
 

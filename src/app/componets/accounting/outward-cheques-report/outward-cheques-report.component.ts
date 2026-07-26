@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { ChartOfAccountsService, ChartOfAccountDto } from '../../../shared/services/chart-of-accounts.service';
 import { VoucherSerialService, VoucherSerial } from '../../../shared/services/voucher-serial.service';
 import {
@@ -14,11 +15,14 @@ import {
   OutwardChequeRowDto,
 } from '../../../shared/services/outward-cheques.service';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-outward-cheques-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective, PaginatorComponent, PaginatePipe],
   templateUrl: './outward-cheques-report.component.html',
   styleUrl: './outward-cheques-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -58,6 +62,8 @@ export class OutwardChequesReportComponent implements OnInit {
   rows: OutwardChequeRowDto[] = [];
   loading = false;
   fetched = false;
+  page = 1;
+  pageSize = 10;
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
   get totalLocal(): number { return this.rows.reduce((s, r) => s + r.LocalAmount, 0); }
@@ -73,7 +79,7 @@ export class OutwardChequesReportComponent implements OnInit {
     private svc:         OutwardChequesService,
     private serialSvc:   VoucherSerialService,
     private accountsSvc: ChartOfAccountsService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -155,6 +161,7 @@ export class OutwardChequesReportComponent implements OnInit {
     }).subscribe({
       next: data => {
         this.rows = data ?? [];
+        this.page = 1;
         this.fetched = true;
         this.loading = false;
         if (this.rows.length === 0) {

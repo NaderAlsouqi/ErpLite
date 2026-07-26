@@ -39,6 +39,7 @@
             <button *hasPermission="'JournalVouchers.Print'" class="btn btn-sm btn-outline-primary" (click)="printVoucher()" [disabled]="transNum === 0">
               <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
             </button>
+            <app-approve-voucher></app-approve-voucher>
             <div class="vr mx-1"></div>
             <button class="btn btn-sm btn-outline-secondary" (click)="goFirst()"
               title="{{ 'JournalVoucher.First' | translate }}">
@@ -401,9 +402,7 @@
             <button class="btn btn-sm btn-primary" (click)="loadList()">
               <i class="ti ti-search me-1"></i>{{ 'General.Search' | translate }}
             </button>
-            <button class="btn btn-sm btn-outline-primary" (click)="printList()">
-              <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-            </button>
+            <app-report-export (formatSelected)="reportService.setNextFormat($event); printList()"></app-report-export>
           </div>
         </div>
 

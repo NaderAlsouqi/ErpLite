@@ -54,3 +54,22 @@
     overflow-x: auto;
     min-height: 300px;
   }
+
+// ── Dark mode ──
+::ng-deep [data-theme-mode="dark"] app-virtual-invoice-refund {
+  .mat-mdc-header-row {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .mat-mdc-header-cell {
+    color: var(--default-text-color) !important;
+  }
+
+  .mat-mdc-row:hover {
+    background-color: var(--list-hover-focus-bg) !important;
+  }
+
+  .mat-mdc-cell {
+    color: var(--default-text-color) !important;
+  }
+}

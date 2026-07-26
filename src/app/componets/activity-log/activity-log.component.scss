@@ -98,7 +98,7 @@
   font-size: 0.875rem;
   border-color: #e2e8f0;
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--default-background, #f8fafc);
   height: 38px;
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 
@@ -171,11 +171,11 @@
   cursor: default;
   padding-bottom: 4px;
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: var(--default-border, #cbd5e1) transparent;
 
   &::-webkit-scrollbar        { height: 4px; }
   &::-webkit-scrollbar-track  { background: #f1f5f9; border-radius: 2px; }
-  &::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 2px; }
+  &::-webkit-scrollbar-thumb  { background: var(--default-border, #cbd5e1); border-radius: 2px; }
 }
 
 .details-values {
@@ -204,11 +204,11 @@
     cursor: default;
     padding-bottom: 4px;
     scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
+    scrollbar-color: var(--default-border, #cbd5e1) transparent;
 
     &::-webkit-scrollbar        { height: 4px; }
     &::-webkit-scrollbar-track  { background: #f1f5f9; border-radius: 2px; }
-    &::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 2px; }
+    &::-webkit-scrollbar-thumb  { background: var(--default-border, #cbd5e1); border-radius: 2px; }
   }
 
   &.details-new .values-label {
@@ -295,7 +295,7 @@ mat-paginator {
     min-height: 38px !important;
     border-radius: 8px !important;
     border: 1px solid #e2e8f0 !important;
-    background: #f8fafc !important;
+    background: var(--default-background, #f8fafc) !important;
     box-shadow: none !important;
     transition: border-color 0.15s, background 0.15s, box-shadow 0.15s !important;
   }

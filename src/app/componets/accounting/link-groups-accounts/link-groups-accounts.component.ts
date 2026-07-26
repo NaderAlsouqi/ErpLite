@@ -11,6 +11,7 @@ import { AccGroupLinkDto, AccGroupLinkService } from '../../../shared/services/a
 import { AccountGroupDto, AccountGroupsService } from '../../../shared/services/account-groups.service';
 import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/services/chart-of-accounts.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { forkJoin } from 'rxjs';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
@@ -18,6 +19,7 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
   selector: 'app-link-groups-accounts',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -53,7 +55,7 @@ export class LinkGroupsAccountsComponent implements OnInit {
     private groupsService: AccountGroupsService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {

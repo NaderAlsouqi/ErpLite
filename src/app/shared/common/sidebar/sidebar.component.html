@@ -20,7 +20,13 @@
 
   <!-- User info -->
   <div class="user-info">
-    <div class="user-avatar">{{ (userName)[0].toUpperCase() }}</div>
+    <div class="user-avatar" [class.has-logo]="companyLogo.logoUrl$ | async">
+      @if (companyLogo.logoUrl$ | async; as logo) {
+        <img [src]="logo" class="user-avatar-img" alt="logo" />
+      } @else {
+        {{ (userName)[0].toUpperCase() }}
+      }
+    </div>
     <span class="user-name">{{ userName }}</span>
   </div>
 
@@ -112,10 +118,13 @@
                       }
                     } @else {
                       <!-- Level 2 Link -->
-                      <a class="nav-child-item" [routerLink]="child.path" routerLinkActive="active" 
+                      <a class="nav-child-item" [routerLink]="child.path" routerLinkActive="active"
                          (click)="setNavActive($event, child.path ?? '')">
                         <span class="nav-child-dot"></span>
                         <span>{{ child.title }}</span>
+                        @if (child.badgeValue) {
+                          <span class="nav-badge" [ngClass]="child.badgeClass ?? ''">{{ child.badgeValue }}</span>
+                        }
                       </a>
                     }
                   </li>

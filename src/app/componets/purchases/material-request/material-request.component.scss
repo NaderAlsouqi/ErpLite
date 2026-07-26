@@ -1,0 +1,40 @@
+.material-request-container {
+  padding: 1rem;
+
+  .form-label { font-weight: 500; .required { color: #dc3545; } }
+
+  .mr-grid {
+    th { white-space: nowrap; font-size: 0.85rem; }
+    td { padding: 0.3rem 0.4rem; }
+    .form-control-sm { font-size: 0.85rem; }
+    ::ng-deep .ng-select.ng-select-single .ng-select-container { min-height: 32px; height: 32px; }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    .btn { min-width: 130px; display: flex; align-items: center; justify-content: center; }
+  }
+
+  .cursor-pointer { cursor: pointer; }
+}
+
+::ng-deep [data-theme-mode="dark"] {
+  .material-request-container {
+    .form-label { color: var(--default-text-color) !important; }
+    .form-control {
+      background-color: var(--form-control-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--default-text-color) !important;
+    }
+    .table thead.table-primary th {
+      background: var(--default-background) !important;
+      color: var(--text-muted) !important;
+      border-color: var(--default-border) !important;
+    }
+    .table td { color: var(--default-text-color) !important; border-color: var(--default-border) !important; }
+    .table th { border-color: var(--default-border) !important; }
+    .text-muted { color: var(--text-muted) !important; }
+  }
+}

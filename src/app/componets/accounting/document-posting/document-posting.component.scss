@@ -3,10 +3,10 @@
 }
 
 .dp-filter-box {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--default-border, #cbd5e1);
   border-radius: 6px;
   padding: 10px 12px;
-  background: #f8fafc;
+  background: var(--default-background, #f8fafc);
 
   &-title {
     font-size: 0.78rem;

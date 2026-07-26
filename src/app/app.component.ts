@@ -5,7 +5,11 @@ import { ColorPickerModule } from 'ngx-color-picker';
 import { AppStateService } from './shared/services/app-state.service';
 import { AuthService } from './shared/services/auth.service';
 import { CompanySettingsService } from './shared/services/company-settings.service';
+import { ReportPrintSettingsService } from './shared/services/report-print-settings.service';
 import { CalculatorService } from './shared/services/calculator.service';
+import { PermissionService } from './shared/services/permission.service';
+import { LabelOverrideService } from './shared/services/label-override.service';
+import { LabelEditService } from './shared/services/label-edit.service';
 import { Subscription, interval } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { ChatWidgetComponent } from './shared/components/chat-widget/chat-widget.component';
@@ -29,6 +33,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private companySettings: CompanySettingsService,
     private calculator: CalculatorService,
+    private permissionService: PermissionService,
+    private reportPrintSettings: ReportPrintSettingsService,
+    private labelOverrides: LabelOverrideService,
+    private labelEdit: LabelEditService,
   ) {
     this.appState.updateState();
   }
@@ -54,7 +62,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Add this version check on startup
-    const currentVersion = '1.0.18';
+    const currentVersion = '1.0.75';
     const storedVersion = localStorage.getItem('appVersion');
 
     if (storedVersion !== currentVersion) {
@@ -70,6 +78,19 @@ export class AppComponent implements OnInit, OnDestroy {
     // Load company settings once (used by all components for decimals, name, etc.)
     if (this.authService.isLoggedIn) {
       this.companySettings.load().subscribe();
+      // Load company-wide report-print styling (colors/fonts/header) for printReport.
+      this.reportPrintSettings.load().subscribe();
+      // Re-sync effective permissions from the server on every app load so that
+      // permissions granted from the admin page take effect on a normal refresh
+      // (no full logout/login needed). Permissions are otherwise only read from
+      // the login response and cached in storage.
+      this.permissionService.getMyPermissions().subscribe({
+        next: perms => this.authService.refreshPermissions((perms || []).map(p => p.PermissionKey)),
+        error: () => { /* keep cached permissions if the sync call fails */ }
+      });
+      // Apply per-tenant label overrides on top of the JSON, then enable the
+      // double-click inline label editor for users with the Labels.Edit permission.
+      this.labelOverrides.load().subscribe(() => this.labelEdit.init());
     }
 
     // Check token validity every minute (skip if already on auth pages)

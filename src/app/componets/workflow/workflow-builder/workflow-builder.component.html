@@ -1,0 +1,225 @@
+<app-page-header
+  [title]="'Workflow.Title' | translate"
+  [title1]="'Nav.Workflow.HeadTitle' | translate"
+  [activeTitle]="'Nav.Workflow.Builder' | translate">
+</app-page-header>
+
+<div class="wf-page">
+  <!-- toolbar -->
+  <div class="wf-head">
+    <span class="wf-sub">{{ 'Workflow.Subtitle' | translate }}</span>
+    <div class="wf-tabs">
+      <button [class.active]="activeTab==='builder'" (click)="switchTab('builder')"><i class="bi bi-pencil-square"></i> {{ 'Workflow.BuilderTab' | translate }}</button>
+      <button [class.active]="activeTab==='list'" (click)="switchTab('list')"><i class="bi bi-collection"></i> {{ 'Workflow.ListTab' | translate }}</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ BUILDER ══════════════ -->
+  <div *ngIf="activeTab==='builder'" class="wf-builder">
+    <!-- Palette -->
+    <aside class="wf-palette">
+      <div class="wf-palette-head">
+        <span>{{ 'Workflow.Palette' | translate }}</span>
+        <small>{{ 'Workflow.PaletteHint' | translate }}</small>
+      </div>
+      <div class="wf-search">
+        <i class="bi bi-search"></i>
+        <input type="text" [(ngModel)]="paletteSearch" [placeholder]="'Workflow.SearchPages' | translate" />
+      </div>
+      <div class="wf-palette-body">
+        <div *ngFor="let g of groups" class="wf-group">
+          <div class="wf-group-title">{{ isAr ? g.moduleAr : g.module }}</div>
+          <div class="wf-group-list"
+               cdkDropList
+               [cdkDropListData]="g.items"
+               [cdkDropListConnectedTo]="canvasIds"
+               [cdkDropListSortingDisabled]="true">
+            <div class="wf-cat" *ngFor="let c of g.items" cdkDrag [cdkDragData]="c" (dblclick)="addStep(c)">
+              <i class="bi" [ngClass]="c.icon"></i>
+              <span class="wf-cat-name">{{ catTitle(c) }}</span>
+              <span class="wf-badge" [attr.data-a]="c.actionType">{{ ('Workflow.Action.' + c.actionType) | translate }}</span>
+              <button type="button" class="wf-add" (click)="addStep(c)" [title]="'Workflow.AddStep' | translate"><i class="bi bi-plus-lg"></i></button>
+              <div class="wf-cat-preview" *cdkDragPreview><i class="bi" [ngClass]="c.icon"></i> {{ catTitle(c) }}</div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="groups.length===0" class="wf-empty-small">{{ 'Workflow.NoPages' | translate }}</div>
+      </div>
+    </aside>
+
+    <!-- Canvas + meta -->
+    <section class="wf-main">
+      <!-- meta -->
+      <div class="wf-meta">
+        <div class="wf-field wf-grow">
+          <label>{{ 'Workflow.Name' | translate }} <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="current.Name" [placeholder]="'Workflow.NamePlaceholder' | translate" />
+        </div>
+        <div class="wf-field">
+          <label>{{ 'Workflow.Reviewer' | translate }} <span class="req">*</span></label>
+          <ng-select [items]="users" bindValue="UserId" bindLabel="UserName" [searchFn]="userSearch" [(ngModel)]="current.AssignedTo"
+                     appendTo="body" [placeholder]="'Workflow.SelectReviewer' | translate">
+            <ng-template ng-option-tmp let-item="item">{{ item.FullName || item.UserName }} <small class="text-muted">({{ item.UserName }})</small></ng-template>
+          </ng-select>
+        </div>
+        <div class="wf-field">
+          <label>{{ 'Workflow.Trigger' | translate }}</label>
+          <select [(ngModel)]="current.TriggerType" (change)="onTriggerChange()">
+            <option value="Manual">{{ 'Workflow.TriggerManual' | translate }}</option>
+            <option value="Scheduled">{{ 'Workflow.TriggerScheduled' | translate }}</option>
+          </select>
+        </div>
+        <div class="wf-field wf-grow" *ngIf="current.TriggerType==='Scheduled'">
+          <label>{{ 'Workflow.Schedule' | translate }}</label>
+          <div class="wf-sched">
+            <select [(ngModel)]="schedFreq" (change)="onSchedChange()">
+              <option value="daily">{{ 'Workflow.Sched.Daily' | translate }}</option>
+              <option value="weekly">{{ 'Workflow.Sched.Weekly' | translate }}</option>
+              <option value="monthly">{{ 'Workflow.Sched.Monthly' | translate }}</option>
+              <option value="custom">{{ 'Workflow.Sched.Custom' | translate }}</option>
+            </select>
+            <select *ngIf="schedFreq==='weekly'" [(ngModel)]="schedDow" (change)="onSchedChange()">
+              <option *ngFor="let d of weekdays" [ngValue]="d.v">{{ isAr ? d.ar : d.en }}</option>
+            </select>
+            <select *ngIf="schedFreq==='monthly'" [(ngModel)]="schedDom" (change)="onSchedChange()">
+              <option *ngFor="let n of monthDays" [ngValue]="n">{{ n }}</option>
+            </select>
+            <input *ngIf="schedFreq!=='custom'" type="time" [(ngModel)]="schedTime" (change)="onSchedChange()" />
+            <input *ngIf="schedFreq==='custom'" type="text" [(ngModel)]="current.ScheduleCron" placeholder="0 8 * * 1" />
+          </div>
+          <small class="wf-sched-hint">{{ scheduleSummary() }} <code *ngIf="current.ScheduleCron">{{ current.ScheduleCron }}</code></small>
+        </div>
+        <div class="wf-field">
+          <label>{{ 'Workflow.Status' | translate }}</label>
+          <select [(ngModel)]="current.Status">
+            <option value="Draft">{{ 'Workflow.StatusDraft' | translate }}</option>
+            <option value="Active">{{ 'Workflow.StatusActive' | translate }}</option>
+            <option value="Paused">{{ 'Workflow.StatusPaused' | translate }}</option>
+          </select>
+        </div>
+        <div class="wf-field wf-grow">
+          <label>{{ 'Workflow.Description' | translate }}</label>
+          <input type="text" [(ngModel)]="current.Description" [placeholder]="'Workflow.DescriptionPlaceholder' | translate" />
+        </div>
+      </div>
+
+      <!-- actions -->
+      <div class="wf-actions">
+        <button class="btn btn-light" (click)="newWorkflow()"><i class="bi bi-file-earmark-plus"></i> {{ 'Workflow.New' | translate }}</button>
+        <button *hasPermission="['Workflow.Create','Workflow.Edit']" class="btn btn-primary" (click)="save()" [disabled]="saving">
+          <i class="bi bi-save"></i> {{ (saving ? 'Workflow.Saving' : 'Workflow.Save') | translate }}
+        </button>
+        <button *hasPermission="'Workflow.Run'" class="btn btn-success" (click)="run()" [disabled]="running || !isExisting">
+          <i class="bi bi-play-fill"></i> {{ (running ? 'Workflow.Running' : 'Workflow.Run') | translate }}
+        </button>
+        <span class="wf-count">{{ current.Steps.length }} {{ 'Workflow.StepsCount' | translate }}</span>
+      </div>
+
+      <!-- canvas -->
+      <div class="wf-canvas" cdkDropList id="wfCanvas" [cdkDropListData]="current.Steps" (cdkDropListDropped)="onCanvasDrop($event)">
+        <div *ngIf="current.Steps.length===0" class="wf-canvas-empty">
+          <i class="bi bi-hand-index-thumb"></i>
+          <p>{{ 'Workflow.DropHere' | translate }}</p>
+          <small>{{ 'Workflow.DropHint' | translate }}</small>
+        </div>
+
+        <div class="wf-step" *ngFor="let s of current.Steps; let i = index" cdkDrag>
+          <div class="wf-step-bar">
+            <span class="wf-step-order">{{ i + 1 }}</span>
+            <span class="wf-drag" cdkDragHandle title="drag"><i class="bi bi-grip-vertical"></i></span>
+            <i class="bi wf-step-icon" [ngClass]="s.icon || 'bi-square'"></i>
+            <div class="wf-step-title">
+              <strong>{{ stepTitle(s) }}</strong>
+              <small>{{ isAr ? s.moduleAr : s.module }}</small>
+            </div>
+            <select *ngIf="actionOptions(s).length > 1" class="wf-action-sel" [attr.data-a]="s.ActionType" [(ngModel)]="s.ActionType" [title]="'Workflow.StepAction' | translate">
+              <option *ngFor="let a of actionOptions(s)" [value]="a">{{ ('Workflow.Action.' + a) | translate }}</option>
+            </select>
+            <span *ngIf="actionOptions(s).length === 1" class="wf-action-badge" [attr.data-a]="s.ActionType">{{ ('Workflow.Action.' + s.ActionType) | translate }}</span>
+            <div class="wf-step-tools">
+              <button *ngIf="hasRoute(s)" (click)="openStep(s)" [title]="'Workflow.OpenPage' | translate"><i class="bi bi-box-arrow-up-right"></i></button>
+              <button *ngIf="s.params && s.params.length && s.ActionType !== 'list'" (click)="toggleStep(s)" [title]="'Workflow.Parameters' | translate"><i class="bi" [ngClass]="s.expanded ? 'bi-chevron-up' : 'bi-sliders'"></i></button>
+              <button (click)="moveUp(i)" [disabled]="i===0" title="up"><i class="bi bi-arrow-up"></i></button>
+              <button (click)="moveDown(i)" [disabled]="i===current.Steps.length-1" title="down"><i class="bi bi-arrow-down"></i></button>
+              <button class="wf-del" (click)="removeStep(i)" [title]="'Workflow.RemoveStep' | translate"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+
+          <div class="wf-step-assignee" *ngIf="isApprovalStep(s)">
+            <label><i class="bi bi-person-check"></i> {{ 'Workflow.Approver' | translate }}</label>
+            <ng-select [items]="users" bindValue="UserId" bindLabel="UserName" [searchFn]="userSearch" [(ngModel)]="s.values!['assigneeId']" (change)="onAssigneeChange(s)"
+                       appendTo="body" [placeholder]="'Workflow.SelectApprover' | translate" [clearable]="true">
+              <ng-template ng-label-tmp let-item="item">{{ item.FullName || item.UserName }}</ng-template>
+              <ng-template ng-option-tmp let-item="item">{{ item.FullName || item.UserName }} <small class="text-muted">({{ item.UserName }})</small></ng-template>
+            </ng-select>
+          </div>
+
+          <div class="wf-step-params" *ngIf="s.expanded && s.ActionType !== 'list'">
+            <div class="wf-param" *ngFor="let p of s.params">
+              <label>{{ paramLabel(p) }}</label>
+              <ng-container [ngSwitch]="p.type">
+                <input *ngSwitchCase="'text'"   type="text"   [(ngModel)]="s.values![p.name]" />
+                <input *ngSwitchCase="'number'" type="number" [(ngModel)]="s.values![p.name]" />
+                <input *ngSwitchCase="'year'"   type="number" [(ngModel)]="s.values![p.name]" />
+                <input *ngSwitchCase="'date'"   type="date"   [(ngModel)]="s.values![p.name]" />
+                <select *ngSwitchCase="'select'" [(ngModel)]="s.values![p.name]">
+                  <option *ngFor="let o of p.options" [value]="o.value">{{ optionLabel(o) }}</option>
+                </select>
+              </ng-container>
+            </div>
+            <div class="wf-param wf-param-wide">
+              <label>{{ 'Workflow.StepNotes' | translate }}</label>
+              <input type="text" [(ngModel)]="s.Notes" [placeholder]="'Workflow.StepNotesPlaceholder' | translate" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══════════════ SAVED LIST ══════════════ -->
+  <div *ngIf="activeTab==='list'" class="wf-list">
+    <div *ngIf="listLoading" class="wf-empty-small">{{ 'Workflow.Loading' | translate }}</div>
+    <div *ngIf="!listLoading && workflows.length===0" class="wf-empty-small">{{ 'Workflow.NoWorkflows' | translate }}</div>
+    <div class="table-responsive" *ngIf="!listLoading && workflows.length">
+      <table class="table wf-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{ 'Workflow.Name' | translate }}</th>
+            <th>{{ 'Workflow.Steps' | translate }}</th>
+            <th>{{ 'Workflow.Reviewer' | translate }}</th>
+            <th>{{ 'Workflow.Status' | translate }}</th>
+            <th>{{ 'Workflow.Tasks' | translate }}</th>
+            <th>{{ 'Workflow.CreatedBy' | translate }}</th>
+            <th class="text-end">{{ 'Workflow.ActionsCol' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let w of workflows; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ w.Name }}</strong><div class="wf-desc">{{ w.Description }}</div></td>
+            <td>{{ w.StepCount }}</td>
+            <td>{{ w.AssignedToName || '—' }}</td>
+            <td><span class="wf-status" [attr.data-s]="w.Status">{{ ('Workflow.Status' + w.Status) | translate }}</span></td>
+            <td>{{ w.TaskCount }}</td>
+            <td>{{ w.CreatedByName || '—' }}</td>
+            <td class="text-end wf-row-actions">
+              <button class="btn btn-sm btn-outline-primary" (click)="loadWorkflow(w.WorkflowId)" [title]="'Workflow.Edit' | translate"><i class="bi bi-pencil"></i></button>
+              <button *hasPermission="'Workflow.Run'" class="btn btn-sm btn-outline-success" (click)="runFromList(w)" [title]="'Workflow.Run' | translate"><i class="bi bi-play-fill"></i></button>
+              <button *hasPermission="'Workflow.Delete'" class="btn btn-sm btn-outline-danger" (click)="askDelete(w.WorkflowId)" [title]="'Workflow.Delete' | translate"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal #confirmModal
+  [title]="'Workflow.DeleteTitle' | translate"
+  [message]="'Workflow.DeleteConfirm' | translate"
+  [confirmButtonText]="'Workflow.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  (confirm)="confirmDelete()">
+</app-confirmation-modal>

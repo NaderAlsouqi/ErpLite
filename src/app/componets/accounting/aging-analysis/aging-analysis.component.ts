@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { applyQueryParams } from '../../../shared/utils/query-params.util';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -8,6 +10,9 @@ import { SharedModule } from '../../../shared/common/sharedmodule';
 import { AccfService, AccfDto } from '../../../shared/services/accf.service';
 import { SalesmanService, SalesmanDto } from '../../../shared/services/salesman.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 import {
   AgingAnalysisService,
   AgingAnalysisFilterDto,
@@ -18,7 +23,8 @@ import {
 @Component({
   selector: 'app-aging-analysis',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SharedModule, NgSelectModule],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, TranslateModule, SharedModule, NgSelectModule, PaginatorComponent, PaginatePipe],
   templateUrl: './aging-analysis.component.html',
   styleUrl: './aging-analysis.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -43,6 +49,8 @@ export class AgingAnalysisComponent implements OnInit {
   rows: AgingAnalysisRowDto[] = [];
   loading = false;
   fetched = false;
+  page = 1;
+  pageSize = 10;
 
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
@@ -81,9 +89,10 @@ export class AgingAnalysisComponent implements OnInit {
     private svc:         AgingAnalysisService,
     private accfSvc:     AccfService,
     private salesmanSvc: SalesmanService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
+    private route:       ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -98,6 +107,8 @@ export class AgingAnalysisComponent implements OnInit {
     this.svc.getAreas().subscribe({
       next: data => { this.areas = data ?? []; },
     });
+    // Honor workflow deep-link params (?asOfDate&…) and auto-run.
+    applyQueryParams(this.route, this, () => this.generate());
   }
 
   generate(): void {
@@ -121,6 +132,7 @@ export class AgingAnalysisComponent implements OnInit {
     this.svc.getReport(filter).subscribe({
       next: data => {
         this.rows = data ?? [];
+        this.page = 1;
         this.fetched = true;
         this.loading = false;
       },

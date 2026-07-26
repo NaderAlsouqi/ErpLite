@@ -7,10 +7,11 @@
 }
 
 .jvr-filter-box {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--default-border, #cbd5e1);
   border-radius: 6px;
   padding: 10px 12px;
-  background: #f8fafc;
+  background: var(--default-background, #f8fafc);
+  color: var(--default-text-color);
   height: 100%;
 
   .jvr-filter-box-title {
@@ -45,22 +46,22 @@
   .col-amt     { min-width: 105px; }
 
   .jvr-group-cell {
-    background: #f8fafc;
+    background: var(--default-background, #f8fafc);
     vertical-align: middle;
   }
 
   .jvr-first-row td {
-    border-top: 2px solid #cbd5e1;
+    border-top: 2px solid var(--default-border, #cbd5e1);
   }
 
   .jvr-subtotal td {
-    background: #f0f9ff;
-    border-top: 1px dashed #93c5fd;
+    background: rgba(var(--primary-rgb), 0.08);
+    border-top: 1px dashed rgba(var(--primary-rgb), 0.4);
   }
 
   .jvr-grand-total td {
-    background: #dbeafe;
-    border-top: 2px solid #60a5fa;
+    background: rgba(var(--primary-rgb), 0.15);
+    border-top: 2px solid rgba(var(--primary-rgb), 0.5);
     font-size: 0.875rem;
   }
 }

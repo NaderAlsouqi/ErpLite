@@ -2,11 +2,12 @@ import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@a
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from "../../../shared/common/sharedmodule";
 import { AuthService } from '../../../shared/services/auth.service';
+import { ApproveVoucherComponent } from '../../../shared/components/approve-voucher/approve-voucher.component';
 import { MatTabsModule, MatTab, MatTabGroup } from '@angular/material/tabs';
 
 import {
@@ -73,6 +74,7 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
     TranslateModule,
     RouterModule,
     SharedModule,
+    ApproveVoucherComponent,
     NgSelectModule,
     FlatpickrModule,
     MatTableModule,
@@ -315,7 +317,8 @@ export class ReceiptVouchersComponent implements OnInit {
     private authService: AuthService,
     private receiptService: ReceiptVouchersService,
     private jvService: JournalVouchersService,
-    private flatpickrDefaults: FlatpickrDefaults
+    private flatpickrDefaults: FlatpickrDefaults,
+    private route: ActivatedRoute
   ) {
     // Configure NgbModal defaults
     this.modalConfig.backdrop = 'static';
@@ -327,6 +330,9 @@ export class ReceiptVouchersComponent implements OnInit {
 
   ngOnInit(): void {
     this.setupUserData();
+    // Honor workflow deep-link (?year=) — pre-set the financial year.
+    const qp = this.route.snapshot.queryParamMap;
+    if (qp.has('year')) this.receiptForm.financialYear = Number(qp.get('year')) || this.receiptForm.financialYear;
     if (this.deliveryId != null) {
       this.loadCustomers(this.deliveryId);
       this.loadBanks();

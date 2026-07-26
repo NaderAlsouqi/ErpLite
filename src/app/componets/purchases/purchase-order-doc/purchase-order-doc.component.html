@@ -1,0 +1,386 @@
+<app-page-header
+  [title]="'PurchaseOrderDoc.Title' | translate"
+  [title1]="'Nav.Purchases.Documents' | translate"
+  [activeTitle]="'PurchaseOrderDoc.Title' | translate">
+</app-page-header>
+
+<div class="po-doc-container">
+  <div class="card custom-card">
+
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'form'" (click)="switchTab('form')" href="javascript:void(0)">
+            <i class="ti ti-file-text me-1"></i>{{ 'PurchaseOrderDoc.FormTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'" (click)="switchTab('list')" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'PurchaseOrderDoc.ListTab' | translate }}
+          </a>
+        </li>
+      </ul>
+      <app-report-export *hasPermission="pPrint"
+        (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
+    </div>
+
+    <!-- ════ Document ════ -->
+    <div *ngIf="activeTab === 'form'" class="card-body">
+
+      <!-- ── Status badge: prominent, top of the document, colour by state ── -->
+      <div class="po-status-bar mb-3" [class.po-cancelled]="isCancelled">
+        <div class="po-steps" *ngIf="!isCancelled">
+          <div class="po-step" *ngFor="let st of lifecycle; let i = index" [attr.data-state]="stepState(st.s)">
+            <span class="po-dot">
+              <i *ngIf="stepState(st.s) === 'done'" class="ti ti-check"></i>
+              <span *ngIf="stepState(st.s) !== 'done'">{{ i + 1 }}</span>
+            </span>
+            <span class="po-step-label">{{ st.k | translate }}</span>
+          </div>
+        </div>
+        <div class="po-cancel-note" *ngIf="isCancelled">
+          <i class="ti ti-ban me-1"></i>{{ 'PurchaseOrderDoc.StatusCancelled' | translate }}
+        </div>
+        <span class="po-current-badge" [class]="statusClass(hdr.status)">
+          <i class="ti ti-circle-filled me-1"></i>{{ statusKey(hdr.status) | translate }}
+        </span>
+      </div>
+
+      <!-- ── Action bar ── -->
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-3 po-actions">
+        <button class="btn btn-outline-secondary" (click)="reset()">
+          <i class="ti ti-file-plus me-1"></i>{{ 'PurchaseOrderDoc.New' | translate }}
+        </button>
+        <button class="btn btn-primary" *hasPermission="pCreate"
+                (click)="save()" [disabled]="saving || readOnly">
+          <i class="ti ti-device-floppy me-1"></i>{{ 'PurchaseOrderDoc.SaveDraft' | translate }}
+        </button>
+        <button class="btn btn-warning" *hasPermission="pCreate"
+                (click)="save('submit')" [disabled]="saving || readOnly">
+          <i class="ti ti-send me-1"></i>{{ 'PurchaseOrderDoc.Submit' | translate }}
+        </button>
+        <button class="btn btn-success" *hasPermission="pApprove"
+                (click)="setStatus('approve')" [disabled]="hdr.status !== ST.Pending">
+          <i class="ti ti-check me-1"></i>{{ 'PurchaseOrderDoc.Approve' | translate }}
+        </button>
+        <button class="btn btn-outline-warning" *hasPermission="pApprove"
+                (click)="setStatus('reject')" [disabled]="hdr.status !== ST.Pending">
+          <i class="ti ti-arrow-back-up me-1"></i>{{ 'PurchaseOrderDoc.Reject' | translate }}
+        </button>
+        <button class="btn btn-outline-primary" *hasPermission="pApprove"
+                (click)="setStatus('close')" [disabled]="hdr.status !== ST.Approved">
+          <i class="ti ti-lock me-1"></i>{{ 'PurchaseOrderDoc.Close' | translate }}
+        </button>
+        <button class="btn btn-outline-danger" *hasPermission="pCancel"
+                (click)="setStatus('cancel')"
+                [disabled]="!isExisting || hdr.status === ST.Cancelled || hdr.status === ST.Closed">
+          <i class="ti ti-ban me-1"></i>{{ 'PurchaseOrderDoc.Cancel' | translate }}
+        </button>
+        <button class="btn btn-outline-danger" *hasPermission="pDelete"
+                (click)="confirmDelete()" [disabled]="!isExisting || hdr.status !== ST.Draft">
+          <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+        </button>
+      </div>
+
+      <div *ngIf="readOnly" class="alert alert-info d-flex align-items-center gap-2 py-2">
+        <i class="ti ti-lock"></i>
+        <span>{{ 'PurchaseOrderDoc.LockedBanner' | translate:{ s: (statusKey(hdr.status) | translate) } }}</span>
+      </div>
+
+      <!-- ── Header ── -->
+      <div class="section-title">{{ 'PurchaseOrderDoc.HeaderInfo' | translate }}</div>
+      <div class="row g-2 mb-3">
+        <div class="col-md-2 year-field" [class.year-off]="hdr.year !== currentYear">
+          <label class="form-label year-field" [class.year-off]="hdr.year !== currentYear">{{ 'PurchaseOrderDoc.Year' | translate }}</label>
+          <input type="number" class="form-control year-field" [class.year-off]="hdr.year !== currentYear"
+                 [(ngModel)]="hdr.year" (change)="reset(); loadList()" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PurchaseOrderDoc.PoNo' | translate }} <span class="required">*</span></label>
+          <div class="input-group">
+            <input type="text" class="form-control" [(ngModel)]="hdr.poNo" (change)="onPoNoChange()" readonly />
+            <button class="btn btn-outline-secondary" (click)="switchTab('list')"
+                    [title]="'PurchaseOrderDoc.Lookup' | translate"><i class="ti ti-search"></i></button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PurchaseOrderDoc.PoDate' | translate }} <span class="required">*</span></label>
+          <input type="date" class="form-control" [(ngModel)]="hdr.podate" [disabled]="readOnly" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label d-flex align-items-center justify-content-between">
+            <span>{{ 'PurchaseOrderDoc.DelvDate' | translate }} <span class="required">*</span></span>
+            <span class="form-check form-check-sm mb-0">
+              <input class="form-check-input" type="checkbox" id="multiDelv"
+                     [(ngModel)]="hdr.multiDelv" (change)="onMultiDelvToggle()" [disabled]="readOnly" />
+              <label class="form-check-label small text-muted" for="multiDelv">
+                {{ 'PurchaseOrderDoc.MultiDelv' | translate }}
+              </label>
+            </span>
+          </label>
+
+          <!-- single date -->
+          <input *ngIf="!hdr.multiDelv" type="date" class="form-control"
+                 [(ngModel)]="hdr.delvDate" [disabled]="readOnly" />
+
+          <!-- list of dates -->
+          <div *ngIf="hdr.multiDelv" class="delv-list">
+            <div class="input-group input-group-sm mb-1" *ngFor="let d of delvDates; let i = index">
+              <input type="date" class="form-control" [(ngModel)]="d.date" [disabled]="readOnly" />
+              <input type="text" class="form-control" [(ngModel)]="d.note" [disabled]="readOnly"
+                     [placeholder]="'PurchaseOrderDoc.DelvDateNote' | translate" />
+              <button class="btn btn-outline-danger" (click)="removeDelvDate(i)" [disabled]="readOnly"
+                      [title]="'General.Delete' | translate"><i class="ti ti-x"></i></button>
+            </div>
+            <button class="btn btn-sm btn-outline-primary" (click)="addDelvDate()" [disabled]="readOnly">
+              <i class="ti ti-plus me-1"></i>{{ 'PurchaseOrderDoc.AddDelvDate' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">{{ 'PurchaseOrderDoc.Vendor' | translate }} <span class="required">*</span></label>
+          <ng-select [items]="lookups.Vendors" bindValue="VenNo" [(ngModel)]="hdr.venNo"
+                     (change)="onVendorChange()" [clearable]="true" [disabled]="readOnly"
+                     [placeholder]="'PurchaseOrderDoc.VendorSearch' | translate" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.VenNo }} — {{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.VenNo }} — {{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'PurchaseOrderDoc.TaxId' | translate }}</label>
+          <input type="text" class="form-control" [value]="hdr.venTaxNo" readonly
+                 [title]="'PurchaseOrderDoc.TaxIdHint' | translate" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PurchaseOrderDoc.Currency' | translate }} <span class="required">*</span></label>
+          <ng-select [items]="lookups.Currencies" bindValue="CurNo" [(ngModel)]="hdr.curNo"
+                     (change)="onCurrencyChange()" [clearable]="false" [disabled]="readOnly" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.CurNo }} — {{ isAr ? x.Cur : (x.Ename || x.Cur) }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.CurNo }} — {{ isAr ? x.Cur : (x.Ename || x.Cur) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'PurchaseOrderDoc.Rate' | translate }}</label>
+          <input type="number" class="form-control" [(ngModel)]="hdr.rate" [disabled]="readOnly" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PurchaseOrderDoc.PaymentTerm' | translate }}</label>
+          <ng-select [items]="lookups.PaymentTerms" bindValue="TermNo" [(ngModel)]="hdr.cluse"
+                     [clearable]="true" [disabled]="readOnly" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ x.TermNo }} — {{ x.Des }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ x.TermNo }} — {{ x.Des }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'PurchaseOrderDoc.TargetStore' | translate }}</label>
+          <ng-select [items]="lookups.Stores" bindValue="StoreNo" [(ngModel)]="hdr.storeNo"
+                     (change)="onStoreChange()" [clearable]="true" [disabled]="readOnly" appendTo="body">
+            <ng-template ng-label-tmp let-x="item">{{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+            <ng-template ng-option-tmp let-x="item">{{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'PurchaseOrderDoc.SourcePo' | translate }}</label>
+          <div class="input-group">
+            <ng-select class="flex-grow-1" [items]="sourceOrders" bindValue="OrderNo"
+                       [(ngModel)]="hdr.sourcePONo" (change)="onSourceChange()" [clearable]="true"
+                       [disabled]="readOnly" [placeholder]="'PurchaseOrderDoc.SourcePo' | translate" appendTo="body">
+              <ng-template ng-label-tmp let-x="item">{{ x.OrderNo }}</ng-template>
+              <ng-template ng-option-tmp let-x="item">
+                {{ x.OrderNo }}<span *ngIf="x.VenName"> — {{ x.VenName }}</span>
+                <small class="text-muted"> ({{ x.ODate | slice:0:10 }})</small>
+                <span *ngIf="x.LinkedPO" class="badge bg-info text-dark ms-1">
+                  {{ 'PurchaseOrderDoc.LinkedTo' | translate:{ no: x.LinkedPO } }}
+                </span>
+              </ng-template>
+            </ng-select>
+            <button class="btn btn-outline-success" (click)="loadFromRequest()" [disabled]="readOnly"
+                    [title]="'PurchaseOrderDoc.LoadSource' | translate"><i class="ti ti-download"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Line items ── -->
+      <div class="section-title d-flex align-items-center justify-content-between">
+        <span>{{ 'PurchaseOrderDoc.Items' | translate }}</span>
+        <button class="btn btn-sm btn-outline-primary" (click)="addLine()" [disabled]="readOnly">
+          <i class="ti ti-plus me-1"></i>{{ 'PurchaseOrderDoc.AddLine' | translate }}
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0 po-grid">
+          <thead class="table-primary">
+            <tr>
+              <th style="width:40px">#</th>
+              <th style="width:13%">{{ 'PurchaseOrderDoc.ItemCode' | translate }}</th>
+              <th style="width:16%">{{ 'PurchaseOrderDoc.Description' | translate }}</th>
+              <th style="width:9%">{{ 'PurchaseOrderDoc.Uom' | translate }}</th>
+              <th style="width:8%">{{ 'PurchaseOrderDoc.Qty' | translate }}</th>
+              <th style="width:9%">{{ 'PurchaseOrderDoc.UnitPrice' | translate }}</th>
+              <th style="width:7%">{{ 'PurchaseOrderDoc.DiscPerc' | translate }}</th>
+              <th style="width:10%">{{ 'PurchaseOrderDoc.TaxCode' | translate }}</th>
+              <th style="width:10%">{{ 'PurchaseOrderDoc.Warehouse' | translate }}</th>
+              <th style="width:10%">{{ 'PurchaseOrderDoc.LineTotal' | translate }}</th>
+              <th style="width:5%"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of lines; let i = index">
+              <td class="text-center text-muted">{{ i + 1 }}</td>
+              <td>
+                <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="l.ItemNo" [searchFn]="itemSearchFn"
+                           (change)="onItemPick(l)" [clearable]="true" [disabled]="readOnly"
+                           [placeholder]="'PurchaseOrderDoc.PickItem' | translate" appendTo="body">
+                  <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }}</ng-template>
+                  <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+                </ng-select>
+              </td>
+              <td><input type="text" class="form-control form-control-sm" [value]="l.ItemName" readonly /></td>
+              <td>
+                <ng-select [items]="l.units" bindValue="UnitNo" [(ngModel)]="l.UnitNo" (change)="onUnitPick(l)"
+                           [disabled]="readOnly || !l.units.length" [clearable]="false" appendTo="body">
+                  <ng-template ng-label-tmp let-u="item">{{ u.UnitName }}</ng-template>
+                  <ng-template ng-option-tmp let-u="item">{{ u.UnitNo }} — {{ u.UnitName }}</ng-template>
+                </ng-select>
+              </td>
+              <td><input type="number" min="0" class="form-control form-control-sm text-center"
+                         [(ngModel)]="l.Qty" [disabled]="readOnly" /></td>
+              <td>
+                <input type="number" min="0" class="form-control form-control-sm text-center"
+                       [(ngModel)]="l.UnitPrice" [disabled]="readOnly || l.IsFreeGoods" />
+                <div class="form-check form-check-sm mt-1">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="l.IsFreeGoods"
+                         (change)="onFreeGoodsChange(l)" [disabled]="readOnly" [id]="'fg' + i" />
+                  <label class="form-check-label small text-muted" [for]="'fg' + i">
+                    {{ 'PurchaseOrderDoc.FreeGoods' | translate }}
+                  </label>
+                </div>
+              </td>
+              <td><input type="number" min="0" max="100" class="form-control form-control-sm text-center"
+                         [(ngModel)]="l.DiscPerc" [disabled]="readOnly" /></td>
+              <td>
+                <ng-select [items]="lookups.Taxes" bindValue="TaxNo" [(ngModel)]="l.TaxNo"
+                           [clearable]="true" [disabled]="readOnly" appendTo="body">
+                  <ng-template ng-label-tmp let-x="item">{{ isAr ? x.NameA : (x.NameE || x.NameA) }}</ng-template>
+                  <ng-template ng-option-tmp let-x="item">{{ isAr ? x.NameA : (x.NameE || x.NameA) }} ({{ x.Perc }}%)</ng-template>
+                </ng-select>
+              </td>
+              <td>
+                <ng-select [items]="lookups.Stores" bindValue="StoreNo" [(ngModel)]="l.StoreNo"
+                           [clearable]="true" [disabled]="readOnly" appendTo="body">
+                  <ng-template ng-label-tmp let-x="item">{{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+                  <ng-template ng-option-tmp let-x="item">{{ isAr ? x.Name : (x.Ename || x.Name) }}</ng-template>
+                </ng-select>
+              </td>
+              <td class="text-end">
+                <span class="fw-semibold">{{ lineTotal(l) | number:'1.0-3' }}</span>
+                <small *ngIf="taxAmt(l)" class="d-block text-muted">
+                  +{{ taxAmt(l) | number:'1.0-3' }} {{ 'PurchaseOrderDoc.Tax' | translate }}
+                </small>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-danger" (click)="removeLine(i)" [disabled]="readOnly"
+                        [title]="'General.Delete' | translate"><i class="ti ti-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Footer totals ── -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-7">
+          <label class="form-label">{{ 'PurchaseOrderDoc.Remarks' | translate }}</label>
+          <textarea class="form-control" rows="4" maxlength="1000" [(ngModel)]="hdr.remarks"
+                    [disabled]="readOnly" [placeholder]="'PurchaseOrderDoc.RemarksHint' | translate"></textarea>
+        </div>
+        <div class="col-md-5">
+          <div class="po-totals">
+            <div class="po-t-row">
+              <span>{{ 'PurchaseOrderDoc.Subtotal' | translate }}</span>
+              <b>{{ subtotal | number:'1.0-3' }}</b>
+            </div>
+            <div class="po-t-row">
+              <span>{{ 'PurchaseOrderDoc.TotalDiscount' | translate }}</span>
+              <b class="text-danger">{{ totalDiscount | number:'1.0-3' }}</b>
+            </div>
+            <div class="po-t-row">
+              <span>{{ 'PurchaseOrderDoc.TotalTax' | translate }}</span>
+              <b>{{ totalTax | number:'1.0-3' }}</b>
+            </div>
+            <div class="po-t-row po-grand">
+              <span>{{ 'PurchaseOrderDoc.GrandTotal' | translate }}</span>
+              <b>{{ grandTotal | number:'1.0-3' }}</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════ List ════ -->
+    <div *ngIf="activeTab === 'list'" class="card-body">
+      <div class="row g-2 mb-3">
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text"><i class="ti ti-search"></i></span>
+            <input type="text" class="form-control" [(ngModel)]="listFilter"
+                   [placeholder]="'PurchaseOrderDoc.SearchPlaceholder' | translate" />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="listStatus" (change)="loadList()">
+            <option *ngFor="let s of statusOptions" [ngValue]="s.v">{{ s.k | translate }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th>{{ 'PurchaseOrderDoc.PoNo' | translate }}</th>
+              <th>{{ 'PurchaseOrderDoc.PoDate' | translate }}</th>
+              <th>{{ 'PurchaseOrderDoc.DelvDate' | translate }}</th>
+              <th>{{ 'PurchaseOrderDoc.Vendor' | translate }}</th>
+              <th>{{ 'PurchaseOrderDoc.SourcePo' | translate }}</th>
+              <th class="text-center">{{ 'PurchaseOrderDoc.Lines' | translate }}</th>
+              <th class="text-end">{{ 'PurchaseOrderDoc.GrandTotal' | translate }}</th>
+              <th>{{ 'PurchaseOrderDoc.Status' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of filteredOrders | paginate:page:pageSize" class="cursor-pointer" (click)="openRow(r)">
+              <td>{{ r.PONo }}</td>
+              <td>{{ (r.PODate || '') | slice:0:10 }}</td>
+              <td>{{ (r.DelvDate || '') | slice:0:10 }}</td>
+              <td>{{ r.VenName }}</td>
+              <td>{{ r.SourcePONo }}</td>
+              <td class="text-center">{{ r.LineCount }}</td>
+              <td class="text-end fw-semibold">{{ r.GrandTotal | number:'1.0-3' }} <small class="text-muted">{{ r.CurName }}</small></td>
+              <td><span [class]="statusClass(r.Status)">{{ statusKey(r.Status) | translate }}</span></td>
+            </tr>
+            <tr *ngIf="!filteredOrders.length">
+              <td colspan="8" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <app-paginator [total]="filteredOrders.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+    </div>
+
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'PurchaseOrderDoc.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="doDelete()">
+</app-confirmation-modal>

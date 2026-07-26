@@ -1,0 +1,210 @@
+<app-page-header
+  [title]="'PurchaseInvoice.Title' | translate"
+  [title1]="'Nav.Purchases.Documents' | translate"
+  [activeTitle]="'PurchaseInvoice.Title' | translate">
+</app-page-header>
+
+<div class="purchase-invoice-container">
+  <div class="card custom-card">
+
+    <!-- ── Tabs ── -->
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'form'" (click)="switchTab('form')" href="javascript:void(0)">
+            <i class="ti ti-file-text me-1"></i>{{ 'PurchaseInvoice.FormTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'" (click)="switchTab('list')" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'PurchaseInvoice.ListTab' | translate }}
+          </a>
+        </li>
+      </ul>
+      <app-report-export *hasPermission="pPrint"
+        (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
+    </div>
+
+    <!-- ════ Form tab ════ -->
+    <div *ngIf="activeTab === 'form'" class="card-body">
+
+      <!-- Action bar -->
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <button class="btn btn-outline-secondary" (click)="newInvoice()">
+          <i class="ti ti-file-plus me-1"></i>{{ 'PurchaseInvoice.New' | translate }}
+        </button>
+        <button class="btn btn-primary" *hasPermission="pCreate"
+                [disabled]="readOnly || saving || !selectedReceipt" (click)="save()">
+          <i class="ti ti-device-floppy me-1"></i>{{ 'PurchaseInvoice.Save' | translate }}
+        </button>
+        <span *ngIf="readOnly" class="badge bg-info align-self-center">{{ 'PurchaseInvoice.Posted' | translate }}</span>
+      </div>
+
+      <!-- Header fields -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'PurchaseInvoice.InvNo' | translate }}</label>
+          <input type="text" class="form-control" [(ngModel)]="invNo" readonly>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'PurchaseInvoice.InvDate' | translate }}</label>
+          <input type="date" class="form-control" [(ngModel)]="invDate" [disabled]="readOnly">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'PurchaseInvoice.SupplierInvNo' | translate }}</label>
+          <input type="text" class="form-control" [(ngModel)]="supplierInvNo" [disabled]="readOnly"
+                 [placeholder]="'PurchaseInvoice.SupplierInvNoPh' | translate">
+        </div>
+
+        <div class="col-md-8">
+          <label class="form-label">{{ 'PurchaseInvoice.Receipt' | translate }} <span class="required">*</span></label>
+          <ng-select [items]="receipts" [(ngModel)]="selectedReceipt" (change)="onReceiptPick()"
+                     [disabled]="readOnly || isExisting" bindLabel="RcptDocNo"
+                     [placeholder]="'PurchaseInvoice.SelectReceipt' | translate">
+            <ng-template ng-option-tmp let-item="item">
+              <span class="fw-bold">{{ 'PurchaseInvoice.RcptShort' | translate }} {{ item.RcptDocNo }}</span>
+              <small class="text-muted"> — {{ item.VenName }} — {{ item.GoodsAmount | number:'1.2-2' }}
+                <ng-container *ngIf="item.SourcePONo"> — {{ 'PurchaseInvoice.PO' | translate }} {{ item.SourcePONo }}</ng-container>
+              </small>
+            </ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'PurchaseInvoice.Vendor' | translate }}</label>
+          <input type="text" class="form-control" [value]="selectedReceipt?.VenName || ''" readonly>
+        </div>
+      </div>
+
+      <!-- No receipt selected -->
+      <div *ngIf="!selectedReceipt && !isExisting" class="alert alert-light border text-center text-muted mb-0">
+        {{ 'PurchaseInvoice.NoReceiptHint' | translate }}
+      </div>
+
+      <!-- Amounts + قيد preview -->
+      <div class="row g-3" *ngIf="selectedReceipt">
+        <div class="col-lg-5">
+          <div class="card custom-card h-100 mb-0">
+            <div class="card-header"><h6 class="mb-0 fw-bold">{{ 'PurchaseInvoice.Amounts' | translate }}</h6></div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="form-label">{{ 'PurchaseInvoice.GoodsAmount' | translate }}</label>
+                  <input type="text" class="form-control text-end" [value]="goodsAmount | number:'1.2-2'" readonly>
+                </div>
+                <div class="col-6">
+                  <label class="form-label">{{ 'PurchaseInvoice.Vat' | translate }}</label>
+                  <input type="number" class="form-control text-end" [(ngModel)]="vatAmount" [disabled]="readOnly" min="0">
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-bold">{{ 'PurchaseInvoice.Total' | translate }}</label>
+                  <input type="text" class="form-control text-end fw-bold" [value]="totalAmount | number:'1.2-2'" readonly>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">{{ 'PurchaseInvoice.Notes' | translate }}</label>
+                  <textarea class="form-control" rows="2" [(ngModel)]="notes" [disabled]="readOnly"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="card custom-card h-100 mb-0">
+            <div class="card-header"><h6 class="mb-0 fw-bold">{{ 'PurchaseInvoice.EntryPreview' | translate }}</h6></div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0 entry-table">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>{{ 'PurchaseInvoice.Account' | translate }}</th>
+                      <th class="text-end">{{ 'PurchaseInvoice.Debit' | translate }}</th>
+                      <th class="text-end">{{ 'PurchaseInvoice.Credit' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ accounts?.GrniAccName || ('PurchaseInvoice.Grni' | translate) }}</td>
+                      <td class="text-end">{{ goodsAmount | number:'1.2-2' }}</td>
+                      <td class="text-end">—</td>
+                    </tr>
+                    <tr *ngIf="(vatAmount || 0) > 0">
+                      <td>{{ accounts?.VatAccName || ('PurchaseInvoice.VatInput' | translate) }}</td>
+                      <td class="text-end">{{ vatAmount | number:'1.2-2' }}</td>
+                      <td class="text-end">—</td>
+                    </tr>
+                    <tr>
+                      <td>{{ selectedReceipt?.VenName }} <small class="text-muted">({{ 'PurchaseInvoice.Payable' | translate }})</small></td>
+                      <td class="text-end">—</td>
+                      <td class="text-end">{{ totalAmount | number:'1.2-2' }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr class="fw-bold">
+                      <td>{{ 'PurchaseInvoice.Balance' | translate }}</td>
+                      <td class="text-end">{{ totalAmount | number:'1.2-2' }}</td>
+                      <td class="text-end">{{ totalAmount | number:'1.2-2' }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <small class="text-muted d-block mt-2">{{ 'PurchaseInvoice.EntryHint' | translate }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ List tab ════ -->
+    <div *ngIf="activeTab === 'list'" class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th>{{ 'PurchaseInvoice.InvNo' | translate }}</th>
+              <th>{{ 'PurchaseInvoice.InvDate' | translate }}</th>
+              <th>{{ 'PurchaseInvoice.Vendor' | translate }}</th>
+              <th>{{ 'PurchaseInvoice.SupplierInvNo' | translate }}</th>
+              <th>{{ 'PurchaseInvoice.RcptShort' | translate }}</th>
+              <th class="text-end">{{ 'PurchaseInvoice.GoodsAmount' | translate }}</th>
+              <th class="text-end">{{ 'PurchaseInvoice.Vat' | translate }}</th>
+              <th class="text-end">{{ 'PurchaseInvoice.Total' | translate }}</th>
+              <th class="text-center">{{ 'PurchaseInvoice.Actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of invoices">
+              <td class="fw-bold">{{ r.InvNo }}</td>
+              <td>{{ r.InvDate }}</td>
+              <td>{{ r.VenName }}</td>
+              <td>{{ r.SupplierInvNo }}</td>
+              <td>{{ r.RcptDocNo }}</td>
+              <td class="text-end">{{ r.GoodsAmount | number:'1.2-2' }}</td>
+              <td class="text-end">{{ r.VatAmount | number:'1.2-2' }}</td>
+              <td class="text-end fw-bold">{{ r.TotalAmount | number:'1.2-2' }}</td>
+              <td class="text-center text-nowrap">
+                <button class="btn btn-sm btn-outline-primary me-1" (click)="openInvoice(r)">
+                  <i class="ti ti-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" *hasPermission="pDelete" (click)="askDelete(r)">
+                  <i class="ti ti-trash"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="!invoices.length">
+              <td colspan="9" class="text-center text-muted py-3">{{ 'PurchaseInvoice.NoData' | translate }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <app-confirmation-modal #confirmModal
+    [title]="'PurchaseInvoice.DeleteTitle' | translate"
+    [message]="'PurchaseInvoice.DeleteConfirm' | translate:{ no: pendingDelete?.InvNo }"
+    [confirmButtonText]="'PurchaseInvoice.Delete' | translate"
+    [cancelButtonText]="'PurchaseInvoice.Cancel' | translate"
+    (confirm)="onConfirmDelete()">
+  </app-confirmation-modal>
+</div>

@@ -1,10 +1,13 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { applyQueryParams } from '../../../shared/utils/query-params.util';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import {
   IncomeStatementService,
   IncomeStatementFilterDto,
@@ -17,7 +20,8 @@ import { AccfService } from '../../../shared/services/accf.service';
 @Component({
   selector: 'app-income-statement',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SharedModule],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, TranslateModule, SharedModule],
   templateUrl: './income-statement.component.html',
   styleUrl: './income-statement.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -59,9 +63,10 @@ export class IncomeStatementComponent implements OnInit {
   constructor(
     private svc:         IncomeStatementService,
     private accfSvc:     AccfService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
+    private route:       ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -76,6 +81,8 @@ export class IncomeStatementComponent implements OnInit {
         this.stockGrid.forEach(r => this.resolveRowName(r));
       },
     });
+    // Honor workflow deep-link params (?dateFrom&dateTo&level) and auto-run.
+    applyQueryParams(this.route, this, () => this.generate());
   }
 
   // ─── Stock grid (بضاعة آخر المدة) ──────────────────────────

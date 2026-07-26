@@ -7,11 +7,14 @@ import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { ChartOfAccountsService, ChartOfAccountDto } from '../../../shared/services/chart-of-accounts.service';
 import {
   MonthlyBalancesService,
   MonthlyBalancesResultDto,
 } from '../../../shared/services/monthly-balances.service';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 /** One display row: the beginning-balance row or a calendar month. */
 interface DisplayRow {
@@ -26,7 +29,8 @@ interface DisplayRow {
 @Component({
   selector: 'app-monthly-balances-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, PaginatorComponent, PaginatePipe],
   templateUrl: './monthly-balances-report.component.html',
   styleUrl: './monthly-balances-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -45,6 +49,8 @@ export class MonthlyBalancesReportComponent implements OnInit {
   rows: DisplayRow[] = [];
   loading = false;
   fetched = false;
+  page = 1;
+  pageSize = 10;
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
 
@@ -61,7 +67,7 @@ export class MonthlyBalancesReportComponent implements OnInit {
   constructor(
     private svc:         MonthlyBalancesService,
     private accountsSvc: ChartOfAccountsService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -101,6 +107,7 @@ export class MonthlyBalancesReportComponent implements OnInit {
       next: data => {
         this.result = data;
         this.buildRows(data);
+        this.page = 1;
         this.fetched = true;
         this.loading = false;
       },

@@ -14,8 +14,13 @@ import { HOME_ACTION_GROUPS, ActionGroup } from '../home/home-actions';
 import {
   VoucherDashboardService,
   VoucherDashboardRowDto,
+  DashboardSerialOption,
+  DashboardDocOption,
 } from '../../shared/services/voucher-dashboard.service';
+import { WarehouseDashboardService } from '../../shared/services/warehouse-dashboard.service';
 import { CurrencyService, CurrencyDto } from '../../shared/services/currency.service';
+import { DashboardLayoutService } from '../../shared/services/dashboard-layout.service';
+import { dashSourceByKey, buildSeriesOptions } from '../../shared/services/dashboard-charts';
 
 type ChartType = 'bar' | 'line' | 'area' | 'pie' | 'donut';
 
@@ -69,14 +74,28 @@ export class Home2Component implements OnInit {
 
   loading = false;
   cards: VoucherCard[] = [];
+  warehouseCards: VoucherCard[] = [];
   overview: Overview | null = null;
+  /** User's custom dashboard (built in the Dashboard Builder, saved in localStorage). */
+  customBoxes: { id: string; titleKey: string; icon: string; color: string; route: string; box: any }[] = [];
 
   // ─── Filters (persisted) ──────────────────────────────────────────────────
   dateFrom = this.toDateStr(new Date(new Date().getFullYear(), 0, 1));
   dateTo   = this.toDateStr(new Date());
   curNo: number | null = null;
   postStatus: number | null = null;   // 1=posted, 0=unposted, null=all
+  serialNo: number | null = null;     // رقم التسلسل
+  docNo: number | null = null;        // رقم المستند
+  amtFrom: number | null = null;      // القيمة من
+  amtTo: number | null = null;        // القيمة إلى
   currencies: CurrencyDto[] = [];
+
+  // Dropdown option lists (loaded once from the voucher data).
+  serialOptions: DashboardSerialOption[] = [];
+  private docOptions: DashboardDocOption[] = [];
+  /** Doc-number options for the current serial. Cached (stable reference) so
+   *  ng-select doesn't reset the dropdown on every change-detection pass. */
+  docNoOptions: number[] = [];
 
   readonly POST_OPTIONS = [
     { value: null, label: 'JvReport.All'       },
@@ -100,6 +119,14 @@ export class Home2Component implements OnInit {
     { docType: 2, titleKey: 'Home2.Cards.Receipt',       icon: 'ti ti-receipt',       color: '#0ea5e9', def: 'line' },
   ];
 
+  /** Warehouse stock-voucher types (i2_transf doctypes) — same card pattern. */
+  private readonly WAREHOUSE_TYPES: { docType: number; titleKey: string; icon: string; color: string; def: ChartType }[] = [
+    { docType: 20, titleKey: 'Home2.Cards.Inbound',  icon: 'ti ti-arrow-down-circle', color: '#22c55e', def: 'bar'  },
+    { docType: 21, titleKey: 'Home2.Cards.Outbound', icon: 'ti ti-arrow-up-circle',   color: '#0ea5e9', def: 'line' },
+    { docType: 22, titleKey: 'Home2.Cards.Damage',   icon: 'ti ti-trash',             color: '#ef4444', def: 'bar'  },
+    { docType: 24, titleKey: 'Home2.Cards.Transfer', icon: 'ti ti-arrows-exchange',   color: '#8b5cf6', def: 'line' },
+  ];
+
   private readonly PALETTE = ['#6366f1','#22c55e','#f59e0b','#0ea5e9','#ef4444','#8b5cf6','#14b8a6','#ec4899','#84cc16','#f97316','#06b6d4','#a855f7'];
   private readonly FILTER_KEY = 'home2.filters';
 
@@ -107,7 +134,9 @@ export class Home2Component implements OnInit {
     private router: Router,
     private translate: TranslateService,
     private svc: VoucherDashboardService,
+    private warehouseSvc: WarehouseDashboardService,
     private currencySvc: CurrencyService,
+    private layoutSvc: DashboardLayoutService,
   ) {}
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
@@ -128,7 +157,32 @@ export class Home2Component implements OnInit {
   ngOnInit(): void {
     this.loadFilters();
     this.currencySvc.getAll().subscribe({ next: d => (this.currencies = d ?? []), error: () => {} });
+    this.svc.getOptions().subscribe({
+      next: o => {
+        this.serialOptions = o?.Serials ?? [];
+        this.docOptions = o?.Docs ?? [];
+        this.recomputeDocOptions();
+      },
+      error: () => { this.serialOptions = []; this.docOptions = []; this.recomputeDocOptions(); },
+    });
     this.load();
+  }
+
+  /** Rebuild the doc-number list for the chosen serial (all serials when none). */
+  private recomputeDocOptions(): void {
+    const src = this.serialNo == null
+      ? this.docOptions
+      : this.docOptions.filter(d => d.SerialNo === this.serialNo);
+    this.docNoOptions = Array.from(new Set(src.map(d => d.DocNo))).sort((a, b) => a - b);
+  }
+
+  /** Serial changed → refresh doc list, drop a doc-number that no longer fits, then reload. */
+  onSerialChange(): void {
+    this.recomputeDocOptions();
+    if (this.docNo != null && !this.docNoOptions.includes(this.docNo)) {
+      this.docNo = null;
+    }
+    this.onFilterChange();
   }
 
   navigate(path: string): void { this.router.navigate([path]); }
@@ -141,10 +195,42 @@ export class Home2Component implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.svc.get({ dateFrom: this.dateFrom, dateTo: this.dateTo, curNo: this.curNo, postStatus: this.postStatus }).subscribe({
-      next: rows => { this.build(rows ?? []); this.loading = false; },
-      error: () => { this.build([]); this.loading = false; },
+    this.svc.get({
+      dateFrom: this.dateFrom, dateTo: this.dateTo, curNo: this.curNo, postStatus: this.postStatus,
+      serialNo: this.serialNo, docNo: this.docNo, amtFrom: this.amtFrom, amtTo: this.amtTo,
+    }).subscribe({
+      next: rows => { this.build(rows ?? []); this.loading = false; this.rebuildCustom(); },
+      error: () => { this.build([]); this.loading = false; this.rebuildCustom(); },
     });
+    // Warehouse stock-voucher charts (same filters; all stores).
+    this.warehouseSvc.get({
+      dateFrom: this.dateFrom, dateTo: this.dateTo, storeNo: null,
+      serialNo: this.serialNo, docNo: this.docNo, amtFrom: this.amtFrom, amtTo: this.amtTo,
+    }).subscribe({
+      next: rows => { this.warehouseCards = this.makeCards(rows ?? [], this.WAREHOUSE_TYPES); this.rebuildCustom(); },
+      error: () => { this.warehouseCards = this.makeCards([], this.WAREHOUSE_TYPES); this.rebuildCustom(); },
+    });
+  }
+
+  /** Render the saved custom dashboard from the built accounting/warehouse cards. */
+  private rebuildCustom(): void {
+    const layout = this.layoutSvc.getLayout();
+    this.customBoxes = layout.map(w => {
+      const src = dashSourceByKey(w.key);
+      if (!src) return null;
+      const pool = src.kind === 'wh' ? this.warehouseCards : this.cards;
+      const card = pool.find(c => c.docType === src.docType);
+      if (!card) return null;
+      return {
+        id: w.id, titleKey: src.titleKey, icon: src.icon, color: src.color, route: src.route,
+        box: {
+          ...buildSeriesOptions(w.chartType, card.months, card.amounts, {
+            name: this.translate.instant('Home2.Value'), color: src.color, height: 240,
+          }),
+          show: true,
+        },
+      };
+    }).filter(Boolean) as any[];
   }
 
   // ─── User picks a chart type (persisted) ──────────────────────────────────
@@ -164,13 +250,17 @@ export class Home2Component implements OnInit {
   }
 
   // ─── Build ────────────────────────────────────────────────────────────────
-  private build(rows: VoucherDashboardRowDto[]): void {
+  /** Build one VoucherCard per type from monthly dashboard rows. */
+  private makeCards(
+    rows: { DocType: number; Ym: string; Cnt: number; Amt: number }[],
+    types: { docType: number; titleKey: string; icon: string; color: string; def: ChartType }[],
+  ): VoucherCard[] {
     const ymKeys = this.ymRange(this.dateFrom, this.dateTo);
     const singleYear = ymKeys.length > 0 && ymKeys.every(k => k.slice(0, 4) === ymKeys[0].slice(0, 4));
     const labels = ymKeys.map(k => this.ymLabel(k, singleYear));
 
-    this.cards = this.TYPES.map(t => {
-      const byYm = new Map<string, VoucherDashboardRowDto>();
+    return types.map(t => {
+      const byYm = new Map<string, { Cnt: number; Amt: number }>();
       rows.filter(r => r.DocType === t.docType).forEach(r => byYm.set(r.Ym, r));
       const amounts = ymKeys.map(k => +(+(byYm.get(k)?.Amt ?? 0)).toFixed(2));
       const counts  = ymKeys.map(k => byYm.get(k)?.Cnt ?? 0);
@@ -188,6 +278,10 @@ export class Home2Component implements OnInit {
       Object.assign(card, this.optsFor(card, type));
       return card;
     });
+  }
+
+  private build(rows: VoucherDashboardRowDto[]): void {
+    this.cards = this.makeCards(rows, this.TYPES);
 
     const grand = this.cards.reduce((s, c) => s + c.totalAmount, 0) || 1;
     const rowsPie: PieRow[] = this.cards.map(c => ({
@@ -310,6 +404,7 @@ export class Home2Component implements OnInit {
     try {
       localStorage.setItem(this.FILTER_KEY, JSON.stringify({
         dateFrom: this.dateFrom, dateTo: this.dateTo, curNo: this.curNo, postStatus: this.postStatus,
+        serialNo: this.serialNo, docNo: this.docNo, amtFrom: this.amtFrom, amtTo: this.amtTo,
       }));
     } catch {}
   }
@@ -322,6 +417,10 @@ export class Home2Component implements OnInit {
       if (f.dateTo)   this.dateTo   = f.dateTo;
       this.curNo      = (typeof f.curNo === 'number') ? f.curNo : null;
       this.postStatus = (f.postStatus === 0 || f.postStatus === 1) ? f.postStatus : null;
+      this.serialNo   = (typeof f.serialNo === 'number') ? f.serialNo : null;
+      this.docNo      = (typeof f.docNo === 'number') ? f.docNo : null;
+      this.amtFrom    = (typeof f.amtFrom === 'number') ? f.amtFrom : null;
+      this.amtTo      = (typeof f.amtTo === 'number') ? f.amtTo : null;
     } catch {}
   }
 

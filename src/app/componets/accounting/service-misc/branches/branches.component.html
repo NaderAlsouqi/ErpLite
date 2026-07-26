@@ -77,9 +77,7 @@
         <div class="card-title">
           {{ 'Branch.List' | translate }}
         </div>
-        <button *hasPermission="'Branches.Print'" class="btn btn-outline-primary" (click)="print()">
-          <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-        </button>
+        <app-report-export *hasPermission="'Branches.Print'" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
       </div>
       <div class="card-body table-section">
         <!-- Filter -->
@@ -110,7 +108,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of filteredBranches"
+              <tr *ngFor="let item of filteredBranches | paginate:page:pageSize"
                   (click)="onSelectBranch(item)"
                   [class.selected-row]="currentBranch.BranchNo === item.BranchNo">
                 <td>{{ item.BranchNo }}</td>
@@ -123,6 +121,7 @@
             </tbody>
           </table>
         </div>
+        <app-paginator [total]="filteredBranches.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
       </div>
     </div>
   </div>

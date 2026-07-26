@@ -1,0 +1,333 @@
+<app-page-header
+  [title]="'Inbound.Title' | translate"
+  [title1]="parentTitleKey | translate"
+  [activeTitle]="'Inbound.Title' | translate">
+</app-page-header>
+
+<div class="inbound-container">
+  <div class="card custom-card">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'form'" (click)="switchTab('form')" href="javascript:void(0)">
+            <i class="ti ti-file-text me-1"></i>{{ 'Inbound.VoucherTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'" (click)="switchTab('list')" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'Inbound.ListTab' | translate }}
+          </a>
+        </li>
+      </ul>
+      <app-report-export *hasPermission="pPrint"
+        (formatSelected)="reportService.setNextFormat($event); onExport()"></app-report-export>
+    </div>
+    <div class="card-body">
+
+      <div *ngIf="activeTab === 'form'">
+
+      <!-- ── Header ─────────────────────────────────────────────── -->
+      <div class="row g-3 mb-2">
+        <div class="col-md-2 year-field" [class.year-off]="current.Myear !== currentYear">
+          <label class="form-label">{{ 'Inbound.Year' | translate }} <span class="required">*</span></label>
+          <input type="number" class="form-control year-field" [class.year-off]="current.Myear !== currentYear"
+            [(ngModel)]="current.Myear" (change)="!isExisting && fetchNextNo()" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'Inbound.Serial' | translate }} <span class="required">*</span></label>
+          <ng-select [items]="lookups.SerialTypes" bindValue="VType" [(ngModel)]="current.VType"
+            (change)="onSerialChange()" [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-s="item">{{ s.VType }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+            <ng-template ng-label-tmp let-s="item">{{ s.VType }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'Inbound.DocNo' | translate }} <span class="required">*</span></label>
+          <div class="input-group">
+            <input type="text" class="form-control" maxlength="15" [(ngModel)]="current.DocNo" [placeholder]="'Inbound.DocNo' | translate" />
+            <button class="btn btn-outline-secondary" type="button" (click)="load()" [title]="'Inbound.LoadVoucher' | translate">
+              <i class="ti ti-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'Inbound.Date' | translate }}</label>
+          <input type="date" class="form-control" [(ngModel)]="current.TransDate" />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">{{ 'Inbound.Vendor' | translate }}</label>
+          <ng-select [items]="lookups.Vendors" bindValue="No" [(ngModel)]="current.VendorNo" (change)="onVendorChange()"
+            [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-v="item">{{ v.No }} — {{ isAr ? v.Name : (v.Ename || v.Name) }}</ng-template>
+            <ng-template ng-label-tmp let-v="item">{{ v.No }} — {{ isAr ? v.Name : (v.Ename || v.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'Inbound.Entity' | translate }}</label>
+          <ng-select [items]="lookups.Entities" bindValue="Tg" [(ngModel)]="current.Tg"
+            [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-e="item">{{ e.Tg }} — {{ isAr ? e.Name : (e.Ename || e.Name) }}</ng-template>
+            <ng-template ng-label-tmp let-e="item">{{ e.Tg }} — {{ isAr ? e.Name : (e.Ename || e.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'Inbound.Branch' | translate }}</label>
+          <input type="number" class="form-control" [(ngModel)]="current.BrNo" />
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="prod" [(ngModel)]="current.Prod" />
+            <label class="form-check-label" for="prod">{{ 'Inbound.OpeningStock' | translate }}</label>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">{{ 'Inbound.Notes' | translate }}</label>
+          <input type="text" class="form-control" maxlength="100" [(ngModel)]="current.Des" />
+        </div>
+      </div>
+
+      <!-- ── Detail grid ────────────────────────────────────────── -->
+      <div class="dgrid-scroll">
+        <div class="dgrid inbound-grid perpetual" [class.no-cost]="!canViewCost">
+          <div class="dgrid-head">
+            <div>{{ 'Inbound.Item' | translate }}</div>
+            <div>{{ 'Inbound.Unit' | translate }}</div>
+            <div>{{ 'Inbound.Store' | translate }}</div>
+            <div>{{ 'Inbound.Qty' | translate }}</div>
+            <div>{{ 'Inbound.Weight' | translate }}</div>
+            <div *ngIf="canViewCost">{{ 'Inbound.Cost' | translate }}</div>
+            <div *ngIf="canViewCost">{{ 'Inbound.Total' | translate }}</div>
+            <div>{{ 'Inbound.Expiry' | translate }}</div>
+            <div>{{ 'Inbound.Batch' | translate }}</div>
+            <div>{{ 'Inbound.DebitAccount' | translate }}</div>
+            <div>{{ 'Inbound.DebitAccName' | translate }}</div>
+            <div>{{ 'Inbound.CostCenter' | translate }}</div>
+            <div>{{ 'Inbound.CreditAccount' | translate }}</div>
+            <div>{{ 'Inbound.CreditAccName' | translate }}</div>
+            <div></div>
+          </div>
+          <div class="dgrid-row" *ngFor="let line of current.Lines; let i = index">
+            <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="line.ItemNo" [searchFn]="itemSearchFn"
+              (change)="onItemPick(line)" [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+              <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+            </ng-select>
+            <ng-select [items]="line.Units || []" bindValue="UnitNo" [(ngModel)]="line.UnitNo" (change)="onUnitChange(line)"
+              [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-u="item">{{ u.UnitNo }} — {{ isAr ? u.UnitName : (u.UnitEname || u.UnitName) }}</ng-template>
+              <ng-template ng-label-tmp let-u="item">{{ u.UnitNo }} — {{ isAr ? u.UnitName : (u.UnitEname || u.UnitName) }}</ng-template>
+            </ng-select>
+            <ng-select [items]="lookups.Stores" bindValue="StoreNo" [(ngModel)]="line.StoreNo" (change)="onStoreChange(line)"
+              [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+              <ng-template ng-label-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+            </ng-select>
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="line.Qty" (ngModelChange)="recalc(line)" />
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="line.Weight" />
+            <input *ngIf="canViewCost" type="number" class="form-control form-control-sm" [(ngModel)]="line.Cost" (ngModelChange)="recalc(line)" />
+            <input *ngIf="canViewCost" type="text" class="form-control form-control-sm text-end" [value]="(line.ItemTot || 0)" readonly />
+            <input type="date" class="form-control form-control-sm" [(ngModel)]="line.ExpDate" [disabled]="!line.Expired" />
+            <input type="text" class="form-control form-control-sm" maxlength="25" [(ngModel)]="line.BatchNo" />
+            <ng-select [items]="postableAccounts" bindValue="no" [(ngModel)]="line.DebitAcc" [searchFn]="accSearchFn"
+              (change)="onLineDebitAccChange(line)" [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-a="item">{{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}</ng-template>
+              <ng-template ng-label-tmp let-a="item">{{ a.no }}</ng-template>
+            </ng-select>
+            <input type="text" class="form-control form-control-sm" [value]="line.DebitAccName || ''" readonly />
+            <ng-select [items]="costCenters" bindValue="CcntrNo" [(ngModel)]="line.CostCenter" [searchFn]="ccSearchFn"
+              [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-c="item">{{ c.CcntrNo }} — {{ isAr ? c.CcAname : (c.Ccename || c.CcAname) }}</ng-template>
+              <ng-template ng-label-tmp let-c="item">{{ c.CcntrNo }}</ng-template>
+            </ng-select>
+            <ng-select [items]="postableAccounts" bindValue="no" [(ngModel)]="line.CreditAcc" [searchFn]="accSearchFn"
+              (change)="onLineCreditAccChange(line)" [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-a="item">{{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}</ng-template>
+              <ng-template ng-label-tmp let-a="item">{{ a.no }}</ng-template>
+            </ng-select>
+            <input type="text" class="form-control form-control-sm" [value]="line.CreditAccName || ''" readonly />
+            <div class="d-flex gap-1 justify-content-center">
+              <button *ngIf="serialSystem" type="button" class="btn btn-sm btn-outline-info" (click)="openSerials(line)"
+                [title]="'Serials.Title' | translate" [class.text-danger]="(line.Serials?.length || 0) !== baseQty(line)">
+                <i class="ti ti-list-numbers"></i><span *ngIf="line.Serials?.length" class="ms-1">{{ line.Serials?.length }}</span>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="removeLine(i)"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-2">
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="addLine()"><i class="ti ti-plus me-1"></i>{{ 'Inbound.AddRow' | translate }}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" (click)="openBring()"><i class="ti ti-package-import me-1"></i>{{ 'Inbound.Bring' | translate }}</button>
+      </div>
+
+      <!-- ── Totals ─────────────────────────────────────────────── -->
+      <div class="row g-3 mt-1 mb-2">
+        <div class="col-md-3 offset-md-6">
+          <label class="form-label">{{ 'Inbound.TotalWeight' | translate }}</label>
+          <input type="text" class="form-control text-end" [value]="totalWeight | number:'1.0-3'" readonly />
+        </div>
+        <div class="col-md-3" *ngIf="canViewCost">
+          <label class="form-label">{{ 'Inbound.GrandTotal' | translate }}</label>
+          <input type="text" class="form-control text-end fw-bold" [value]="grandTotal | number:'1.0-2'" readonly />
+        </div>
+      </div>
+
+      <!-- ── Actions ────────────────────────────────────────────── -->
+      <div class="action-buttons">
+        <button *hasPermission="pCreate" class="btn btn-primary" (click)="save()" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>{{ 'General.Save' | translate }}
+        </button>
+        <button *hasPermission="pDelete" class="btn btn-danger" (click)="delete()" [disabled]="!isExisting">
+          <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+        </button>
+        <button type="button" class="btn btn-warning" (click)="showGLEntries()" [disabled]="!isExisting">
+          <i class="ti ti-book me-1"></i>{{ 'Inbound.GLEntries' | translate }}
+        </button>
+        <button class="btn btn-secondary" (click)="reset()">
+          <i class="ti ti-file-plus me-1"></i>{{ 'General.New' | translate }}
+        </button>
+      </div>
+      </div><!-- /form tab -->
+
+      <!-- ── Vouchers list tab ──────────────────────────────────── -->
+      <div *ngIf="activeTab === 'list'">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-search"></i></span>
+              <input type="text" class="form-control" [(ngModel)]="listFilter" [placeholder]="'General.Search' | translate" />
+              <button class="btn btn-outline-secondary" (click)="loadList()" [title]="'General.Refresh' | translate"><i class="ti ti-refresh"></i></button>
+            </div>
+          </div>
+          <div class="col-md-6 d-flex align-items-center justify-content-md-end small text-muted">{{ filteredVouchers.length }} / {{ vouchers.length }}</div>
+        </div>
+
+        <div *ngIf="listLoading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">{{ 'General.Loading' | translate }}</span></div>
+        </div>
+
+        <div *ngIf="!listLoading" class="table-responsive voucher-list">
+          <table class="table table-bordered table-hover table-sm mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th>{{ 'Inbound.DocNo' | translate }}</th>
+                <th>{{ 'Inbound.Serial' | translate }}</th>
+                <th>{{ 'Inbound.Date' | translate }}</th>
+                <th>{{ 'Inbound.Vendor' | translate }}</th>
+                <th>{{ 'Inbound.Entity' | translate }}</th>
+                <th class="text-end" *ngIf="canViewCost">{{ 'Inbound.GrandTotal' | translate }}</th>
+                <th class="text-center">{{ 'Inbound.LinesCount' | translate }}</th>
+                <th style="width:40px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let v of filteredVouchers" class="cursor-pointer" (click)="openVoucher(v)">
+                <td>{{ v.DocNo }}</td>
+                <td>{{ v.VTypeName }}</td>
+                <td>{{ v.TransDate ? (v.TransDate | date:'yyyy-MM-dd') : '' }}</td>
+                <td>{{ v.VendorName }}</td>
+                <td>{{ v.TgName }}</td>
+                <td class="text-end" *ngIf="canViewCost">{{ v.Total | number:'1.0-2' }}</td>
+                <td class="text-center">{{ v.Lines }}</td>
+                <td class="text-center"><i class="ti ti-pencil text-primary"></i></td>
+              </tr>
+              <tr *ngIf="filteredVouchers.length === 0">
+                <td [attr.colspan]="canViewCost ? 8 : 7" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── احضار (bring items of a category) modal ───────────────────── -->
+<div class="inb-overlay" *ngIf="showBring" (click)="closeBring()">
+  <div class="inb-dialog" style="max-width:460px" (click)="$event.stopPropagation()">
+    <div class="inb-header">
+      <h6 class="mb-0"><i class="ti ti-package-import me-1"></i>{{ 'Inbound.BringTitle' | translate }}</h6>
+      <button type="button" class="btn btn-sm btn-light" (click)="closeBring()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="inb-body">
+      <div class="mb-3">
+        <label class="form-label">{{ 'Inbound.Category' | translate }} <span class="required">*</span></label>
+        <ng-select [items]="lookups.Categories" bindValue="TypeNo" [(ngModel)]="bringCategory"
+          [clearable]="false" [placeholder]="'General.Select' | translate">
+          <ng-template ng-option-tmp let-c="item">{{ c.TypeNo }} — {{ isAr ? c.Name : (c.Ename || c.Name) }}</ng-template>
+          <ng-template ng-label-tmp let-c="item">{{ c.TypeNo }} — {{ isAr ? c.Name : (c.Ename || c.Name) }}</ng-template>
+        </ng-select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ 'Inbound.Store' | translate }}</label>
+        <ng-select [items]="lookups.Stores" bindValue="StoreNo" [(ngModel)]="bringStore"
+          [clearable]="false" [placeholder]="'General.Select' | translate">
+          <ng-template ng-option-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+          <ng-template ng-label-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+        </ng-select>
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <button type="button" class="btn btn-secondary" (click)="closeBring()">{{ 'General.Cancel' | translate }}</button>
+        <button type="button" class="btn btn-primary" (click)="doBring()"><i class="ti ti-download me-1"></i>{{ 'Inbound.Bring' | translate }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GL entries (قيود السند) modal ─────────────────────────────── -->
+<div class="inb-overlay" *ngIf="showGL" (click)="closeGL()">
+  <div class="inb-dialog" (click)="$event.stopPropagation()">
+    <div class="inb-header">
+      <h6 class="mb-0"><i class="ti ti-book me-1"></i>{{ 'Inbound.GLTitle' | translate }} — {{ current.DocNo }}</h6>
+      <button type="button" class="btn btn-sm btn-light" (click)="closeGL()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="inb-body">
+      <div *ngIf="glLoading" class="d-flex justify-content-center py-4"><div class="spinner-border text-primary"></div></div>
+      <div *ngIf="!glLoading">
+        <table class="table table-bordered table-sm mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th>{{ 'Inbound.Account' | translate }}</th>
+              <th>{{ 'Inbound.AccountName' | translate }}</th>
+              <th class="text-end">{{ 'Inbound.Debit' | translate }}</th>
+              <th class="text-end">{{ 'Inbound.Credit' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of glEntries">
+              <td>{{ e.Acc }}</td>
+              <td>{{ e.AccName }}</td>
+              <td class="text-end">{{ e.Debit ? (e.Debit | number:'1.0-2') : '' }}</td>
+              <td class="text-end">{{ e.Credit ? (e.Credit | number:'1.0-2') : '' }}</td>
+            </tr>
+            <tr *ngIf="glEntries.length === 0"><td colspan="4" class="text-center text-muted py-3">{{ 'Inbound.NoGL' | translate }}</td></tr>
+          </tbody>
+          <tfoot *ngIf="glEntries.length">
+            <tr class="fw-bold">
+              <td colspan="2" class="text-end">{{ 'Inbound.GrandTotal' | translate }}</td>
+              <td class="text-end">{{ glDebit | number:'1.0-2' }}</td>
+              <td class="text-end">{{ glCredit | number:'1.0-2' }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'Inbound.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="confirmDelete()">
+</app-confirmation-modal>
+
+<!-- ── serial-number entry dialog ─────────────────────────────────── -->
+<app-serial-entry-modal #serialModal></app-serial-entry-modal>

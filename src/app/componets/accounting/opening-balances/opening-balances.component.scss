@@ -42,7 +42,7 @@
   align-items: center;
   gap: 1.25rem;
   padding: 0.625rem 1rem;
-  background: #f8fafc;
+  background: var(--default-background, #f8fafc);
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   flex-wrap: wrap;
@@ -150,7 +150,7 @@
   font-size: 0.8rem;
   padding: 0.25rem 0.4rem;
   border-radius: 6px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--default-border, #cbd5e1);
   transition: border-color 0.15s, box-shadow 0.15s;
 
   &:focus {
@@ -178,7 +178,7 @@
     min-height: 30px !important;
     height: 30px !important;
     border-radius: 6px !important;
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid var(--default-border, #cbd5e1) !important;
     background: #fff !important;
     box-shadow: none !important;
     transition: border-color 0.15s, box-shadow 0.15s !important;

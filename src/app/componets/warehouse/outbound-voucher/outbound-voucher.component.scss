@@ -1,0 +1,119 @@
+.outbound-container {
+  padding: 1rem;
+
+  .form-label { font-weight: 500; margin-bottom: 0.25rem; .required { color: #dc3545; } }
+
+  .dgrid-scroll {
+    overflow-x: scroll;            /* always show the horizontal scrollbar */
+    overflow-y: hidden;
+    padding-bottom: 2px;
+    scrollbar-width: thin;         /* Firefox */
+    scrollbar-color: var(--primary, #4b49ac) #e9ecef;
+
+    &::-webkit-scrollbar { height: 12px; }
+    &::-webkit-scrollbar-track {
+      background: #e9ecef;
+      border-radius: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--primary, #4b49ac);
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+    }
+    &::-webkit-scrollbar-thumb:hover { background: var(--primary-tint2-color, #3d3b96); }
+  }
+
+  .dgrid {
+    min-width: 1050px;
+    border: 1px solid var(--default-border, #e9ecef);
+    border-radius: 6px;
+
+    .dgrid-head, .dgrid-row {
+      display: grid;
+      grid-template-columns: 2fr 1.3fr 1.5fr 0.8fr 0.8fr 1fr 1fr 1.2fr 1fr 40px;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+    }
+    &.perpetual {
+      min-width: 1450px;
+      .dgrid-head, .dgrid-row {
+        grid-template-columns: 1.8fr 1.2fr 1.4fr 0.7fr 0.7fr 0.9fr 0.9fr 1.1fr 0.9fr 1.3fr 1.3fr 0.9fr 40px;
+      }
+      /* الكلفة hidden (no Outbound.ViewCost): drop the Cost + Total columns */
+      &.no-cost {
+        min-width: 1300px;
+        .dgrid-head, .dgrid-row {
+          grid-template-columns: 1.8fr 1.2fr 1.4fr 0.7fr 0.7fr 1.1fr 0.9fr 1.3fr 1.3fr 0.9fr 40px;
+        }
+      }
+    }
+    .dgrid-head {
+      background: rgba(var(--primary-rgb), 0.08);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .dgrid-row { border-top: 1px solid var(--default-border, #e9ecef); }
+
+    .form-control, .form-control-sm { width: 100%; min-width: 0; }
+    .btn { padding: 0.2rem 0.4rem; }
+    ::ng-deep .ng-select { width: 100%; }
+    ::ng-deep .ng-select.ng-select-single .ng-select-container { min-height: 31px; height: 31px; }
+
+    .qty-cell { display: flex; flex-direction: column; min-width: 0; }
+    .qty-cell .qty-avail { font-size: 10px; line-height: 1.1; color: #198754; white-space: nowrap; text-align: center; margin-top: 1px; }
+  }
+
+  .voucher-list {
+    max-height: 60vh;
+    overflow: auto;
+    tr.cursor-pointer { cursor: pointer; }
+    tbody tr:hover { background-color: rgba(var(--primary-rgb), 0.06); }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    max-width: 640px;
+    .btn { flex: 1; display: flex; align-items: center; justify-content: center; }
+  }
+}
+
+.inb-overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1055;
+  padding: 1rem;
+}
+.inb-dialog {
+  background: var(--custom-white, #fff); border-radius: 10px; width: 100%; max-width: 680px;
+  max-height: 85vh; display: flex; flex-direction: column;
+  overflow: visible;  /* allow ng-select dropdown panels to escape the dialog box */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  .inb-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 1rem; border-bottom: 1px solid var(--default-border, #e9ecef);
+    border-radius: 10px 10px 0 0;
+  }
+  .inb-body { padding: 1rem; overflow: visible; }
+}
+
+::ng-deep [data-theme-mode="dark"] app-outbound-voucher {
+  .form-label, .form-check-label { color: var(--default-text-color) !important; }
+  .form-control, .form-select {
+    background: var(--form-control-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--default-text-color) !important;
+  }
+  .dgrid { border-color: var(--default-border) !important; }
+  .dgrid .dgrid-head { color: var(--default-text-color) !important; }
+  .dgrid .dgrid-row  { border-top-color: var(--default-border) !important; }
+  .dgrid-scroll {
+    scrollbar-color: var(--primary, #4b49ac) rgba(255, 255, 255, 0.08);
+    &::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.08); }
+    &::-webkit-scrollbar-thumb { border-color: rgba(255, 255, 255, 0.08); }
+  }
+}

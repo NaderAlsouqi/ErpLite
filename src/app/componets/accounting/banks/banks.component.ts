@@ -10,11 +10,15 @@ import { ChartOfAccountDto, ChartOfAccountsService } from '../../../shared/servi
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-banks',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -22,6 +26,8 @@ import { ReportService } from '../../../shared/services/report.service';
     SharedModule,
     ConfirmationModalComponent,
     HasPermissionDirective,
+    PaginatorComponent,
+    PaginatePipe,
   ],
   templateUrl: './banks.component.html',
   styleUrl: './banks.component.scss',
@@ -38,6 +44,8 @@ export class BanksComponent implements OnInit {
   loading = false;
   saving = false;
   activeTab: 'form' | 'list' = 'form';
+  page = 1;
+  pageSize = 10;
 
   switchToForm(): void { this.activeTab = 'form'; }
   switchToList(): void { this.activeTab = 'list'; }
@@ -47,7 +55,7 @@ export class BanksComponent implements OnInit {
     private accService: ChartOfAccountsService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {
@@ -85,6 +93,7 @@ export class BanksComponent implements OnInit {
       b.Bank?.toLowerCase().includes(term) ||
       b.BEName?.toLowerCase().includes(term)
     );
+    this.page = 1;
   }
 
   clearFilters(): void {

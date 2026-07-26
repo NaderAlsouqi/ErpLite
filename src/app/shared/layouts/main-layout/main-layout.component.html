@@ -7,6 +7,7 @@
     <div class="main-content app-content" (click)="clickOnBody()" >
         <div class="container-fluid">
             <router-outlet></router-outlet>
+            <app-attachments [moduleKey]="attachmentKey"></app-attachments>
         </div>
     </div>
     <app-footer></app-footer>

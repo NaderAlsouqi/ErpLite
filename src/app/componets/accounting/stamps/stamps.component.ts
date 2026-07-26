@@ -8,17 +8,23 @@ import { SignatureDto, SignatureService } from '../../../shared/services/signatu
 import { ConfirmationModalComponent } from '../../../shared/common/confirmation-modal/confirmation-modal.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-stamps',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
     SharedModule,
     ConfirmationModalComponent,
     HasPermissionDirective,
+    PaginatorComponent,
+    PaginatePipe,
   ],
   templateUrl: './stamps.component.html',
   styleUrl: './stamps.component.scss',
@@ -33,6 +39,8 @@ export class StampsComponent implements OnInit {
   current: SignatureDto = this.initForm();
   loading = false;
   saving = false;
+  page = 1;
+  pageSize = 10;
   activeTab: 'form' | 'list' = 'form';
 
   switchToForm(): void { this.activeTab = 'form'; }
@@ -42,7 +50,7 @@ export class StampsComponent implements OnInit {
     private signatureService: SignatureService,
     private toastr: ToastrService,
     private translate: TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +87,7 @@ export class StampsComponent implements OnInit {
       s.Desc?.toLowerCase().includes(term) ||
       s.eDesc?.toLowerCase().includes(term)
     );
+    this.page = 1;
   }
 
   clearFilter(): void {

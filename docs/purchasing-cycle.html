@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>دورة المشتريات — Purchasing Cycle</title>
+  <style>html,body{margin:0;padding:0;}body{background:#eef0f6;}@media (prefers-color-scheme:dark){body{background:#10141d;}}</style>
+<style>
+  :root {
+    --paper:#eef0f6; --card:#fff; --card-2:#f7f8fc; --ink:#1a2138; --muted:#5b6479; --faint:#8a92a6;
+    --line:#dfe3ee; --navy:#26356e; --navy-ink:#26356e; --navy-soft:#e9edfa; --teal:#0f7a8b; --teal-soft:#e0f2f5;
+    --draft:#6b7280; --pending:#b07813; --approved:#1f7a4d; --closed:#2456a6; --cancel:#b3341f;
+    --shadow:0 1px 2px rgba(26,33,56,.06),0 8px 24px rgba(26,33,56,.05);
+    --mono:ui-monospace,"Cascadia Code","SF Mono","Consolas",monospace;
+    --sans:-apple-system,"Segoe UI",system-ui,"Noto Sans Arabic","Tahoma",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#10141d; --card:#191f2d; --card-2:#141926; --ink:#e7eaf2; --muted:#9aa2b6; --faint:#6d7688;
+      --line:#2a3245; --navy:#8fa2de; --navy-ink:#b9c6f2; --navy-soft:#1e2740; --teal:#45b8c8; --teal-soft:#123037;
+      --draft:#949cad; --pending:#d8a341; --approved:#4cb681; --closed:#6fa2e8; --cancel:#e07a63;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"]{--paper:#eef0f6;--card:#fff;--card-2:#f7f8fc;--ink:#1a2138;--muted:#5b6479;--faint:#8a92a6;--line:#dfe3ee;--navy:#26356e;--navy-ink:#26356e;--navy-soft:#e9edfa;--teal:#0f7a8b;--teal-soft:#e0f2f5;--draft:#6b7280;--pending:#b07813;--approved:#1f7a4d;--closed:#2456a6;--cancel:#b3341f;--shadow:0 1px 2px rgba(26,33,56,.06),0 8px 24px rgba(26,33,56,.05);}
+  :root[data-theme="dark"]{--paper:#10141d;--card:#191f2d;--card-2:#141926;--ink:#e7eaf2;--muted:#9aa2b6;--faint:#6d7688;--line:#2a3245;--navy:#8fa2de;--navy-ink:#b9c6f2;--navy-soft:#1e2740;--teal:#45b8c8;--teal-soft:#123037;--draft:#949cad;--pending:#d8a341;--approved:#4cb681;--closed:#6fa2e8;--cancel:#e07a63;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);}
+
+  *{box-sizing:border-box;}
+  .wrap{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;
+    padding:clamp(1.25rem,4vw,3rem) 1.25rem 4rem;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .inner{max-width:1060px;margin:0 auto;}
+
+  /* language show/hide */
+  [data-lang="ar"] .lx-en{display:none!important;}
+  [data-lang="en"] .lx-ar{display:none!important;}
+  .wrap[data-lang="ar"]{font-size:1.02rem;}
+
+  /* toolbar */
+  .toolbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;margin-bottom:1.4rem;}
+  .langtoggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card);box-shadow:var(--shadow);}
+  .langbtn{border:0;background:transparent;color:var(--muted);font-family:var(--sans);font-weight:700;
+    font-size:.82rem;padding:.4rem .9rem;cursor:pointer;letter-spacing:.02em;}
+  .langbtn.active{background:var(--navy);color:#fff;}
+  .langbtn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+
+  .eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);font-weight:700;margin:0 0 .55rem;}
+  h1{font-size:clamp(1.6rem,4.2vw,2.5rem);line-height:1.12;margin:0 0 .5rem;font-weight:800;letter-spacing:-.01em;text-wrap:balance;}
+  .lede{color:var(--muted);font-size:1.05rem;max-width:62ch;margin:0 0 1.6rem;}
+
+  .glance{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;padding:.85rem 1rem;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin-bottom:2.4rem;font-size:.82rem;}
+  .glance .g{padding:.26rem .6rem;border-radius:999px;background:var(--navy-soft);color:var(--navy-ink);font-weight:650;white-space:nowrap;}
+  .glance .arw{color:var(--faint);font-weight:800;}
+
+  .sec-h{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--faint);
+    margin:2.7rem 0 1.1rem;display:flex;align-items:center;gap:.6rem;}
+  .sec-h::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  /* flow */
+  .flow{position:relative;}
+  .stage{display:grid;grid-template-columns:40px 1fr;gap:1.1rem;position:relative;}
+  .rail{position:relative;display:flex;justify-content:center;}
+  .rail::before{content:"";position:absolute;top:0;bottom:-1.6rem;width:2px;background:var(--line);}
+  .stage:last-child .rail::before{display:none;}
+  .num{position:relative;z-index:1;width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;
+    display:grid;place-items:center;font-weight:800;font-size:.95rem;margin-top:2px;box-shadow:0 0 0 4px var(--paper);font-variant-numeric:tabular-nums;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:1.05rem 1.2rem 1.1rem;box-shadow:var(--shadow);margin-bottom:1.55rem;}
+  .card.stock{border-color:color-mix(in srgb,var(--teal) 45%,var(--line));}
+  .card.acct{border-color:color-mix(in srgb,var(--pending) 40%,var(--line));}
+  .name{display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem .7rem;margin-bottom:.5rem;}
+  .name .big{font-size:1.25rem;font-weight:750;color:var(--ink);}
+  .path{font-family:var(--mono);font-size:.73rem;color:var(--faint);margin-bottom:.6rem;word-break:break-all;unicode-bidi:plaintext;}
+  .what{font-size:.95rem;margin:0 0 .8rem;color:var(--ink);}
+  .meta{display:flex;flex-wrap:wrap;gap:.42rem;align-items:center;}
+  .lab{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:700;}
+  .tbl{font-family:var(--mono);font-size:.75rem;padding:.16rem .5rem;border-radius:6px;background:var(--card-2);
+    border:1px solid var(--line);color:var(--ink);white-space:nowrap;unicode-bidi:plaintext;}
+  .to-next{display:flex;gap:.5rem;align-items:flex-start;margin-top:.85rem;padding-top:.75rem;
+    border-top:1px dashed var(--line);font-size:.86rem;color:var(--muted);}
+  .to-next .ic{color:var(--navy);font-weight:800;flex:0 0 auto;}
+  .to-next.gen .ic{color:var(--teal);}
+  .to-next b{color:var(--ink);font-weight:700;}
+  .link-chip{font-family:var(--mono);font-size:.73rem;color:var(--teal);background:var(--teal-soft);padding:.05rem .4rem;border-radius:5px;unicode-bidi:plaintext;}
+
+  /* chips */
+  .chip{font-size:.72rem;font-weight:700;padding:.16rem .55rem;border-radius:999px;white-space:nowrap;display:inline-flex;align-items:center;gap:.35rem;}
+  .chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;}
+  .c-draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 14%,transparent);}
+  .c-pending{color:var(--pending);background:color-mix(in srgb,var(--pending) 15%,transparent);}
+  .c-approved{color:var(--approved);background:color-mix(in srgb,var(--approved) 15%,transparent);}
+  .c-closed{color:var(--closed);background:color-mix(in srgb,var(--closed) 15%,transparent);}
+  .c-cancel{color:var(--cancel);background:color-mix(in srgb,var(--cancel) 15%,transparent);}
+  .c-linked{color:var(--teal);background:var(--teal-soft);}
+
+  /* accounting entries */
+  .entries{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  @media (max-width:680px){.entries{grid-template-columns:1fr;}}
+  .entry{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden;}
+  .entry h4{margin:0;padding:.7rem 1rem;font-size:.9rem;background:var(--navy-soft);color:var(--navy-ink);font-weight:750;}
+  .entry table{width:100%;border-collapse:collapse;font-size:.85rem;}
+  .entry td{padding:.5rem 1rem;border-top:1px solid var(--line);}
+  .entry td.n{text-align:end;font-variant-numeric:tabular-nums;font-family:var(--mono);}
+  .entry .dr{color:var(--approved);font-weight:700;}
+  .entry .cr{color:var(--cancel);font-weight:700;}
+  .entry .foot td{background:var(--card-2);font-weight:700;border-top:2px solid var(--navy);}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  @media (max-width:620px){.two{grid-template-columns:1fr;}}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:1.05rem 1.2rem;box-shadow:var(--shadow);}
+  .metric .tag{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--faint);}
+  .metric .ar-h{font-size:1.1rem;font-weight:750;margin:.25rem 0 .5rem;}
+  .formula{font-family:var(--mono);font-size:.82rem;background:var(--card-2);border:1px solid var(--line);border-radius:8px;padding:.5rem .7rem;margin:.4rem 0 .55rem;unicode-bidi:plaintext;}
+  .metric p{margin:0;font-size:.87rem;color:var(--muted);}
+  .metric .where{font-size:.77rem;color:var(--teal);font-weight:650;margin-top:.5rem;}
+
+  .life{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;padding:1.05rem 1.2rem;box-shadow:var(--shadow);}
+  .life .step-arw{color:var(--faint);font-weight:800;}
+  .life .off{margin-inline-start:auto;display:flex;gap:.5rem;padding-inline-start:.8rem;border-inline-start:1px solid var(--line);}
+  .life-note{font-size:.82rem;color:var(--muted);margin:.7rem 0 0;}
+
+  .tbl-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);background:var(--card);}
+  table.links{border-collapse:collapse;width:100%;font-size:.85rem;min-width:560px;}
+  table.links th,table.links td{text-align:start;padding:.65rem .9rem;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.links thead th{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:700;background:var(--card-2);}
+  table.links tr:last-child td{border-bottom:0;}
+  table.links code{font-family:var(--mono);font-size:.79rem;color:var(--teal);unicode-bidi:plaintext;}
+  table.links .a{color:var(--ink);font-weight:650;}
+
+  .foot{margin-top:2.6rem;padding-top:1.1rem;border-top:1px solid var(--line);font-size:.8rem;color:var(--faint);}
+  .foot code{font-family:var(--mono);color:var(--muted);unicode-bidi:plaintext;}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap" data-lang="ar" dir="rtl">
+  <div class="inner">
+
+    <div class="toolbar">
+      <p class="eyebrow" style="margin:0">ErpLite · <span class="lx-ar">نظام إدارة المشتريات</span><span class="lx-en">Purchasing Module</span></p>
+      <div class="langtoggle" role="group" aria-label="Language">
+        <button class="langbtn active" data-l="ar" onclick="setLang('ar')">العربية</button>
+        <button class="langbtn" data-l="en" onclick="setLang('en')">English</button>
+      </div>
+    </div>
+
+    <h1><span class="lx-ar">دورة المشتريات</span><span class="lx-en">The Purchasing Cycle</span></h1>
+    <p class="lede">
+      <span class="lx-ar">كيف ترتبط شاشات المشتريات ببعضها — من طلب المواد وصولاً إلى استلام البضاعة وفاتورة المشتريات والقيود المحاسبية.</span>
+      <span class="lx-en">How the purchasing screens connect — from a material request all the way to receiving goods, the purchase invoice, and the accounting entries.</span>
+    </p>
+
+    <div class="glance" dir="ltr">
+      <span class="g"><span class="lx-ar">طلب مواد</span><span class="lx-en">Request</span></span><span class="arw">→</span>
+      <span class="g"><span class="lx-ar">عرض سعر</span><span class="lx-en">Quotation</span></span><span class="arw">→</span>
+      <span class="g">RFQ</span><span class="arw">→</span>
+      <span class="g"><span class="lx-ar">طلب شراء</span><span class="lx-en">PO (internal)</span></span><span class="arw">→</span>
+      <span class="g"><span class="lx-ar">تجميع</span><span class="lx-en">Consolidation</span></span><span class="arw">→</span>
+      <span class="g"><span class="lx-ar">أمر الشراء</span><span class="lx-en">Purchase Order</span></span><span class="arw">→</span>
+      <span class="g"><span class="lx-ar">استلام بضاعة</span><span class="lx-en">Goods Receipt</span></span><span class="arw">→</span>
+      <span class="g"><span class="lx-ar">فاتورة مشتريات</span><span class="lx-en">Invoice</span></span>
+    </div>
+
+    <div class="sec-h"><span class="lx-ar">مراحل الدورة</span><span class="lx-en">The flow, stage by stage</span></div>
+
+    <div class="flow">
+
+      <!-- 1 -->
+      <div class="stage"><div class="rail"><div class="num">1</div></div>
+        <div class="card">
+          <div class="name"><span class="big lx-ar">طلب مواد شراء</span><span class="big lx-en">Material Request</span></div>
+          <div class="path">purchases/documents/material-request</div>
+          <p class="what"><span class="lx-ar">قسم يطلب شراء مواد. كل سطر يرفع «الكمية المطلوبة» للمادة، فيعرف المستودع ما هو قادم.</span>
+            <span class="lx-en">A department asks to buy materials. Each line raises the item's on-order quantity, so the warehouse knows what's coming.</span></p>
+          <div class="meta"><span class="lab lx-ar">الجداول</span><span class="lab lx-en">Tables</span>
+            <span class="tbl">ItemReq1</span><span class="tbl">ItemReq2</span><span class="tbl">invf.oq2 ↑</span></div>
+          <div class="to-next"><span class="ic">→</span>
+            <span class="lx-ar">أسطرها تُغذّي عرض السعر، أو يجمّعها سند التجميع.</span>
+            <span class="lx-en">Its lines seed a supplier quotation, or are gathered by a consolidation.</span></div>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="stage"><div class="rail"><div class="num">2</div></div>
+        <div class="card">
+          <div class="name"><span class="big lx-ar">عرض سعر</span><span class="big lx-en">Supplier Quotation</span></div>
+          <div class="path">purchases/documents/supplier-quotation</div>
+          <p class="what"><span class="lx-ar">كل مورّد يقدّم عرض سعر للمواد. حقل «رقم طلب شراء المواد» يسحب الأسطر من طلب الشراء مباشرة.</span>
+            <span class="lx-en">Each supplier submits a priced offer. The purchase-order picker pulls the lines straight in to quote against.</span></p>
+          <div class="meta"><span class="lab lx-ar">الجداول</span><span class="lab lx-en">Tables</span>
+            <span class="tbl">SuppQuot1</span><span class="tbl">SuppQuot2</span></div>
+          <div class="to-next"><span class="ic">→</span>
+            <span class="lx-ar">كل العروض تنتقل إلى شاشة طلب عروض الأسعار للمقارنة.</span>
+            <span class="lx-en">All offers flow into the RFQ screen for comparison.</span></div>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="stage"><div class="rail"><div class="num">3</div></div>
+        <div class="card">
+          <div class="name"><span class="big lx-ar">طلب عروض الأسعار</span><span class="big lx-en">RFQ — compare &amp; approve</span></div>
+          <div class="path">purchases/documents/rfq</div>
+          <p class="what"><span class="lx-ar">يعرض كل العروض جنباً إلى جنب — الأرخص لكل مادة وأفضل صفقة — ثم تعتمد واحداً.</span>
+            <span class="lx-en">Lays every offer side by side — cheapest per item, best deal — then you approve one.</span></p>
+          <div class="meta"><span class="lab lx-ar">يقرأ</span><span class="lab lx-en">Reads</span><span class="tbl">SuppQuot1 / 2</span></div>
+          <div class="to-next gen"><span class="ic">✦</span>
+            <span class="lx-ar"><b>الاعتماد يولّد «طلب شراء المواد»</b> من العرض الفائز. <span class="link-chip">SuppQuot1.PONo</span> يختم الطلب المولّد.</span>
+            <span class="lx-en"><b>Approving generates a purchase order</b> from the winning offer. <span class="link-chip">SuppQuot1.PONo</span> stamps it.</span></div>
+        </div>
+      </div>
+
+      <!-- 4 -->
+      <div class="stage"><div class="rail"><div class="num">4</div></div>
+        <div class="card">
+          <div class="name"><span class="big lx-ar">طلب شراء المواد</span><span class="big lx-en">Purchase Order (internal request)</span></div>
+          <div class="path">purchases/documents/purchase-order</div>
+          <p class="what"><span class="lx-ar">المستند المركزي — قائمة المواد المعتمدة للشراء. يُنشأ يدوياً أو يُولَّد من عرض معتمد أو من تجميع، وله دورة حالة كاملة.</span>
+            <span class="lx-en">The central document — the approved list of what to buy. Created by hand, generated from an approved offer, or produced by a consolidation. Carries a full status lifecycle.</span></p>
+          <div class="meta"><span class="lab lx-ar">الجداول</span><span class="lab lx-en">Tables</span>
+            <span class="tbl">pof1</span><span class="tbl">pof2</span><span class="tbl">VType 31</span></div>
+          <div class="meta" style="margin-top:.5rem">
+            <span class="chip c-draft"><span class="lx-ar">مسودة</span><span class="lx-en">Draft</span></span>
+            <span class="chip c-pending"><span class="lx-ar">بانتظار الاعتماد</span><span class="lx-en">Pending</span></span>
+            <span class="chip c-approved"><span class="lx-ar">معتمد</span><span class="lx-en">Approved</span></span>
+            <span class="chip c-closed"><span class="lx-ar">مغلق</span><span class="lx-en">Closed</span></span>
+            <span class="chip c-cancel"><span class="lx-ar">ملغى</span><span class="lx-en">Cancelled</span></span>
+            <span class="chip c-linked"><span class="lx-ar">مربوط لأمر شراء</span><span class="lx-en">Linked</span></span></div>
+          <div class="to-next"><span class="ic">→</span>
+            <span class="lx-ar">يُجمَّع في سند تجميع، ثم يتحوّل لاحقاً إلى أمر شراء رسمي.</span>
+            <span class="lx-en">Grouped by a consolidation, then turned into a formal purchase order.</span></div>
+        </div>
+      </div>
+
+      <!-- 5 -->
+      <div class="stage"><div class="rail"><div class="num">5</div></div>
+        <div class="card">
+          <div class="name"><span class="big lx-ar">تجميع طلبات شراء المواد</span><span class="big lx-en">PO Consolidation</span></div>
+          <div class="path">purchases/documents/po-consolidation</div>
+          <p class="what"><span class="lx-ar">وظيفتان: <b>تجميع</b> عدة طلبات شراء تحت مستند واحد، أو <b>جمع طلبات المواد</b> وإسناد مورّد لكل صنف وتوليد أمر شراء لكل مورّد. وتُظهر القائمة كل طلب بجانب صفقته وكميته المتبقية والمستلَم.</span>
+            <span class="lx-en">Two jobs: <b>group</b> several purchase orders under one document, or <b>gather material requests</b>, assign a supplier per item, and generate one order per supplier. The list shows each order beside its deal, variance, and what's received.</span></p>
+          <div class="meta"><span class="lab lx-ar">الجداول</span><span class="lab lx-en">Tables</span>
+            <span class="tbl">PoCons1</span><span class="tbl">PoCons2</span><span class="tbl">PoConsReq</span><span class="tbl">PoConsItem</span></div>
+          <div class="to-next"><span class="ic">→</span>
+            <span class="lx-ar">الطلبات المجمّعة تُصدَر للموردين كأوامر شراء رسمية.</span>
+            <span class="lx-en">Consolidated orders are issued to suppliers as formal purchase orders.</span></div>
+        </div>
+      </div>
+
+      <!-- 6 -->
+      <div class="stage"><div class="rail"><div class="num">6</div></div>
+        <div class="card">
+          <div class="name"><span class="big lx-ar">أمر الشراء</span><span class="big lx-en">Purchase Order — issued to supplier</span></div>
+          <div class="path">purchases/documents/purchase-order-doc</div>
+          <p class="what"><span class="lx-ar">الأمر الرسمي المُرسَل للمورّد (بمعيار المطابقة الثلاثية): ضرائب، خصومات، تواريخ تسليم متعددة، ودورة اعتماد خاصة. يستمد من «طلب شراء المواد»، وربطُه به يجعله <span class="chip c-linked" style="vertical-align:middle">مربوط لأمر شراء</span>.</span>
+            <span class="lx-en">The formal order sent to the supplier (three-way-match standard): tax, discounts, multiple delivery dates, its own approval lifecycle. It sources a purchase order — marking it <span class="chip c-linked" style="vertical-align:middle">Linked</span>.</span></p>
+          <div class="meta"><span class="lab lx-ar">الجداول</span><span class="lab lx-en">Tables</span>
+            <span class="tbl">PurchOrd1</span><span class="tbl">PurchOrd2</span><span class="tbl">PO-2026-0001</span></div>
+          <div class="to-next"><span class="ic">→</span>
+            <span class="lx-ar">أسطرُه تُستلَم بسند استلام بضاعة. <span class="link-chip">PurchOrd1.SourcePONo → pof</span></span>
+            <span class="lx-en">Its lines are received on a goods-receipt voucher. <span class="link-chip">PurchOrd1.SourcePONo → pof</span></span></div>
+        </div>
+      </div>
+
+      <!-- 7 -->
+      <div class="stage"><div class="rail"><div class="num">7</div></div>
+        <div class="card stock">
+          <div class="name"><span class="big lx-ar">سند استلام بضاعة</span><span class="big lx-en">Goods Receipt</span></div>
+          <div class="path">purchases/documents/goods-receipt</div>
+          <p class="what"><span class="lx-ar">استلام البضاعة مقابل أمر الشراء — تظهر الأسطر بـ «المطلوب / المستلَم / المتبقي». الحفظ <b>يولّد داخلياً سند إدخال مواد</b> يُدخِل المخزون ويُنشئ القيد مرة واحدة فقط.</span>
+            <span class="lx-en">Receive goods against the purchase order — lines show ordered / received / remaining. Saving it <b>internally creates a stock-in voucher</b> that posts the movement and its entry exactly once.</span></p>
+          <div class="meta"><span class="lab lx-ar">السند</span><span class="lab lx-en">Receipt</span><span class="tbl">i2_transf1 · doctype 37</span></div>
+          <div class="meta" style="margin-top:.5rem"><span class="lab lx-ar">إدخال تلقائي</span><span class="lab lx-en">Auto stock-in</span>
+            <span class="tbl">i2_transf1 · doctype 20</span><span class="tbl">i2_transf2</span></div>
+          <div class="to-next gen"><span class="ic">↺</span>
+            <span class="lx-ar"><b>القيد:</b> مدين المخزون / دائن <b>بضاعة واردة لم تُفوتر (GRNI)</b>. الكميات المستلَمة تعود إلى أعمدة «المستلَم / المتبقي» في التجميع. <span class="link-chip">RcptPONo → PurchOrd.PONo</span></span>
+            <span class="lx-en"><b>Entry:</b> Dr Inventory / Cr <b>GRNI (goods received not invoiced)</b>. Received quantities feed back into the consolidation's received columns. <span class="link-chip">RcptPONo → PurchOrd.PONo</span></span></div>
+        </div>
+      </div>
+
+      <!-- 8 -->
+      <div class="stage"><div class="rail"><div class="num">8</div></div>
+        <div class="card acct">
+          <div class="name"><span class="big lx-ar">فاتورة مشتريات</span><span class="big lx-en">Purchase Invoice</span></div>
+          <div class="path">purchases/documents/purchase-invoice</div>
+          <p class="what"><span class="lx-ar">تُدخَل عند وصول فاتورة المورّد. تُقفل حساب «البضاعة الواردة» الذي فتحه الاستلام، وتُسجّل ذمّة المورّد وضريبة المدخلات القابلة للاسترداد. سند الاستلام يُختَم كـ «مُفوتر» فلا يُفوتَر مرتين.</span>
+            <span class="lx-en">Entered when the supplier's invoice arrives. It clears the GRNI account the receipt opened and records the supplier payable + recoverable input VAT. The receipt is stamped "invoiced" so it can't be invoiced twice.</span></p>
+          <div class="meta"><span class="lab lx-ar">الجداول</span><span class="lab lx-en">Tables</span>
+            <span class="tbl">PurchInv1</span><span class="tbl">PurchInv2</span><span class="tbl">GL · doctype 30</span></div>
+          <div class="to-next gen"><span class="ic">✦</span>
+            <span class="lx-ar"><b>القيد:</b> مدين GRNI + مدين ضريبة مدخلات / دائن المورّد. يظهر على شاشة القيود ضمن «قيد مشتريات».</span>
+            <span class="lx-en"><b>Entry:</b> Dr GRNI + Dr VAT input / Cr supplier. Appears on the journal screen as a purchase entry.</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- accounting -->
+    <div class="sec-h"><span class="lx-ar">القيود المحاسبية — المطابقة الثلاثية (GRNI)</span><span class="lx-en">The accounting — three-way-match (GRNI)</span></div>
+    <div class="entries">
+      <div class="entry">
+        <h4><span class="lx-ar">① سند الاستلام</span><span class="lx-en">① Goods Receipt</span></h4>
+        <table>
+          <tr><td class="dr"><span class="lx-ar">مدين — المخزون</span><span class="lx-en">Dr — Inventory</span></td><td class="n">100</td><td class="n">—</td></tr>
+          <tr><td class="cr"><span class="lx-ar">دائن — بضاعة واردة لم تُفوتر</span><span class="lx-en">Cr — GRNI</span></td><td class="n">—</td><td class="n">100</td></tr>
+        </table>
+      </div>
+      <div class="entry">
+        <h4><span class="lx-ar">② فاتورة المشتريات</span><span class="lx-en">② Purchase Invoice</span></h4>
+        <table>
+          <tr><td class="dr"><span class="lx-ar">مدين — بضاعة واردة لم تُفوتر</span><span class="lx-en">Dr — GRNI</span></td><td class="n">100</td><td class="n">—</td></tr>
+          <tr><td class="dr"><span class="lx-ar">مدين — ضريبة مدخلات</span><span class="lx-en">Dr — VAT input</span></td><td class="n">15</td><td class="n">—</td></tr>
+          <tr><td class="cr"><span class="lx-ar">دائن — المورّد (ذمم دائنة)</span><span class="lx-en">Cr — Supplier (payable)</span></td><td class="n">—</td><td class="n">115</td></tr>
+        </table>
+      </div>
+    </div>
+    <p class="life-note"><span class="lx-ar">حساب «البضاعة الواردة لم تُفوتر» يُفتَح عند الاستلام ويُقفَل عند الفوترة — رصيده يعود صفراً بعد الفاتورة. أي أنّ ذمّة المورّد لا تنشأ إلا بإدخال الفاتورة، وهو جوهر المطابقة الثلاثية.</span>
+      <span class="lx-en">GRNI opens on receipt and closes on the invoice — it nets to zero across the pair. So the supplier payable only arises once the invoice is entered — the essence of three-way-match.</span></p>
+
+    <!-- two remaining numbers -->
+    <div class="sec-h"><span class="lx-ar">رقمان مختلفان لـ «المتبقي»</span><span class="lx-en">Two different "remaining" numbers</span></div>
+    <div class="two">
+      <div class="metric">
+        <div class="tag"><span class="lx-ar">أعلى السلسلة · التجميع</span><span class="lx-en">Upstream · consolidation</span></div>
+        <div class="ar-h"><span class="lx-ar">الكمية المتبقية</span><span class="lx-en">Remaining to order</span></div>
+        <div class="formula" dir="rtl">كمية العرض − كمية طلب الشراء</div>
+        <p><span class="lx-ar">كم من الكمية التي عرضها المورّد لم تتحوّل بعد إلى طلب شراء.</span>
+          <span class="lx-en">How much of what a supplier quoted hasn't yet become a purchase order.</span></p>
+        <div class="where"><span class="lx-ar">تظهر في: تجميع طلبات الشراء</span><span class="lx-en">Shown on: PO Consolidation</span></div>
+      </div>
+      <div class="metric">
+        <div class="tag"><span class="lx-ar">أسفل السلسلة · الاستلام</span><span class="lx-en">Downstream · receiving</span></div>
+        <div class="ar-h"><span class="lx-ar">المتبقي للاستلام</span><span class="lx-en">Remaining to receive</span></div>
+        <div class="formula" dir="rtl">الكمية المطلوبة − الكمية المستلمة</div>
+        <p><span class="lx-ar">كم من الكمية المطلوبة لم يصل فعلياً بعد.</span>
+          <span class="lx-en">How much of an ordered quantity hasn't physically arrived yet.</span></p>
+        <div class="where"><span class="lx-ar">تظهر في: سند الاستلام + التجميع</span><span class="lx-en">Shown on: Goods Receipt + Consolidation</span></div>
+      </div>
+    </div>
+
+    <!-- lifecycle -->
+    <div class="sec-h"><span class="lx-ar">دورة الحالة — طلب الشراء وأمر الشراء</span><span class="lx-en">Status lifecycle — purchase order &amp; أمر الشراء</span></div>
+    <div class="life">
+      <span class="chip c-draft"><span class="lx-ar">مسودة</span><span class="lx-en">Draft</span></span><span class="step-arw">→</span>
+      <span class="chip c-pending"><span class="lx-ar">بانتظار الاعتماد</span><span class="lx-en">Pending</span></span><span class="step-arw">→</span>
+      <span class="chip c-approved"><span class="lx-ar">معتمد</span><span class="lx-en">Approved</span></span><span class="step-arw">→</span>
+      <span class="chip c-closed"><span class="lx-ar">مغلق</span><span class="lx-en">Closed</span></span>
+      <span class="off">
+        <span class="chip c-cancel"><span class="lx-ar">ملغى</span><span class="lx-en">Cancelled</span></span>
+        <span class="chip c-linked"><span class="lx-ar">مربوط لأمر شراء</span><span class="lx-en">Linked</span></span></span>
+    </div>
+    <p class="life-note"><span class="lx-ar">الشارة أعلى كل مستند وتتغيّر ألوانها تلقائياً. «ملغى» و«مربوط لأمر شراء» خارج المسار الطبيعي — الطلب المربوط مقفل لأنّ أمر شراء يستمد منه.</span>
+      <span class="lx-en">The badge sits atop each document and recolours automatically. "Cancelled" and "Linked" sit off the happy path — a linked request is locked because a purchase order sources it.</span></p>
+
+    <!-- data links -->
+    <div class="sec-h"><span class="lx-ar">كيف ترتبط المستندات معاً</span><span class="lx-en">How the documents are wired together</span></div>
+    <div class="tbl-scroll">
+      <table class="links">
+        <thead><tr>
+          <th><span class="lx-ar">من</span><span class="lx-en">From</span></th>
+          <th><span class="lx-ar">عمود الربط</span><span class="lx-en">Link column</span></th>
+          <th><span class="lx-ar">إلى</span><span class="lx-en">To</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="a"><span class="lx-ar">عرض سعر ← طلب شراء</span><span class="lx-en">Quotation → purchase order</span></td><td><code>SuppQuot1.PONo</code></td><td><span class="lx-ar">الطلب المولّد عند الاعتماد</span><span class="lx-en">the order generated on approval</span></td></tr>
+          <tr><td class="a"><span class="lx-ar">تجميع ← طلب شراء</span><span class="lx-en">Consolidation → purchase order</span></td><td><code>PoCons2.OrderNo</code></td><td><span class="lx-ar">الطلبات المجمّعة</span><span class="lx-en">the grouped orders</span></td></tr>
+          <tr><td class="a"><span class="lx-ar">أمر الشراء ← طلب شراء</span><span class="lx-en">Purchase order → request</span></td><td><code>PurchOrd1.SourcePONo</code></td><td><span class="lx-ar">الطلب المصدر</span><span class="lx-en">the sourced request</span></td></tr>
+          <tr><td class="a"><span class="lx-ar">سند الاستلام ← أمر الشراء</span><span class="lx-en">Receipt → purchase order</span></td><td><code>i2_transf1(37).RcptPONo</code></td><td><span class="lx-ar">الأمر المُستلَم مقابله</span><span class="lx-en">the order being received</span></td></tr>
+          <tr><td class="a"><span class="lx-ar">سند الإدخال (تلقائي) ← أمر الشراء</span><span class="lx-en">Auto stock-in → purchase order</span></td><td><code>i2_transf1(20).PONo</code></td><td><span class="lx-ar">مختوم على الإدخال المولّد</span><span class="lx-en">stamped on the generated inbound</span></td></tr>
+          <tr><td class="a"><span class="lx-ar">فاتورة المشتريات ← سند الاستلام</span><span class="lx-en">Invoice → receipt</span></td><td><code>i2_transf1(37).PurchInvNo</code></td><td><span class="lx-ar">يُقفل GRNI ويسجّل الذمّة + الضريبة</span><span class="lx-en">clears GRNI, books payable + VAT</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="foot">
+      <span class="lx-ar">هويّات أساسية:</span><span class="lx-en">Core identities:</span>
+      <code>طلب شراء = pof1/pof2, VType 31</code> · <code>أمر الشراء = PurchOrd1/2</code> · <code>استلام = doctype 37</code> → <code>إدخال = doctype 20</code> · <code>فاتورة = doctype 30</code>.
+      <span class="lx-ar"> الرصيد المخزوني يُجمَع حسب Kind فقط، لذلك يُرحَّل الاستلام عبر إدخال واحد مولَّد بدل احتسابه مرتين.</span>
+      <span class="lx-en"> Stock on-hand is summed by Kind alone, so the receipt posts through a single generated inbound rather than counting twice.</span>
+    </p>
+
+  </div>
+</div>
+
+<script>
+  function setLang(l){
+    var w=document.getElementById('wrap');
+    w.setAttribute('data-lang',l);
+    w.setAttribute('dir', l==='ar'?'rtl':'ltr');
+    var btns=document.querySelectorAll('.langbtn');
+    for(var i=0;i<btns.length;i++){btns[i].classList.toggle('active', btns[i].getAttribute('data-l')===l);}
+  }
+</script>
+</body>
+</html>

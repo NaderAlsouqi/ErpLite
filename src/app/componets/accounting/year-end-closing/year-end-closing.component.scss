@@ -11,7 +11,7 @@
   padding: 1.1rem 1.25rem 1.35rem;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--default-background, #f8fafc);
 }
 
 .yec-sub {
@@ -29,7 +29,7 @@
   .ng-select-container {
     min-height: 38px !important;
     border-radius: 8px !important;
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid var(--default-border, #cbd5e1) !important;
     background: #fff !important;
   }
   &.ng-select-focused .ng-select-container {

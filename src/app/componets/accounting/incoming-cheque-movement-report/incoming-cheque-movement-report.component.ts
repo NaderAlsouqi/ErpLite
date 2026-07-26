@@ -8,6 +8,9 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 import {
   IncomingChequeMovementService,
   IncomingChequeDto,
@@ -18,7 +21,8 @@ import {
 @Component({
   selector: 'app-incoming-cheque-movement-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective, PaginatorComponent, PaginatePipe],
   templateUrl: './incoming-cheque-movement-report.component.html',
   styleUrl: './incoming-cheque-movement-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -41,6 +45,8 @@ export class IncomingChequeMovementReportComponent implements OnInit {
   fetched = false;
   /** The cheque the displayed rows belong to (for the header card). */
   shownCheque: IncomingChequeDto | null = null;
+  page = 1;
+  pageSize = 10;
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
 
@@ -54,7 +60,7 @@ export class IncomingChequeMovementReportComponent implements OnInit {
 
   constructor(
     private svc:         IncomingChequeMovementService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -123,6 +129,7 @@ export class IncomingChequeMovementReportComponent implements OnInit {
     this.svc.getMovement(c.ChequeNum, c.BankNum, c.Draw).subscribe({
       next: data => {
         this.rows = data ?? [];
+        this.page = 1;
         this.shownCheque = c;
         this.fetched = true;
         this.loading = false;

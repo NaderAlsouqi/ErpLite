@@ -1,8 +1,10 @@
 import {
   Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation
 } from '@angular/core';
+import { ApproveVoucherComponent } from '../../../shared/components/approve-voucher/approve-voucher.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -29,6 +31,7 @@ import { CurrencyService, CurrencyDto } from '../../../shared/services/currency.
 import { CostCenterService, CostCenterDto } from '../../../shared/services/cost-center.service';
 import { SignatureDto, SignatureService } from '../../../shared/services/signature.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { VoucherSerialService, VoucherSerial } from '../../../shared/services/voucher-serial.service';
 
@@ -52,6 +55,8 @@ export interface CreditLine {
   selector: 'app-cash-payment',
   standalone: true,
   imports: [
+    ReportExportComponent,
+    ApproveVoucherComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -146,19 +151,29 @@ export class CashPaymentComponent implements OnInit {
     private currencyService: CurrencyService,
     private costCenterService: CostCenterService,
     private signatureService: SignatureService,
-    private reportService: ReportService,
+    public reportService: ReportService,
     public cs: CompanySettingsService,
     private voucherSerialService: VoucherSerialService,
+    private route: ActivatedRoute,
   ) {
     this.modalConfig.backdrop = 'static';
     this.modalConfig.keyboard = false;
   }
 
+  private _pendingVType: number | null = null;
+  private _pendingDocNum: number | null = null;
+
   ngOnInit(): void {
     const user = this.authService.currentUserValue;
     if (user) this.userName = user.DeliveryName ?? '';
+    // Capture workflow deep-link; applied once the serials load (async) so the
+    // serial-load default doesn't clobber ?vType=. Init runs after serials load.
+    const qp = this.route.snapshot.queryParamMap;
+    if (qp.has('year')) this.myYear = Number(qp.get('year')) || this.myYear;
+    this._pendingVType  = qp.has('vType') ? (Number(qp.get('vType')) || null) : null;
+    const dn = Number(qp.get('docNum'));
+    this._pendingDocNum = (qp.has('docNum') && dn > 0) ? dn : null;
     this.loadLookups();
-    this.initNewVoucher();
   }
 
   // ─── Lookups ────────────────────────────────────────────────
@@ -188,9 +203,17 @@ export class CashPaymentComponent implements OnInit {
     this.voucherSerialService.getAll(4).subscribe({
       next: d => {
         this.voucherSerials = d;
-        if (!this.transNum && d.length) { this.vType = d[0].VSerialNo; this.brNo = d[0].BR_No; }
+        if (!this.transNum && d.length) {
+          let chosen = d[0];
+          if (this._pendingVType != null) { const m = d.find(s => s.VSerialNo === this._pendingVType); if (m) chosen = m; }
+          this.vType = chosen.VSerialNo; this.brNo = chosen.BR_No;
+        }
+        // serials ready → open the deep-linked voucher, else start a new one
+        if (this._pendingDocNum != null) { this.docNum = this._pendingDocNum; this.loadVoucher(this._pendingDocNum); }
+        else this.initNewVoucher();
+        this._pendingVType = null; this._pendingDocNum = null;
       },
-      error: () => {}
+      error: () => { this.initNewVoucher(); }
     });
   }
 

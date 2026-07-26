@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ErpLite E2E Test Results</title>
+</head>
+<body>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --panel: #ffffff;
+    --panel-2: #fbfcfe;
+    --ink: #141a2b;
+    --ink-soft: #47506a;
+    --ink-faint: #79839e;
+    --line: #e5e9f2;
+    --line-strong: #d3d9e8;
+    --accent: #3d55e0;
+    --accent-soft: #eaeeff;
+    --pass: #12996b;
+    --pass-bg: #e2f4ec;
+    --fail: #d83a45;
+    --fail-bg: #fbe6e8;
+    --warn: #c07e17;
+    --warn-bg: #f8efdb;
+    --shadow: 0 1px 2px rgba(20,26,43,.04), 0 8px 24px rgba(20,26,43,.06);
+    --radius: 14px;
+    --mono: ui-monospace, "SFMono-Regular", "Cascadia Code", "Segoe UI Mono", Menlo, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0c0f17;
+      --panel: #141926;
+      --panel-2: #10141f;
+      --ink: #e9edf7;
+      --ink-soft: #a9b2c9;
+      --ink-faint: #6f7893;
+      --line: #232a3b;
+      --line-strong: #2e3750;
+      --accent: #7d90ff;
+      --accent-soft: #1b2138;
+      --pass: #35c891;
+      --pass-bg: #10261f;
+      --fail: #ff6672;
+      --fail-bg: #2a1519;
+      --warn: #e0a83c;
+      --warn-bg: #2a2011;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f6fb; --panel: #ffffff; --panel-2: #fbfcfe; --ink: #141a2b; --ink-soft: #47506a;
+    --ink-faint: #79839e; --line: #e5e9f2; --line-strong: #d3d9e8; --accent: #3d55e0;
+    --accent-soft: #eaeeff; --pass: #12996b; --pass-bg: #e2f4ec; --fail: #d83a45; --fail-bg: #fbe6e8;
+    --warn: #c07e17; --warn-bg: #f8efdb; --shadow: 0 1px 2px rgba(20,26,43,.04), 0 8px 24px rgba(20,26,43,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0f17; --panel: #141926; --panel-2: #10141f; --ink: #e9edf7; --ink-soft: #a9b2c9;
+    --ink-faint: #6f7893; --line: #232a3b; --line-strong: #2e3750; --accent: #7d90ff;
+    --accent-soft: #1b2138; --pass: #35c891; --pass-bg: #10261f; --fail: #ff6672; --fail-bg: #2a1519;
+    --warn: #e0a83c; --warn-bg: #2a2011; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); line-height: 1.5;
+    -webkit-font-smoothing: antialiased; font-feature-settings: "cv02","ss01";
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: clamp(20px, 4vw, 52px) clamp(16px, 4vw, 40px) 72px; }
+
+  /* ── Header ── */
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before { content: ""; width: 26px; height: 2px; background: var(--accent); border-radius: 2px; }
+  h1 { font-size: clamp(28px, 5vw, 44px); line-height: 1.08; letter-spacing: -.02em; margin: 0 0 12px; text-wrap: balance; font-weight: 760; }
+  .lede { font-size: clamp(15px, 2vw, 17px); color: var(--ink-soft); max-width: 62ch; margin: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 10px; margin-top: 20px; }
+  .chip {
+    font-family: var(--mono); font-size: 12px; color: var(--ink-soft);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip b { color: var(--ink); font-weight: 600; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .dot.live { background: var(--pass); box-shadow: 0 0 0 3px var(--pass-bg); }
+
+  /* ── Sections ── */
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin: 0; font-weight: 700; }
+  .sec-note { font-size: 13px; color: var(--ink-faint); }
+
+  /* ── KPI row ── */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 720px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 18px 16px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .kpi .label { font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px; font-weight: 600; }
+  .kpi .num { font-family: var(--mono); font-size: 34px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .kpi .sub { font-size: 12.5px; color: var(--ink-faint); margin-top: 7px; }
+  .kpi.accent .num { color: var(--accent); }
+  .kpi.good .num { color: var(--pass); }
+  .kpi.bad .num { color: var(--fail); }
+  .kpi.warn .num { color: var(--warn); }
+
+  /* ── overall meter ── */
+  .meter-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px; margin-top: 14px; }
+  .meter-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; flex-wrap: wrap; gap: 6px; }
+  .meter-top .rate { font-family: var(--mono); font-size: 20px; font-weight: 600; color: var(--pass); font-variant-numeric: tabular-nums; }
+  .meter-top .rate small { color: var(--ink-faint); font-size: 13px; font-weight: 400; }
+  .bar { height: 15px; border-radius: 8px; overflow: hidden; display: flex; background: var(--line); }
+  .bar > span { height: 100%; display: block; }
+  .bar .s-pass { background: var(--pass); }
+  .bar .s-fail { background: var(--fail); }
+  .bar .s-skip { background: var(--warn); }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; font-size: 13px; color: var(--ink-soft); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ── module table ── */
+  .table-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .grp-label { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); padding: 14px 20px 6px; }
+  .mrow { display: grid; grid-template-columns: 190px 1fr 118px; align-items: center; gap: 16px; padding: 13px 20px; border-top: 1px solid var(--line); }
+  .mrow:first-of-type { border-top: none; }
+  @media (max-width: 640px) { .mrow { grid-template-columns: 1fr; gap: 8px; } }
+  .mname { font-weight: 620; font-size: 15px; display: flex; align-items: center; gap: 9px; }
+  .mname .tag { font-family: var(--mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding: 2px 7px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); }
+  .mname .tag.ok { background: var(--pass-bg); color: var(--pass); }
+  .mbar { height: 10px; border-radius: 6px; overflow: hidden; display: flex; background: var(--line); }
+  .mbar > span { height: 100%; }
+  .mcount { font-family: var(--mono); font-size: 13px; text-align: right; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .mcount b { color: var(--pass); }
+  .mcount .f { color: var(--fail); }
+  .mcount .s { color: var(--warn); }
+
+  /* ── bugs ── */
+  .bugs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .bugs { grid-template-columns: 1fr; } }
+  .bug { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--fail); border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .bug.sev-med { border-left-color: var(--warn); }
+  .bug.sev-low { border-left-color: var(--accent); }
+  .bug-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  .bug-head .sev { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; background: var(--fail-bg); color: var(--fail); }
+  .bug.sev-med .sev { background: var(--warn-bg); color: var(--warn); }
+  .bug.sev-low .sev { background: var(--accent-soft); color: var(--accent); }
+  .bug-head .layer { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+  .bug h3 { font-size: 14.5px; margin: 0 0 6px; font-weight: 650; letter-spacing: -.01em; }
+  .bug p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+  .bug code { font-family: var(--mono); font-size: 12px; background: var(--panel-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+
+  /* ── residual + generic list ── */
+  .note-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 4px 4px; }
+  .rrow { display: grid; grid-template-columns: 120px 1fr; gap: 14px; padding: 11px 18px; border-top: 1px solid var(--line); align-items: baseline; }
+  .rrow:first-child { border-top: none; }
+  @media (max-width: 560px) { .rrow { grid-template-columns: 1fr; gap: 3px; } }
+  .rrow .mod { font-family: var(--mono); font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
+  .rrow .desc { font-size: 13.5px; color: var(--ink-soft); }
+  .rrow .desc b { color: var(--ink); font-weight: 600; }
+
+  /* ── run panel ── */
+  .run { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
+  .run pre { font-family: var(--mono); font-size: 13px; margin: 0; overflow-x: auto; color: var(--ink); }
+  .run pre .c { color: var(--ink-faint); }
+  .run pre .k { color: var(--accent); }
+  .callout { margin-top: 14px; font-size: 13px; color: var(--ink-soft); background: var(--warn-bg); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent); border-radius: 10px; padding: 12px 14px; }
+  .callout b { color: var(--warn); }
+
+  footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-faint); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-family: var(--mono); }
+
+  .fill { animation: grow .9s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes grow { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); } }
+  @media (prefers-reduced-motion: reduce) { .fill { animation: none; } }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">ErpLite · Functional test suite</p>
+    <h1>End-to-end test results</h1>
+    <p class="lede">A Playwright suite exercising every route and business flow of the ErpLite Angular app against the live CashVanApi backend — smoke, auth, and deep per-module specs with real create / post / delete flows.</p>
+    <div class="meta">
+      <span class="chip"><span class="dot live"></span> Verified live</span>
+      <span class="chip"><b>605</b> tests · <b>54</b> files</span>
+      <span class="chip">Backend <b>:7089</b> · tenant <b>SC_ERP78</b></span>
+      <span class="chip">Writes <b>enabled</b></span>
+      <span class="chip">Playwright · Chromium</span>
+    </div>
+  </header>
+
+  <!-- KPIs -->
+  <section>
+    <div class="kpis">
+      <div class="kpi accent"><p class="label">Total tests</p><div class="num">605</div><p class="sub">across all modules</p></div>
+      <div class="kpi good"><p class="label">Passed</p><div class="num">558</div><p class="sub">executed &amp; green</p></div>
+      <div class="kpi bad"><p class="label">Failing</p><div class="num">12</div><p class="sub">selector / timeout tuning</p></div>
+      <div class="kpi warn"><p class="label">Skipped / known-issue</p><div class="num">35</div><p class="sub">16 tracked bugs · 19 data-gated</p></div>
+    </div>
+
+    <div class="meter-card">
+      <div class="meter-top">
+        <strong style="font-size:14px;">Overall outcome</strong>
+        <span class="rate">97.9% <small>pass rate of executed tests (558 / 570)</small></span>
+      </div>
+      <div class="bar">
+        <span class="s-pass fill" style="width:92.2%"></span>
+        <span class="s-fail fill" style="width:2.0%"></span>
+        <span class="s-skip fill" style="width:5.8%"></span>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--pass)"></span> 558 passed</span>
+        <span><span class="swatch" style="background:var(--fail)"></span> 12 failing (test tuning, not app bugs)</span>
+        <span><span class="swatch" style="background:var(--warn)"></span> 35 skipped / tracked known-issue</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Module results -->
+  <section>
+    <div class="sec-head"><h2>Results by area</h2><span class="sec-note">bar = pass · fail · skip</span></div>
+    <div class="table-card">
+
+      <div class="grp-label">Coverage baseline — verified green</div>
+      <!-- route smoke 115/0/16 of 131 -->
+      <div class="mrow">
+        <div class="mname">Route smoke <span class="tag ok">133 routes</span></div>
+        <div class="mbar"><span class="fill" style="width:87.8%;background:var(--pass)"></span><span class="fill" style="width:0%;background:var(--fail)"></span><span class="fill" style="width:12.2%;background:var(--warn)"></span></div>
+        <div class="mcount"><b>115</b> · <span class="f">0</span> · <span class="s">16</span></div>
+      </div>
+      <!-- auth+guard 24/0/0 -->
+      <div class="mrow">
+        <div class="mname">Auth &amp; guards <span class="tag ok">login/redirect</span></div>
+        <div class="mbar"><span class="fill" style="width:100%;background:var(--pass)"></span></div>
+        <div class="mcount"><b>24</b> · <span class="f">0</span> · <span class="s">0</span></div>
+      </div>
+
+      <div class="grp-label">Deep module specs — live, writes on</div>
+      <!-- reports 60/0/0 -->
+      <div class="mrow">
+        <div class="mname">Reports <span class="tag ok">read-only</span></div>
+        <div class="mbar"><span class="fill" style="width:100%;background:var(--pass)"></span></div>
+        <div class="mcount"><b>60</b> · <span class="f">0</span> · <span class="s">0</span></div>
+      </div>
+      <!-- misc 53/0/0 -->
+      <div class="mrow">
+        <div class="mname">Workflow &amp; misc <span class="tag ok">tuned</span></div>
+        <div class="mbar"><span class="fill" style="width:100%;background:var(--pass)"></span></div>
+        <div class="mcount"><b>53</b> · <span class="f">0</span> · <span class="s">0</span></div>
+      </div>
+      <!-- accounting 95/0/2 of 97 -->
+      <div class="mrow">
+        <div class="mname">Accounting <span class="tag">writes ✓</span></div>
+        <div class="mbar"><span class="fill" style="width:97.9%;background:var(--pass)"></span><span class="fill" style="width:0%;background:var(--fail)"></span><span class="fill" style="width:2.1%;background:var(--warn)"></span></div>
+        <div class="mcount"><b>95</b> · <span class="f">0</span> · <span class="s">2</span></div>
+      </div>
+      <!-- warehouse 104/8/0 of 112 -->
+      <div class="mrow">
+        <div class="mname">Warehouse <span class="tag">writes ✓</span></div>
+        <div class="mbar"><span class="fill" style="width:92.9%;background:var(--pass)"></span><span class="fill" style="width:7.1%;background:var(--fail)"></span></div>
+        <div class="mcount"><b>104</b> · <span class="f">8</span> · <span class="s">0</span></div>
+      </div>
+      <!-- cheques 63/1/11 of 75 -->
+      <div class="mrow">
+        <div class="mname">Cheques <span class="tag">lifecycle</span></div>
+        <div class="mbar"><span class="fill" style="width:84.0%;background:var(--pass)"></span><span class="fill" style="width:1.3%;background:var(--fail)"></span><span class="fill" style="width:14.7%;background:var(--warn)"></span></div>
+        <div class="mcount"><b>63</b> · <span class="f">1</span> · <span class="s">11</span></div>
+      </div>
+      <!-- sales 35/2/5 of 42 -->
+      <div class="mrow">
+        <div class="mname">Sales <span class="tag">writes ✓</span></div>
+        <div class="mbar"><span class="fill" style="width:83.3%;background:var(--pass)"></span><span class="fill" style="width:4.8%;background:var(--fail)"></span><span class="fill" style="width:11.9%;background:var(--warn)"></span></div>
+        <div class="mcount"><b>35</b> · <span class="f">2</span> · <span class="s">5</span></div>
+      </div>
+      <!-- permissions 9/1/1 of 11 -->
+      <div class="mrow">
+        <div class="mname">Permissions <span class="tag">matrix</span></div>
+        <div class="mbar"><span class="fill" style="width:81.8%;background:var(--pass)"></span><span class="fill" style="width:9.1%;background:var(--fail)"></span><span class="fill" style="width:9.1%;background:var(--warn)"></span></div>
+        <div class="mcount"><b>9</b> · <span class="f">1</span> · <span class="s">1</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Bugs found -->
+  <section>
+    <div class="sec-head"><h2>Real bugs the suite found</h2><span class="sec-note">4 application defects · with code-level evidence</span></div>
+    <div class="bugs">
+      <div class="bug sev-high">
+        <div class="bug-head"><span class="sev">High</span><span class="layer">backend · SQL</span></div>
+        <h3>Virtual refunds → HTTP 500</h3>
+        <p>Three <code>VirtualInvoice</code> refund endpoints fail with <code>Invalid object name 'Virtual_srf'</code> — a required table/view is missing from tenant SC_ERP78. Breaks 4 virtual-refund pages.</p>
+      </div>
+      <div class="bug sev-med">
+        <div class="bug-head"><span class="sev">Medium</span><span class="layer">frontend · Angular</span></div>
+        <h3>List pages crash on null data</h3>
+        <p>12 invoice / refund / transfer list pages call <code>.map()</code> on a null API response → <code>TypeError</code> caught by the global handler. Needs a <code>(data ?? [])</code> null-guard.</p>
+      </div>
+      <div class="bug sev-med">
+        <div class="bug-head"><span class="sev">Medium</span><span class="layer">backend · Dapper</span></div>
+        <h3>Stamps update/delete → 404 on success</h3>
+        <p><code>SP_UpdateSignature</code>/<code>SP_DeleteSignature</code> use <code>SET NOCOUNT ON</code>, so Dapper returns −1; the repo gates on <code>rows &gt; 0</code> and returns <code>NotFound()</code> even though the row was changed.</p>
+      </div>
+      <div class="bug sev-low">
+        <div class="bug-head"><span class="sev">Low</span><span class="layer">frontend · UX</span></div>
+        <h3>Journal voucher swallows failed save</h3>
+        <p>The account picker lists non-postable parent accounts (unlike cash-payment's leaf-only). Posting to a parent is rejected, but <code>save()</code>'s error handler shows no toast — zero feedback to the user.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Residual -->
+  <section>
+    <div class="sec-head"><h2>Residual failures (12) — test tuning, not app bugs</h2></div>
+    <div class="note-card">
+      <div class="rrow"><span class="mod">warehouse</span><span class="desc"><b>8</b> — barcode-print label visibility (×2), voucher &amp; transfer create 90s write-timeouts (×3), CRUD delete-row visibility, replace-item-code disabled-state, transfer add-row total recompute</span></div>
+      <div class="rrow"><span class="mod">sales</span><span class="desc"><b>2</b> — virtual-invoices table visibility &amp; search-clear timeout</span></div>
+      <div class="rrow"><span class="mod">cheques</span><span class="desc"><b>1</b> — fetch-by-period 90s timeout (slow / empty result on this tenant)</span></div>
+      <div class="rrow"><span class="mod">permissions</span><span class="desc"><b>1</b> — module-checkbox cascade waits on a slow save response</span></div>
+    </div>
+  </section>
+
+  <!-- Fixed during this run -->
+  <section>
+    <div class="sec-head"><h2>Fixed during verification</h2><span class="sec-note">3 test-harness bugs corrected live</span></div>
+    <div class="note-card">
+      <div class="rrow"><span class="mod">api-client</span><span class="desc">Playwright dropped <code style="font-family:var(--mono);font-size:12px">/api</code> when a request path started with <code style="font-family:var(--mono);font-size:12px">/</code> → 404. Fixed base-URL resolution (unblocked sales/cheques data + the permissions matrix).</span></div>
+      <div class="rrow"><span class="mod">selectors</span><span class="desc">The global attachments panel injects a 2nd <code style="font-family:var(--mono);font-size:12px">.card.custom-card</code>; scoped 16 page objects with <code style="font-family:var(--mono);font-size:12px">:not(.attachments-panel)</code>.</span></div>
+      <div class="rrow"><span class="mod">console-guard</span><span class="desc">Ignored Vite/HMR, HTTP2 and SignalR dev-server noise so the smoke suite flags only real app errors.</span></div>
+    </div>
+  </section>
+
+  <!-- How to run -->
+  <section>
+    <div class="sec-head"><h2>How to run</h2></div>
+    <div class="run">
+      <pre><span class="c"># from the repo</span>
+cd e2e
+npm install <span class="k">&amp;&amp;</span> npm run install:browsers   <span class="c"># first time</span>
+
+npm run test:smoke     <span class="c"># all 133 routes — green baseline</span>
+npm test               <span class="c"># everything (read-only; writes auto-skip)</span>
+npm run test:ui        <span class="c"># interactive explorer</span>
+npm run report         <span class="c"># open the Playwright HTML report</span></pre>
+      <div class="callout"><b>Write flows.</b> 62 create / edit / post / delete scenarios are gated behind <code style="font-family:var(--mono);font-size:12px">ALLOW_WRITES=true</code> — enable only against a test tenant. This run had them on; accounting alone created 7 records.</div>
+    </div>
+  </section>
+
+  <footer>
+    <span>ErpLite E2E · Playwright + TypeScript</span>
+    <span>558 pass / 12 fail / 35 skip · 605 total</span>
+  </footer>
+
+</div>
+</body>
+</html>

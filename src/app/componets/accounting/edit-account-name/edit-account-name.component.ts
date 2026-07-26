@@ -7,6 +7,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { AccfService, RenameAccountDto } from '../../../shared/services/accf.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 interface EditRow {
@@ -24,6 +25,7 @@ interface EditRow {
   selector: 'app-edit-account-name',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -61,7 +63,7 @@ export class EditAccountNameComponent implements OnInit {
     private accfService:   AccfService,
     private toastr:        ToastrService,
     private translate:     TranslateService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {}
 
   ngOnInit(): void {

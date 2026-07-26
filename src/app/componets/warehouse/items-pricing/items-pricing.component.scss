@@ -1,0 +1,39 @@
+.ipr-container {
+  .form-label { font-weight: 500; margin-bottom: 0.25rem; }
+  .form-check { margin-bottom: 0.15rem; }
+
+  .table {
+    th, td { white-space: nowrap; vertical-align: middle; font-size: 0.82rem; }
+    min-width: max-content;   /* take natural width so the wide table scrolls horizontally */
+  }
+  tbody > tr.ipr-cat-header > td {
+    background: var(--bs-primary-bg-subtle, #cfe2ff);
+    font-weight: 700;
+  }
+
+  /* Always-visible scrollbars on both axes (this table has 12 columns). */
+  .table-responsive {
+    max-height: 65vh;
+    overflow-x: scroll;
+    overflow-y: scroll;
+  }
+  .table-responsive::-webkit-scrollbar             { width: 12px; height: 12px; }
+  .table-responsive::-webkit-scrollbar-track       { background: #eef2f7; border-radius: 4px; }
+  .table-responsive::-webkit-scrollbar-thumb       { background: #b6c2d1; border-radius: 4px; border: 2px solid #eef2f7; }
+  .table-responsive::-webkit-scrollbar-thumb:hover { background: #8996a8; }
+
+  /* Opaque sticky header (also enforced globally) so scrolled rows don't bleed through. */
+  thead.table-primary > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: var(--bs-primary-bg-subtle, #cfe2ff) !important;
+    background-clip: padding-box;
+  }
+  tbody > tr > td       { background-color: var(--bs-body-bg, #fff); }
+  tbody > tr:hover > td { background-color: var(--bs-table-hover-bg, rgba(0,0,0,0.0375)); }
+  tbody > tr.ipr-cat-header > td { background-color: var(--bs-primary-bg-subtle, #cfe2ff); }
+  tfoot > tr > td       { background-color: #eef2f7; }
+
+  ::ng-deep .ng-select .ng-select-container { min-height: 38px; }
+}

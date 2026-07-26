@@ -8,6 +8,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { CostCenterService, CostCenterDto } from '../../../shared/services/cost-center.service';
 import { ChartOfAccountsService, ChartOfAccountDto } from '../../../shared/services/chart-of-accounts.service';
 import {
@@ -31,7 +32,8 @@ interface CcTxnGroup {
 @Component({
   selector: 'app-cost-center-transactions-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective],
   templateUrl: './cost-center-transactions-report.component.html',
   styleUrl: './cost-center-transactions-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -91,7 +93,7 @@ export class CostCenterTransactionsReportComponent implements OnInit {
     private svc:         CostCenterTransactionsService,
     private ccSvc:       CostCenterService,
     private accountsSvc: ChartOfAccountsService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}

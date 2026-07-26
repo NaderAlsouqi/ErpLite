@@ -1,0 +1,139 @@
+<app-page-header
+  [title]="'ItemsPricing.Title' | translate"
+  [title1]="'Nav.Warehouse.Reports' | translate"
+  [activeTitle]="'ItemsPricing.Title' | translate">
+</app-page-header>
+
+<div class="row ipr-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">{{ 'ItemsPricing.Title' | translate }}</div>
+        <div class="d-flex gap-2">
+          <app-report-export [disabled]="!fetched" (formatSelected)="reportPrint.setNextFormat($event); onExport()"></app-report-export>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Scope + category ──────────────────────────── -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-3">
+            <div class="form-check"><input class="form-check-input" type="radio" id="scopeItem" value="item" [(ngModel)]="scope" name="scopeMode" (change)="onScopeChange()" />
+              <label class="form-check-label" for="scopeItem">{{ 'ItemsPricing.ByItem' | translate }}</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" id="scopeAll" value="all" [(ngModel)]="scope" name="scopeMode" (change)="onScopeChange()" />
+              <label class="form-check-label" for="scopeAll">{{ 'ItemsPricing.AllItems' | translate }}</label></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ItemsPricing.Item' | translate }}</label>
+            <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="itemNo" [searchFn]="itemSearchFn" [disabled]="scope !== 'item'"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+              <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'ItemsPricing.Category' | translate }}</label>
+            <ng-select [items]="categories" bindValue="TypeNo" [(ngModel)]="catNo" [searchFn]="catSearchFn"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'ItemsPricing.AllCategories' | translate">
+              <ng-template ng-label-tmp let-c="item">{{ c.TypeNo }} — {{ isAr ? c.TypeName : (c.Etname || c.TypeName) }}</ng-template>
+              <ng-template ng-option-tmp let-c="item">{{ c.TypeNo }} — {{ isAr ? c.TypeName : (c.Etname || c.TypeName) }}</ng-template>
+            </ng-select>
+          </div>
+        
+
+        <!-- ── Order + qty filter ────────────────────────── -->
+        
+          <div class="col-md-4">
+            <label class="form-label d-block">{{ 'ItemsPricing.OrderBy' | translate }}</label>
+            <div class="d-flex gap-3 flex-wrap">
+              <div class="form-check"><input class="form-check-input" type="radio" id="ord0" name="ord" [value]="0" [(ngModel)]="orderBy" (change)="onFilterChange()" /><label class="form-check-label" for="ord0">{{ 'ItemsPricing.OrderItemNo' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" id="ord1" name="ord" [value]="1" [(ngModel)]="orderBy" (change)="onFilterChange()" /><label class="form-check-label" for="ord1">{{ 'ItemsPricing.OrderItemName' | translate }}</label></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label d-block">{{ 'ItemsPricing.QtyFilter' | translate }}</label>
+            <div class="d-flex gap-3 flex-wrap">
+              <div class="form-check"><input class="form-check-input" type="radio" id="qf0" name="qf" [value]="0" [(ngModel)]="qtyFilter" (change)="onFilterChange()" /><label class="form-check-label" for="qf0">{{ 'ItemsPricing.QtyAll' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" id="qf1" name="qf" [value]="1" [(ngModel)]="qtyFilter" (change)="onFilterChange()" /><label class="form-check-label" for="qf1">{{ 'ItemsPricing.QtyOnlyZero' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" id="qf2" name="qf" [value]="2" [(ngModel)]="qtyFilter" (change)="onFilterChange()" /><label class="form-check-label" for="qf2">{{ 'ItemsPricing.QtyHideZero' | translate }}</label></div>
+            </div>
+          </div>
+        
+
+        <!-- ── Display options ───────────────────────────── -->
+        
+          <div class="col-md-8">
+            <label class="form-label d-block">{{ 'ItemsPricing.Options' | translate }}</label>
+            <div class="d-flex gap-3 flex-wrap">
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="showQty" [(ngModel)]="showQty" /><label class="form-check-label" for="showQty">{{ 'ItemsPricing.ShowQty' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="showPrice" [(ngModel)]="showPrice" /><label class="form-check-label" for="showPrice">{{ 'ItemsPricing.ShowPrice' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="showFamily" [(ngModel)]="showFamily" /><label class="form-check-label" for="showFamily">{{ 'ItemsPricing.ShowFamily' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="groupCat" [(ngModel)]="groupByCategory" /><label class="form-check-label" for="groupCat">{{ 'ItemsPricing.GroupByCategory' | translate }}</label></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5"><div class="spinner-border text-primary" role="status"></div></div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched">
+          <div *ngIf="rows.length === 0" class="alert alert-info text-center">{{ 'ItemsPricing.NoData' | translate }}</div>
+
+          <div *ngIf="rows.length > 0" class="table-responsive">
+            <table class="table table-bordered table-hover table-sm mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th>{{ 'ItemsPricing.ItemNo' | translate }}</th>
+                  <th>{{ 'ItemsPricing.ItemName' | translate }}</th>
+                  <th>{{ 'ItemsPricing.Category' | translate }}</th>
+                  <th>{{ 'ItemsPricing.Barcode' | translate }}</th>
+                  <th *ngIf="showPrice">{{ 'ItemsPricing.Unit' | translate }}</th>
+                  <th class="text-end">{{ 'ItemsPricing.Operand' | translate }}</th>
+                  <th class="text-end" *ngIf="showPrice">{{ 'ItemsPricing.Price' | translate }}</th>
+                  <th class="text-end">{{ 'ItemsPricing.Tax' | translate }}</th>
+                  <th class="text-end" *ngIf="showQty">{{ 'ItemsPricing.Qty' | translate }}</th>
+                  <th *ngIf="showFamily">{{ 'ItemsPricing.Family' | translate }}</th>
+                  <th>{{ 'ItemsPricing.Brand' | translate }}</th>
+                  <th>{{ 'ItemsPricing.Origin' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let r of rows">
+                  <tr *ngIf="groupByCategory && r.catFirst" class="ipr-cat-header">
+                    <td [attr.colspan]="colCount">{{ isAr ? r.Category : (r.CategoryE || r.Category) }}</td>
+                  </tr>
+                  <tr>
+                    <td>{{ r.ItemNo }}</td>
+                    <td>{{ isAr ? r.ItemName : (r.Ename || r.ItemName) }}</td>
+                    <td>{{ isAr ? r.Category : (r.CategoryE || r.Category) }}</td>
+                    <td>{{ r.Barcode }}</td>
+                    <td *ngIf="showPrice">{{ isAr ? r.Unit : (r.UnitE || r.Unit) }}</td>
+                    <td class="text-end">{{ r.Operand | number:numFmt }}</td>
+                    <td class="text-end" *ngIf="showPrice">{{ r.Price | number:numFmt }}</td>
+                    <td class="text-end">{{ r.Tax | number:'1.0-2' }}%</td>
+                    <td class="text-end" *ngIf="showQty">{{ r.Qty | number:numFmt }}</td>
+                    <td *ngIf="showFamily">{{ isAr ? r.Family : (r.FamilyE || r.Family) }}</td>
+                    <td>{{ isAr ? r.Brand : (r.BrandE || r.Brand) }}</td>
+                    <td>{{ isAr ? r.Origin : (r.OriginE || r.Origin) }}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+              <tfoot class="fw-bold table-light">
+                <tr><td [attr.colspan]="colCount">{{ 'General.Total' | translate }}: {{ rows.length }}</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

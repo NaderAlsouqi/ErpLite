@@ -1,0 +1,67 @@
+<app-page-header
+  [title]="'BarcodePrint.Title' | translate"
+  [title1]="'Nav.Warehouse.Title' | translate"
+  [activeTitle]="'BarcodePrint.Title' | translate">
+</app-page-header>
+
+<div class="barcode-print-container">
+  <div class="card custom-card">
+    <div class="card-body">
+
+      <!-- ── Options ─────────────────────────────────────────── -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'BarcodePrint.FromItem' | translate }}</label>
+          <ng-select [items]="items" bindValue="ItemNo" [(ngModel)]="fromItem" [searchFn]="searchFn"
+            [loading]="loading" [clearable]="true" appendTo="body" [placeholder]="'BarcodePrint.SelectItem' | translate">
+            <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+            <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }}<span *ngIf="x.ItemName"> — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</span></ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'BarcodePrint.ToItem' | translate }}</label>
+          <ng-select [items]="items" bindValue="ItemNo" [(ngModel)]="toItem" [searchFn]="searchFn"
+            [loading]="loading" [clearable]="true" appendTo="body" [placeholder]="'BarcodePrint.SelectItem' | translate">
+            <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+            <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }}<span *ngIf="x.ItemName"> — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</span></ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'BarcodePrint.Copies' | translate }}</label>
+          <input type="number" min="1" class="form-control" [(ngModel)]="copies" />
+        </div>
+        <div class="col-md-2 d-flex flex-column justify-content-end">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="showName" [(ngModel)]="showName" />
+            <label class="form-check-label" for="showName">{{ 'BarcodePrint.ShowName' | translate }}</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="showPrice" [(ngModel)]="showPrice" />
+            <label class="form-check-label" for="showPrice">{{ 'BarcodePrint.ShowPrice' | translate }}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mb-3">
+        <button class="btn btn-primary" (click)="generate()"><i class="ti ti-eye me-1"></i>{{ 'BarcodePrint.Preview' | translate }}</button>
+        <button class="btn btn-success" (click)="print()" [disabled]="!labels.length"><i class="ti ti-printer me-1"></i>{{ 'BarcodePrint.Print' | translate }}</button>
+        <button class="btn btn-secondary" (click)="clear()" *ngIf="labels.length"><i class="ti ti-x me-1"></i>{{ 'General.Clear' | translate }}</button>
+        <span class="ms-auto align-self-center small text-muted" *ngIf="labels.length">{{ labels.length }} {{ 'BarcodePrint.LabelsCount' | translate }}</span>
+      </div>
+
+      <!-- ── Preview / print area ────────────────────────────── -->
+      <div class="labels" #printArea>
+        <div class="label" *ngFor="let l of labels">
+          <div class="nm" *ngIf="showName && l.name">{{ l.name }}</div>
+          <div class="pr" *ngIf="showPrice && l.price">{{ l.price }}</div>
+          <svg class="label-bc" [attr.data-value]="l.value"></svg>
+        </div>
+      </div>
+
+      <div *ngIf="!labels.length" class="text-center text-muted py-5">
+        <i class="ti ti-barcode me-1"></i>{{ 'BarcodePrint.Hint' | translate }}
+      </div>
+
+    </div>
+  </div>
+</div>

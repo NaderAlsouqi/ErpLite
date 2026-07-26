@@ -10,11 +10,30 @@ export interface VoucherDashboardRowDto {
   Amt:     number;
 }
 
+export interface DashboardSerialOption {
+  SerialNo:   number;
+  SerialName: string;
+}
+
+export interface DashboardDocOption {
+  DocNo:    number;
+  SerialNo: number;
+}
+
+export interface DashboardFilterOptions {
+  Serials: DashboardSerialOption[];
+  Docs:    DashboardDocOption[];
+}
+
 export interface VoucherDashboardFilter {
   dateFrom:    string;
   dateTo:      string;
   curNo:       number | null;
   postStatus:  number | null;   // 1=posted, 0=unposted, null=all
+  serialNo:    number | null;   // رقم التسلسل
+  docNo:       number | null;   // رقم المستند
+  amtFrom:     number | null;   // القيمة من
+  amtTo:       number | null;   // القيمة إلى
 }
 
 @Injectable({ providedIn: 'root' })
@@ -29,6 +48,14 @@ export class VoucherDashboardService {
       .set('dateTo',   f.dateTo);
     if (f.curNo != null)      p = p.set('curNo', f.curNo);
     if (f.postStatus != null) p = p.set('postStatus', f.postStatus);
+    if (f.serialNo != null)   p = p.set('serialNo', f.serialNo);
+    if (f.docNo != null)      p = p.set('docNo', f.docNo);
+    if (f.amtFrom != null)    p = p.set('amtFrom', f.amtFrom);
+    if (f.amtTo != null)      p = p.set('amtTo', f.amtTo);
     return this.http.get<VoucherDashboardRowDto[]>(`${this.base}/Get`, { params: p });
+  }
+
+  getOptions(): Observable<DashboardFilterOptions> {
+    return this.http.get<DashboardFilterOptions>(`${this.base}/Options`);
   }
 }

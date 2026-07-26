@@ -41,6 +41,29 @@ backend_build*.txt
 !.vscode/extensions.json
 .history/*
 
+# ===== Environment / secrets =====
+# (never commit real credentials; .env.example templates are fine)
+.env
+.env.local
+.env.*.local
+*.pem
+*.pfx
+*.key
+
+# ===== E2E / Playwright =====
+# e2e/ carries its own .gitignore; these are a root-level safety net
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+.auth/
+
+# ===== Scratch / temp =====
+*.tmp
+*.bak
+*.orig
+*~
+
 # ===== System files =====
 .DS_Store
 Thumbs.db

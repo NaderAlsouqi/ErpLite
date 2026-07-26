@@ -11,6 +11,9 @@ import {
   ChartOfAccountDto,
 } from '../../../shared/services/chart-of-accounts.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 interface AccountsListRow {
   no:       number;
@@ -24,7 +27,8 @@ interface AccountsListRow {
 @Component({
   selector: 'app-accounts-list-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, PaginatorComponent, PaginatePipe],
   templateUrl: './accounts-list-report.component.html',
   styleUrl: './accounts-list-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -44,6 +48,8 @@ export class AccountsListReportComponent implements OnInit {
   lookupLoading = false;
   loading = false;
   fetched = false;
+  page = 1;
+  pageSize = 10;
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
 
@@ -56,7 +62,7 @@ export class AccountsListReportComponent implements OnInit {
 
   constructor(
     private accountsSvc: ChartOfAccountsService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -120,6 +126,7 @@ export class AccountsListReportComponent implements OnInit {
       branched: a.branch === 1,
     }));
 
+    this.page = 1;
     this.fetched = true;
     this.loading = false;
 

@@ -6,16 +6,20 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import {
   PaymentVouchersService,
   PaymentVoucherRowDto,
 } from '../../../shared/services/payment-vouchers.service';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 
 @Component({
   selector: 'app-payment-vouchers-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, HasPermissionDirective],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, HasPermissionDirective, PaginatorComponent, PaginatePipe],
   templateUrl: './payment-vouchers-report.component.html',
   styleUrl: './payment-vouchers-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -34,12 +38,14 @@ export class PaymentVouchersReportComponent {
   rows: PaymentVoucherRowDto[] = [];
   loading = false;
   fetched = false;
+  page = 1;
+  pageSize = 10;
 
   get totalAmount(): number { return this.rows.reduce((s, r) => s + r.Amount, 0); }
 
   constructor(
     private svc:         PaymentVouchersService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -86,6 +92,7 @@ export class PaymentVouchersReportComponent {
     }).subscribe({
       next: data => {
         this.rows = data ?? [];
+        this.page = 1;
         this.fetched = true;
         this.loading = false;
         if (this.rows.length === 0) {

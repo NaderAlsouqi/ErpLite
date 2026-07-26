@@ -1,0 +1,391 @@
+<app-page-header
+  [title]="'Transfer.Title' | translate"
+  [title1]="'Nav.Warehouse.Vouchers' | translate"
+  [activeTitle]="'Transfer.Title' | translate">
+</app-page-header>
+
+<div class="transfer-container">
+  <div class="card custom-card">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'form'" (click)="switchTab('form')" href="javascript:void(0)">
+            <i class="ti ti-file-text me-1"></i>{{ 'Transfer.VoucherTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'" (click)="switchTab('list')" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'Transfer.ListTab' | translate }}
+          </a>
+        </li>
+      </ul>
+      <app-report-export *hasPermission="'Transfer.Print'"
+        (formatSelected)="reportService.setNextFormat($event); onExport()"></app-report-export>
+    </div>
+    <div class="card-body">
+
+      <div *ngIf="activeTab === 'form'">
+
+      <!-- ── Header ─────────────────────────────────────────────── -->
+      <div class="row g-3 mb-2">
+        <div class="col-md-2 year-field" [class.year-off]="current.Myear !== currentYear">
+          <label class="form-label">{{ 'Transfer.Year' | translate }} <span class="required">*</span></label>
+          <input type="number" class="form-control year-field" [class.year-off]="current.Myear !== currentYear"
+            [(ngModel)]="current.Myear" (change)="!isExisting && fetchNextNo()" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'Transfer.Serial' | translate }} <span class="required">*</span></label>
+          <ng-select [items]="lookups.SerialTypes" bindValue="VType" [(ngModel)]="current.VType"
+            (change)="onSerialChange()" [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-s="item">{{ s.VType }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+            <ng-template ng-label-tmp let-s="item">{{ s.VType }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'Transfer.DocNo' | translate }} <span class="required">*</span></label>
+          <div class="input-group">
+            <input type="text" class="form-control" maxlength="15" [(ngModel)]="current.DocNo" [placeholder]="'Transfer.DocNo' | translate" />
+            <button class="btn btn-outline-secondary" type="button" (click)="load()" [title]="'Transfer.LoadVoucher' | translate">
+              <i class="ti ti-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'Transfer.Date' | translate }}</label>
+          <input type="date" class="form-control" [(ngModel)]="current.TransDate" (change)="onDateChange()" />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">{{ 'Transfer.FromStore' | translate }} <span class="required">*</span></label>
+          <ng-select [items]="lookups.Stores" bindValue="StoreNo" [(ngModel)]="current.FromStore" (change)="onFromStoreChange()"
+            [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+            <ng-template ng-label-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'Transfer.ToStore' | translate }} <span class="required">*</span></label>
+          <ng-select [items]="lookups.Stores" bindValue="StoreNo" [(ngModel)]="current.ToStore" (change)="onToStoreChange()"
+            [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+            <ng-template ng-label-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.Name : (s.Ename || s.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'Transfer.AdditionalCost' | translate }}</label>
+          <input type="number" class="form-control" [(ngModel)]="current.AdditionalCost" (change)="onAdditionalCostChange()" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'Transfer.Branch' | translate }}</label>
+          <input type="number" class="form-control" [(ngModel)]="current.BrNo" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">{{ 'Transfer.Currency' | translate }}</label>
+          <ng-select [items]="lookups.Currencies" bindValue="CurNo" [(ngModel)]="current.CurNo"
+            [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-c="item">{{ c.CurNo }} — {{ isAr ? c.Name : (c.Ename || c.Name) }}</ng-template>
+            <ng-template ng-label-tmp let-c="item">{{ c.CurNo }} — {{ isAr ? c.Name : (c.Ename || c.Name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'Transfer.Rate' | translate }}</label>
+          <input type="number" class="form-control" [(ngModel)]="current.Rate" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ 'Transfer.DebitAccount' | translate }} <small class="text-muted">({{ 'Transfer.ToStore' | translate }})</small></label>
+          <ng-select [items]="postableAccounts" bindValue="no" [(ngModel)]="current.DebitAcc" [searchFn]="accSearchFn"
+            (change)="onDebitAccChange()" [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-a="item">{{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}</ng-template>
+            <ng-template ng-label-tmp let-a="item">{{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ 'Transfer.CreditAccount' | translate }} <small class="text-muted">({{ 'Transfer.FromStore' | translate }})</small></label>
+          <ng-select [items]="postableAccounts" bindValue="no" [(ngModel)]="current.CreditAcc" [searchFn]="accSearchFn"
+            (change)="onCreditAccChange()" [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-a="item">{{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}</ng-template>
+            <ng-template ng-label-tmp let-a="item">{{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}</ng-template>
+          </ng-select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ 'Transfer.DebitCostCenter' | translate }}</label>
+          <ng-select [items]="costCenters" bindValue="CcntrNo" [(ngModel)]="current.DbCostCenter" [searchFn]="ccSearchFn"
+            [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-c="item">{{ c.CcntrNo }} — {{ isAr ? c.CcAname : (c.Ccename || c.CcAname) }}</ng-template>
+            <ng-template ng-label-tmp let-c="item">{{ c.CcntrNo }} — {{ isAr ? c.CcAname : (c.Ccename || c.CcAname) }}</ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ 'Transfer.CreditCostCenter' | translate }}</label>
+          <ng-select [items]="costCenters" bindValue="CcntrNo" [(ngModel)]="current.CrCostCenter" [searchFn]="ccSearchFn"
+            [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+            <ng-template ng-option-tmp let-c="item">{{ c.CcntrNo }} — {{ isAr ? c.CcAname : (c.Ccename || c.CcAname) }}</ng-template>
+            <ng-template ng-label-tmp let-c="item">{{ c.CcntrNo }} — {{ isAr ? c.CcAname : (c.Ccename || c.CcAname) }}</ng-template>
+          </ng-select>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">{{ 'Transfer.Notes' | translate }}</label>
+          <input type="text" class="form-control" maxlength="100" [(ngModel)]="current.Des" />
+        </div>
+      </div>
+
+      <!-- ── Detail grid ────────────────────────────────────────── -->
+      <div class="dgrid-scroll">
+        <div class="dgrid transfer-grid" [class.no-cost]="!canViewCost">
+          <div class="dgrid-head">
+            <div>{{ 'Transfer.Item' | translate }}</div>
+            <div>{{ 'Transfer.Unit' | translate }}</div>
+            <div>{{ 'Transfer.Qty' | translate }}</div>
+            <div>{{ 'Transfer.Weight' | translate }}</div>
+            <div *ngIf="canViewCost">{{ 'Transfer.Cost' | translate }}</div>
+            <div *ngIf="canViewCost">{{ 'Transfer.Total' | translate }}</div>
+            <div>{{ 'Transfer.Expiry' | translate }}</div>
+            <div>{{ 'Transfer.Batch' | translate }}</div>
+            <div>{{ 'Transfer.Account' | translate }}</div>
+            <div>{{ 'Transfer.CostCenter' | translate }}</div>
+            <div></div>
+          </div>
+          <div class="dgrid-row" *ngFor="let line of current.Lines; let i = index">
+            <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="line.ItemNo" [searchFn]="itemSearchFn"
+              (change)="onItemPick(line)" [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+              <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+            </ng-select>
+            <ng-select [items]="line.Units || []" bindValue="UnitNo" [(ngModel)]="line.UnitNo" (change)="onUnitChange(line)"
+              [clearable]="false" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-u="item">{{ u.UnitNo }} — {{ isAr ? u.UnitName : (u.UnitEname || u.UnitName) }}</ng-template>
+              <ng-template ng-label-tmp let-u="item">{{ u.UnitNo }} — {{ isAr ? u.UnitName : (u.UnitEname || u.UnitName) }}</ng-template>
+            </ng-select>
+            <div class="qty-cell">
+              <input type="number" class="form-control form-control-sm" [(ngModel)]="line.Qty" (change)="onQtyChange(line)" [max]="line.MaxQty ?? null" />
+              <small *ngIf="line.MaxQty != null" class="qty-avail">{{ 'Transfer.Available' | translate }}: {{ line.MaxQty | number:'1.0-3' }}</small>
+            </div>
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="line.Weight" />
+            <input *ngIf="canViewCost" type="text" class="form-control form-control-sm text-end" [value]="(line.Cost || 0) | number:'1.0-3'" readonly />
+            <input *ngIf="canViewCost" type="text" class="form-control form-control-sm text-end" [value]="(line.ItemTot || 0) | number:'1.0-2'" readonly />
+            <input type="date" class="form-control form-control-sm" [(ngModel)]="line.ExpDate" [disabled]="!line.Expired" />
+            <div class="input-group input-group-sm">
+              <input type="text" class="form-control" maxlength="25" [(ngModel)]="line.BatchNo" />
+              <button type="button" class="btn btn-outline-secondary" (click)="openBatch(line)" [title]="'Transfer.PickBatch' | translate"><i class="ti ti-search"></i></button>
+            </div>
+            <ng-select [items]="postableAccounts" bindValue="no" [(ngModel)]="line.AccountNo" [searchFn]="accSearchFn"
+              (change)="onLineAccChange(line)" [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-a="item">{{ a.no }} — {{ isAr ? a.name : (a.Ename || a.name) }}</ng-template>
+              <ng-template ng-label-tmp let-a="item">{{ a.no }}</ng-template>
+            </ng-select>
+            <ng-select [items]="costCenters" bindValue="CcntrNo" [(ngModel)]="line.CostCenter" [searchFn]="ccSearchFn"
+              [clearable]="true" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-option-tmp let-c="item">{{ c.CcntrNo }} — {{ isAr ? c.CcAname : (c.Ccename || c.CcAname) }}</ng-template>
+              <ng-template ng-label-tmp let-c="item">{{ c.CcntrNo }}</ng-template>
+            </ng-select>
+            <div class="d-flex gap-1 justify-content-center">
+              <button *ngIf="serialSystem" type="button" class="btn btn-sm btn-outline-info" (click)="openSerials(line)"
+                [title]="'Serials.Title' | translate" [class.text-danger]="(line.Serials?.length || 0) !== baseQty(line)">
+                <i class="ti ti-list-numbers"></i><span *ngIf="line.Serials?.length" class="ms-1">{{ line.Serials?.length }}</span>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="removeLine(i)"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-2">
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="addLine()"><i class="ti ti-plus me-1"></i>{{ 'Transfer.AddRow' | translate }}</button>
+        <button type="button" class="btn btn-sm btn-outline-success" (click)="openBring()"><i class="ti ti-package-import me-1"></i>{{ 'Transfer.Bring' | translate }}</button>
+      </div>
+
+      <!-- ── Totals ─────────────────────────────────────────────── -->
+      <div class="row g-3 mt-1 mb-2">
+        <div class="col-md-3 offset-md-6">
+          <label class="form-label">{{ 'Transfer.TotalWeight' | translate }}</label>
+          <input type="text" class="form-control text-end" [value]="totalWeight | number:'1.0-3'" readonly />
+        </div>
+        <div class="col-md-3" *ngIf="canViewCost">
+          <label class="form-label">{{ 'Transfer.GrandTotal' | translate }}</label>
+          <input type="text" class="form-control text-end fw-bold" [value]="grandTotal | number:'1.0-2'" readonly />
+        </div>
+      </div>
+
+      <!-- ── Actions ────────────────────────────────────────────── -->
+      <div class="action-buttons">
+        <button *hasPermission="'Transfer.Create'" class="btn btn-primary" (click)="save()" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>{{ 'General.Save' | translate }}
+        </button>
+        <button *hasPermission="'Transfer.Delete'" class="btn btn-danger" (click)="delete()" [disabled]="!isExisting">
+          <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+        </button>
+        <button type="button" class="btn btn-warning" (click)="showGLEntries()" [disabled]="!isExisting">
+          <i class="ti ti-book me-1"></i>{{ 'Transfer.GLEntries' | translate }}
+        </button>
+        <button class="btn btn-secondary" (click)="reset()">
+          <i class="ti ti-file-plus me-1"></i>{{ 'General.New' | translate }}
+        </button>
+      </div>
+      </div><!-- /form tab -->
+
+      <!-- ── Vouchers list tab ──────────────────────────────────── -->
+      <div *ngIf="activeTab === 'list'">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-search"></i></span>
+              <input type="text" class="form-control" [(ngModel)]="listFilter" [placeholder]="'General.Search' | translate" />
+              <button class="btn btn-outline-secondary" (click)="loadList()" [title]="'General.Refresh' | translate"><i class="ti ti-refresh"></i></button>
+            </div>
+          </div>
+          <div class="col-md-6 d-flex align-items-center justify-content-md-end small text-muted">{{ filteredVouchers.length }} / {{ vouchers.length }}</div>
+        </div>
+
+        <div *ngIf="listLoading" class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">{{ 'General.Loading' | translate }}</span></div>
+        </div>
+
+        <div *ngIf="!listLoading" class="table-responsive voucher-list">
+          <table class="table table-bordered table-hover table-sm mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th>{{ 'Transfer.DocNo' | translate }}</th>
+                <th>{{ 'Transfer.Serial' | translate }}</th>
+                <th>{{ 'Transfer.Date' | translate }}</th>
+                <th>{{ 'Transfer.FromStore' | translate }}</th>
+                <th>{{ 'Transfer.ToStore' | translate }}</th>
+                <th class="text-end" *ngIf="canViewCost">{{ 'Transfer.GrandTotal' | translate }}</th>
+                <th class="text-center">{{ 'Transfer.LinesCount' | translate }}</th>
+                <th style="width:40px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let v of filteredVouchers" class="cursor-pointer" (click)="openVoucher(v)">
+                <td>{{ v.DocNo }}</td>
+                <td>{{ v.VTypeName }}</td>
+                <td>{{ v.TransDate ? (v.TransDate | date:'yyyy-MM-dd') : '' }}</td>
+                <td>{{ v.FromStoreName }}</td>
+                <td>{{ v.ToStoreName }}</td>
+                <td class="text-end" *ngIf="canViewCost">{{ v.Total | number:'1.0-2' }}</td>
+                <td class="text-center">{{ v.Lines }}</td>
+                <td class="text-center"><i class="ti ti-pencil text-primary"></i></td>
+              </tr>
+              <tr *ngIf="filteredVouchers.length === 0">
+                <td [attr.colspan]="canViewCost ? 8 : 7" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── احضار (bring items of a category) modal ───────────────────── -->
+<div class="inb-overlay" *ngIf="showBring" (click)="closeBring()">
+  <div class="inb-dialog" style="max-width:460px" (click)="$event.stopPropagation()">
+    <div class="inb-header">
+      <h6 class="mb-0"><i class="ti ti-package-import me-1"></i>{{ 'Transfer.BringTitle' | translate }}</h6>
+      <button type="button" class="btn btn-sm btn-light" (click)="closeBring()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="inb-body">
+      <div class="mb-3">
+        <label class="form-label">{{ 'Transfer.Category' | translate }} <span class="required">*</span></label>
+        <ng-select [items]="lookups.Categories" bindValue="TypeNo" [(ngModel)]="bringCategory"
+          [clearable]="false" [placeholder]="'General.Select' | translate">
+          <ng-template ng-option-tmp let-c="item">{{ c.TypeNo }} — {{ isAr ? c.Name : (c.Ename || c.Name) }}</ng-template>
+          <ng-template ng-label-tmp let-c="item">{{ c.TypeNo }} — {{ isAr ? c.Name : (c.Ename || c.Name) }}</ng-template>
+        </ng-select>
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <button type="button" class="btn btn-secondary" (click)="closeBring()">{{ 'General.Cancel' | translate }}</button>
+        <button type="button" class="btn btn-primary" (click)="doBring()"><i class="ti ti-download me-1"></i>{{ 'Transfer.Bring' | translate }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── batch / expiry picker modal (VB6 ShowGrid2) ───────────────── -->
+<div class="inb-overlay" *ngIf="showBatch" (click)="closeBatch()">
+  <div class="inb-dialog" style="max-width:520px" (click)="$event.stopPropagation()">
+    <div class="inb-header">
+      <h6 class="mb-0"><i class="ti ti-versions me-1"></i>{{ 'Transfer.BatchTitle' | translate }}</h6>
+      <button type="button" class="btn btn-sm btn-light" (click)="closeBatch()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="inb-body">
+      <div *ngIf="batchLoading" class="d-flex justify-content-center my-4"><div class="spinner-border text-primary" role="status"></div></div>
+      <div *ngIf="!batchLoading" class="table-responsive">
+        <table class="table table-bordered table-hover table-sm mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th>{{ 'Transfer.Batch' | translate }}</th>
+              <th>{{ 'Transfer.Expiry' | translate }}</th>
+              <th class="text-end">{{ 'Transfer.NetQty' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of batchList" class="cursor-pointer" (click)="pickBatch(b)">
+              <td>{{ b.BatchNo || '—' }}</td>
+              <td>{{ b.ExpDate || '—' }}</td>
+              <td class="text-end">{{ b.NetQty | number:'1.0-3' }}</td>
+            </tr>
+            <tr *ngIf="batchList.length === 0"><td colspan="3" class="text-center text-muted py-3">{{ 'Transfer.NoBatches' | translate }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GL entries (قيود السند) modal ─────────────────────────────── -->
+<div class="inb-overlay" *ngIf="showGL" (click)="closeGL()">
+  <div class="inb-dialog" (click)="$event.stopPropagation()">
+    <div class="inb-header">
+      <h6 class="mb-0"><i class="ti ti-book me-1"></i>{{ 'Transfer.GLEntries' | translate }}</h6>
+      <button type="button" class="btn btn-sm btn-light" (click)="closeGL()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="inb-body">
+      <div *ngIf="glLoading" class="d-flex justify-content-center my-4">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+      <div *ngIf="!glLoading" class="table-responsive">
+        <table class="table table-bordered table-sm mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th>{{ 'Transfer.Account' | translate }}</th>
+              <th>{{ 'Transfer.AccountName' | translate }}</th>
+              <th class="text-end">{{ 'Transfer.Debit' | translate }}</th>
+              <th class="text-end">{{ 'Transfer.Credit' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of glEntries">
+              <td>{{ e.Acc }}</td><td>{{ e.AccName }}</td>
+              <td class="text-end">{{ e.Debit | number:'1.0-2' }}</td>
+              <td class="text-end">{{ e.Credit | number:'1.0-2' }}</td>
+            </tr>
+            <tr *ngIf="glEntries.length === 0"><td colspan="4" class="text-center text-muted py-3">{{ 'General.NoRecordsFound' | translate }}</td></tr>
+            <tr *ngIf="glEntries.length" style="font-weight:700;background:#eef2ff">
+              <td colspan="2" class="text-end">{{ 'Transfer.GrandTotal' | translate }}</td>
+              <td class="text-end">{{ glDebit | number:'1.0-2' }}</td>
+              <td class="text-end">{{ glCredit | number:'1.0-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'Transfer.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="confirmDelete()">
+</app-confirmation-modal>
+
+<!-- ── serial-number entry dialog ─────────────────────────────────── -->
+<app-serial-entry-modal #serialModal></app-serial-entry-modal>

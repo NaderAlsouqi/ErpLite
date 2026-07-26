@@ -6,9 +6,10 @@ import { ToastrService } from 'ngx-toastr';
 import { TranslateService } from '@ngx-translate/core';
 
 export interface ClusefDto {
-  No:      string;
-  Des:     string;
-  Clename: string;
+  Id:          string;   // the clusef code (e.g. '011')
+  ArabicName:  string;
+  EnglishName: string;
+  Type:        number;
 }
 
 @Injectable({ providedIn: 'root' })

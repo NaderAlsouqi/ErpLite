@@ -190,6 +190,7 @@ code[class*=language-]
   border-radius: 8px !important;
   box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1), 0 2px 8px rgba(15, 23, 42, 0.06) !important;
   overflow: hidden !important;
+  z-index: 1060 !important;   /* keep body-appended panels above NgbModal windows (1055) */
 
   .ng-dropdown-panel-items {
     max-height: 260px !important;
@@ -2248,6 +2249,31 @@ input.year-field  { color: #2e7d32 !important; font-weight: 600; }
 label.year-off    { color: #c0392b !important; }
 input.year-off    { color: #c0392b !important; }
 
+// ── Global form grid ───────────────────────────────────────────────────────
+// One rule for the whole system: السنة المالية takes a line to itself, every
+// other labelled field is a third of a line, so form rows read 3-up.
+//
+// Scoped with :has() to columns that directly contain a .form-label, so rows of
+// buttons, checkboxes, tables, paginators and action bars keep their own widths.
+// Matches Bootstrap 5's own breakpoint — below 768px columns stay stacked — and
+// overrides `width`, which is what BS5 sets (not flex-basis).
+// Browsers without :has() simply keep the per-page Bootstrap columns.
+@media (min-width: 768px) {
+  .row > [class*="col-"]:has(> .form-label) {
+    flex: 0 0 auto;
+    width: 33.333333%;
+    max-width: 33.333333%;
+  }
+
+  // financial year: alone on its line (nothing beside it)
+  .row > [class*="col-"].year-field,
+  .row > [class*="col-"]:has(> .form-label.year-field) {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 // ── Cheque-number dropdown panels (appendTo="body") ───────────────────────
 // When appendTo="body" the panel loses its .ng-select ancestor, so
 // ng-select's own overflow/max-height rules no longer apply — we restore
@@ -2356,12 +2382,12 @@ body > ng-dropdown-panel {
 html:not([data-theme-mode="dark"]):not(#_) {
   .table { background: transparent !important; }
 
-  // Primary-tinted header — exact currency color (template uses a 10% brand tint)
+  // Solid nav/primary (navy) header with white text — matches the sidebar colour
   .table > thead > tr > th,
   .table > thead.table-primary > tr > th {
-    background-color: rgba(var(--primary-rgb), 0.10) !important;
-    color: #000 !important;
-    border-color: rgba(var(--primary-rgb), 0.10) !important;
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+    border-color: var(--primary-color) !important;
   }
 
   // Plain white rows — neutralizes per-component parent/zebra shading
@@ -2374,9 +2400,18 @@ html:not([data-theme-mode="dark"]):not(#_) {
   .table > tbody > tr.selected-row > td,
   .table tbody tr.selected-row > td   { background-color: rgba(var(--primary-rgb), 0.10) !important; }
 
+  // Uniform total (tfoot) row across all report tables — solid navy, matches header
+  .table > tfoot > tr > td,
+  .table > tfoot > tr > th {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+    border-color: var(--primary-color) !important;
+    font-weight: 700 !important;
+  }
+
   // Angular Material tables
   .mat-mdc-header-row,
-  .mat-mdc-header-cell { background-color: rgba(var(--primary-rgb), 0.10) !important; color: #000 !important; }
+  .mat-mdc-header-cell { background-color: var(--primary-color) !important; color: #fff !important; }
   .mat-mdc-row         { background: transparent !important; }
   .mat-mdc-row:hover   { background-color: rgba(0, 0, 0, 0.03) !important; }
   .mat-mdc-cell        { background: transparent !important; }
@@ -2390,9 +2425,9 @@ html[data-theme-mode="dark"]:not(#_) {
   .table > thead.table-primary > tr > th,
   .table > thead.table-secondary > tr > th,
   .table > thead.table-light > tr > th {
-    background-color: var(--default-background) !important;
-    color: var(--text-muted) !important;
-    border-color: var(--default-border) !important;
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+    border-color: var(--primary-color) !important;
   }
 
   .table > tbody > tr > td {
@@ -2404,9 +2439,18 @@ html[data-theme-mode="dark"]:not(#_) {
   .table > tbody > tr.selected-row > td,
   .table tbody tr.selected-row > td   { background-color: rgba(var(--primary-rgb), 0.12) !important; }
 
+  // Uniform total (tfoot) row — solid navy, matches header
+  .table > tfoot > tr > td,
+  .table > tfoot > tr > th {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+    border-color: var(--primary-color) !important;
+    font-weight: 700 !important;
+  }
+
   // Angular Material tables
   .mat-mdc-header-row,
-  .mat-mdc-header-cell                { background: var(--default-background) !important; color: var(--text-muted) !important; }
+  .mat-mdc-header-cell                { background: var(--primary-color) !important; color: #fff !important; }
   .mat-mdc-row                        { background: transparent !important; }
   .mat-mdc-cell                       { background: transparent !important; color: var(--default-text-color) !important; }
 }
@@ -2471,4 +2515,58 @@ html[data-theme-mode="dark"]:not(#_) .mat-mdc-table .mat-mdc-header-cell {
 :not(#_) .mat-mdc-table .mat-mdc-header-cell :is(.mat-sort-header-container, .mat-sort-header-content, button, .mdc-data-table__header-cell-label) {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Sticky report-table headers — force OPAQUE so scrolled rows never bleed through
+// The light/dark "currency look" blocks above paint every .table header with a
+// TRANSLUCENT tint (rgba(var(--primary-rgb),0.10)) and force body cells fully
+// transparent. Inside a scrollable .table-responsive that leaves the *sticky*
+// header see-through, so scrolled rows overlap the frozen header text (reported
+// on the warehouse reports; affects every scrollable report table).
+// Re-assert an OPAQUE header for scrollable tables only — the extra
+// .table-responsive class + last source order out-specifies the rules above.
+// Header-only (body cells untouched) so selected/colored rows keep their tint;
+// an opaque sticky header alone fully covers scrolled rows. Light + dark.
+// See memory: feedback_sticky_report_header.
+// ═════════════════════════════════════════════════════════════════════════════
+html:not([data-theme-mode="dark"]):not(#_) {
+  .table-responsive .table > thead > tr > th,
+  .table-responsive .table > thead.table-primary > tr > th,
+  .table-responsive .table > thead.table-secondary > tr > th,
+  .table-responsive .table > thead.table-light > tr > th {
+    background-color: var(--primary-color) !important;   // nav navy — opaque so the sticky header still covers scrolled rows
+    color: #fff !important;
+    border-color: var(--primary-color) !important;
+    background-clip: padding-box;
+  }
+}
+html[data-theme-mode="dark"]:not(#_) {
+  .table-responsive .table > thead > tr > th,
+  .table-responsive .table > thead.table-primary > tr > th,
+  .table-responsive .table > thead.table-secondary > tr > th,
+  .table-responsive .table > thead.table-light > tr > th {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+    border-color: var(--primary-color) !important;
+    background-clip: padding-box;
+  }
+}
+
+/* ── Floating-button de-collision ─────────────────────────────────────────
+   The global back-to-top button (.scrollToTop) and the chat launcher
+   (.chat-fab) are both pinned to the bottom corner and were overlapping on
+   every page. Lift the back-to-top button so it stacks neatly ABOVE the
+   chat button instead of on top of it. */
+.scrollToTop {
+  inset-block-end: 92px !important;   /* clear the 56px chat-fab + gap */
+  inset-inline-end: 32px !important;  /* align over the chat button */
+}
+
+/* ── Bold field labels (Appearance setting) ─────────────────────────────────
+   When enabled in Settings → Appearance, <html data-bold-labels="on"> is set.
+   The :not(#_) id-trick beats component-scoped `.form-label { font-weight:500 }`. */
+html[data-bold-labels="on"]:not(#_) .form-label,
+html[data-bold-labels="on"]:not(#_) label.form-label {
+  font-weight: 700 !important;
 }

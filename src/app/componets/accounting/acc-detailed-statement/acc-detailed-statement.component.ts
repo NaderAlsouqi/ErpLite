@@ -7,7 +7,8 @@ import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FlatpickrModule, FlatpickrDefaults } from 'angularx-flatpickr';
 import { SharedModule } from '../../../shared/common/sharedmodule';
-import { ReportService } from '../../../shared/services/report.service';
+import { ReportService, ReportFormat } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { ChartOfAccountsService, ChartOfAccountDto } from '../../../shared/services/chart-of-accounts.service';
 import { CurrencyService, CurrencyDto } from '../../../shared/services/currency.service';
@@ -46,6 +47,7 @@ interface AccGroup {
   selector: 'app-acc-detailed-statement',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -425,7 +427,7 @@ export class AccDetailedStatementComponent implements OnInit {
     this.hasResults      = false;
   }
 
-  print(): void {
+  print(format: ReportFormat = 'print'): void {
     if (!this.hasResults || this.groups.length === 0) return;
 
     const t      = (k: string) => this.translate.instant(k);
@@ -582,7 +584,7 @@ export class AccDetailedStatementComponent implements OnInit {
 
     const filtersHtml = this.buildFiltersHtml(t);
     const footerHtml  = this.buildFooterHtml(t, dec);
-    this.reportPrint.printReport(t('AccDetailedStatement.Title'), cols, rows + grandRow, filtersHtml, footerHtml);
+    this.reportPrint.output(format, t('AccDetailedStatement.Title'), cols, rows + grandRow, filtersHtml, footerHtml);
   }
 
   private buildFiltersHtml(t: (k: string) => string): string {

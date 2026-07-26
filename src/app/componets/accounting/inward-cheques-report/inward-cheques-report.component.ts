@@ -7,6 +7,9 @@ import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SharedModule } from '../../../shared/common/sharedmodule';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
+import { PaginatorComponent } from '../../../shared/components/paginator/paginator.component';
+import { PaginatePipe } from '../../../shared/pipes/paginate.pipe';
 import { ChartOfAccountsService, ChartOfAccountDto } from '../../../shared/services/chart-of-accounts.service';
 import {
   IncomingChequeMovementService,
@@ -21,7 +24,8 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
 @Component({
   selector: 'app-inward-cheques-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective],
+  imports: [
+    ReportExportComponent,CommonModule, FormsModule, RouterModule, TranslateModule, SharedModule, NgSelectModule, HasPermissionDirective, PaginatorComponent, PaginatePipe],
   templateUrl: './inward-cheques-report.component.html',
   styleUrl: './inward-cheques-report.component.scss',
   encapsulation: ViewEncapsulation.None,
@@ -65,6 +69,8 @@ export class InwardChequesReportComponent implements OnInit {
   fetched = false;
   /** Snapshot of the status filter the rows were generated with (drives columns). */
   viewAllStatus = true;
+  page = 1;
+  pageSize = 10;
 
   get isAr(): boolean { return this.translate.currentLang === 'ar'; }
   get totalLocal(): number { return this.rows.reduce((s, r) => s + r.LocalAmount, 0); }
@@ -80,7 +86,7 @@ export class InwardChequesReportComponent implements OnInit {
     private svc:         InwardChequesService,
     private serialSvc:   IncomingChequeMovementService,
     private accountsSvc: ChartOfAccountsService,
-    private reportPrint: ReportService,
+    public reportPrint: ReportService,
     private translate:   TranslateService,
     private toastr:      ToastrService,
   ) {}
@@ -179,6 +185,7 @@ export class InwardChequesReportComponent implements OnInit {
     }).subscribe({
       next: data => {
         this.rows = data ?? [];
+        this.page = 1;
         this.viewAllStatus = status === -1;
         this.fetched = true;
         this.loading = false;

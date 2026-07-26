@@ -16,6 +16,7 @@ import { ComfService } from '../../../shared/services/comf.service';
 import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { CurrencyDto, CurrencyService } from '../../../shared/services/currency.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 export interface CcBalRow {
@@ -31,6 +32,7 @@ export interface CcBalRow {
   selector: 'app-cc-opening-balances',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -72,7 +74,7 @@ export class CcOpeningBalancesComponent implements OnInit {
     private centerBalService:  CenterBalService,
     private comfService:       ComfService,
     private currencyService:   CurrencyService,
-    private reportService:     ReportService,
+    public reportService:     ReportService,
     private toastr:            ToastrService,
     private translate:         TranslateService,
     private cs:                CompanySettingsService,

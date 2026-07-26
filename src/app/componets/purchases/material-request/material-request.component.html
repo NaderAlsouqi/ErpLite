@@ -1,0 +1,175 @@
+<app-page-header
+  [title]="'MaterialRequest.Title' | translate"
+  [title1]="'Nav.Purchases.Documents' | translate"
+  [activeTitle]="'MaterialRequest.Title' | translate">
+</app-page-header>
+
+<div class="material-request-container">
+  <div class="card custom-card">
+
+    <!-- ── Tabs ─────────────────────────────────────────────── -->
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'form'" (click)="switchTab('form')" href="javascript:void(0)">
+            <i class="ti ti-file-text me-1"></i>{{ 'MaterialRequest.RequestTab' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'" (click)="switchTab('list')" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'MaterialRequest.ListTab' | translate }}
+          </a>
+        </li>
+      </ul>
+      <app-report-export *hasPermission="pPrint" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
+    </div>
+
+    <!-- ════ Form tab ════ -->
+    <div *ngIf="activeTab === 'form'" class="card-body">
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'MaterialRequest.OrderNo' | translate }} <span class="required">*</span></label>
+          <div class="input-group">
+            <input type="text" class="form-control" [(ngModel)]="orderNo" (change)="onOrderNoChange()"
+                   [placeholder]="'MaterialRequest.OrderNo' | translate" />
+            <button class="btn btn-outline-secondary" (click)="switchTab('list')" [title]="'MaterialRequest.Lookup' | translate">
+              <i class="ti ti-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'MaterialRequest.Date' | translate }} <span class="required">*</span></label>
+          <input type="date" class="form-control" [(ngModel)]="odate" [disabled]="readOnly" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'MaterialRequest.Section' | translate }}</label>
+          <input type="text" class="form-control" maxlength="50" [(ngModel)]="section" [disabled]="readOnly" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'MaterialRequest.Notes' | translate }}</label>
+          <input type="text" class="form-control" maxlength="100" [(ngModel)]="notes" [disabled]="readOnly" />
+        </div>
+      </div>
+
+      <div *ngIf="readOnly" class="alert alert-warning py-2">{{ 'MaterialRequest.Posted' | translate }}</div>
+
+      <!-- ── Items grid ── -->
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0 mr-grid">
+          <thead class="table-primary">
+            <tr>
+              <th style="width:20%">{{ 'MaterialRequest.ItemNo' | translate }}</th>
+              <th style="width:26%">{{ 'MaterialRequest.ItemName' | translate }}</th>
+              <th style="width:14%">{{ 'MaterialRequest.UnitNo' | translate }}</th>
+              <th style="width:14%">{{ 'MaterialRequest.UnitName' | translate }}</th>
+              <th style="width:10%">{{ 'MaterialRequest.Qty' | translate }}</th>
+              <th style="width:12%">{{ 'MaterialRequest.Barcode' | translate }}</th>
+              <th style="width:4%"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let line of lines; let i = index">
+              <td>
+                <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="line.ItemNo" [searchFn]="itemSearchFn"
+                           (change)="onItemPick(line)" [disabled]="readOnly" [clearable]="true"
+                           [placeholder]="'MaterialRequest.PickItem' | translate" appendTo="body">
+                  <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }}</ng-template>
+                  <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+                </ng-select>
+              </td>
+              <td><input type="text" class="form-control form-control-sm" [value]="line.ItemName" readonly /></td>
+              <td>
+                <ng-select [items]="line.units" bindValue="UnitNo" [(ngModel)]="line.UnitNo"
+                           (change)="onUnitPick(line)" [disabled]="readOnly || !line.units.length" [clearable]="false"
+                           appendTo="body">
+                  <ng-template ng-label-tmp let-u="item">{{ u.UnitNo }}</ng-template>
+                  <ng-template ng-option-tmp let-u="item">{{ u.UnitNo }} — {{ isAr ? u.UnitName : (u.UnitEname || u.UnitName) }}</ng-template>
+                </ng-select>
+              </td>
+              <td><input type="text" class="form-control form-control-sm" [value]="line.UnitName" readonly /></td>
+              <td><input type="number" min="0" class="form-control form-control-sm text-center" [(ngModel)]="line.Qty" [disabled]="readOnly" /></td>
+              <td><input type="text" class="form-control form-control-sm" [value]="line.Barcode" readonly dir="ltr" /></td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-danger" (click)="removeRow(i)" [disabled]="readOnly" [title]="'MaterialRequest.DeleteRow' | translate">
+                  <i class="ti ti-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-2">
+        <button class="btn btn-sm btn-outline-primary" (click)="addRow()" [disabled]="readOnly">
+          <i class="ti ti-plus me-1"></i>{{ 'MaterialRequest.AddRow' | translate }}
+        </button>
+      </div>
+
+      <!-- ── Actions ── -->
+      <div class="action-buttons mt-4">
+        <button *hasPermission="pCreate" class="btn btn-primary" (click)="save(false)" [disabled]="saving || readOnly">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>{{ 'General.Save' | translate }}
+        </button>
+        <button *hasPermission="pPrint" class="btn btn-info" (click)="save(true)" [disabled]="saving || readOnly">
+          <i class="ti ti-printer me-1"></i>{{ 'MaterialRequest.SavePrint' | translate }}
+        </button>
+        <button *hasPermission="pDelete" class="btn btn-danger" (click)="delete()" [disabled]="!isExisting">
+          <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+        </button>
+        <button class="btn btn-secondary" (click)="reset()">
+          <i class="ti ti-refresh me-1"></i>{{ 'General.New' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ════ List tab ════ -->
+    <div *ngIf="activeTab === 'list'" class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text"><i class="ti ti-search"></i></span>
+            <input type="text" class="form-control" [(ngModel)]="listFilter"
+                   [placeholder]="'MaterialRequest.SearchPlaceholder' | translate" />
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover mb-0">
+          <thead class="table-primary">
+            <tr>
+              <th>{{ 'MaterialRequest.OrderNo' | translate }}</th>
+              <th>{{ 'MaterialRequest.Date' | translate }}</th>
+              <th>{{ 'MaterialRequest.Section' | translate }}</th>
+              <th>{{ 'MaterialRequest.Status' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of filteredRequests | paginate:page:pageSize" class="cursor-pointer" (click)="openRow(r)">
+              <td>{{ r.OrderNo }}</td>
+              <td>{{ (r.ODate || '') | slice:0:10 }}</td>
+              <td>{{ r.Section }}</td>
+              <td>{{ (r.State === 1 ? 'MaterialRequest.PostedShort' : 'MaterialRequest.Draft') | translate }}</td>
+            </tr>
+            <tr *ngIf="filteredRequests.length === 0">
+              <td colspan="4" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <app-paginator [total]="filteredRequests.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+    </div>
+
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'MaterialRequest.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="confirmDelete()">
+</app-confirmation-modal>

@@ -29,6 +29,7 @@ import { BankService, BankDto } from '../../../shared/services/bank.service';
 import { VoucherSerialService, VoucherSerial } from '../../../shared/services/voucher-serial.service';
 import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 
 export interface CheqLine {
   cheqNum: string;
@@ -45,6 +46,7 @@ export interface CheqLine {
   selector: 'app-incoming-cheq1',
   standalone: true,
   imports: [
+    ReportExportComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -180,7 +182,7 @@ export class IncomingCheq1Component implements OnInit {
     private bankService: BankService,
     private voucherSerialService: VoucherSerialService,
     public cs: CompanySettingsService,
-    private reportService: ReportService,
+    public reportService: ReportService,
   ) {
     this.modalConfig.backdrop = 'static';
     this.modalConfig.keyboard = false;

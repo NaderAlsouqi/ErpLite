@@ -14,6 +14,7 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginatorModule, PageEvent, MatPaginator } from '@angular/material/paginator';
 import { AuthService } from '../../../../shared/services/auth.service';
+import { formatAmount, parseAmount } from '../../../../shared/utils/amount.util';
 
 interface RefundData {
   InvoiceDate: string;
@@ -117,7 +118,7 @@ export class ServiceTransferedRefundsComponent implements OnInit {
           InvoiceNumber: refund.InvoiceNumber ?? refund.invoiceNumber ?? '',
           CustomerName: refund.CustomerName ?? refund.customerName ?? '',
           FinancialYear: Math.floor(Number(refund.FinancialYear ?? refund.financialYear)).toString(),
-          InvoiceAmount: parseFloat(refund.InvoiceAmount ?? refund.invoiceAmount ?? 0).toFixed(this.cs.billDecimals),
+          InvoiceAmount: formatAmount(refund.InvoiceAmount ?? refund.invoiceAmount ?? 0, this.cs.billDecimals),
           RIsTransfered: !!(refund.rIsTransfered ?? refund.RIsTransfered),
           RQRCode: refund.rQRCode ?? refund.RQRCode ?? null,
         }));
@@ -205,7 +206,7 @@ export class ServiceTransferedRefundsComponent implements OnInit {
             );
           case 'CustomerName': return this.compare(a.CustomerName, b.CustomerName, isAsc);
           case 'FinancialYear': return this.compare(a.FinancialYear, b.FinancialYear, isAsc);
-          case 'InvoiceAmount': return this.compare(parseFloat(a.InvoiceAmount), parseFloat(b.InvoiceAmount), isAsc);
+          case 'InvoiceAmount': return this.compare(parseAmount(a.InvoiceAmount), parseAmount(b.InvoiceAmount), isAsc);
           default: return 0;
         }
       });

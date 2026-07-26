@@ -22,6 +22,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 // NgSelect import
 import { NgSelectModule } from '@ng-select/ng-select';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { formatAmount, parseAmount } from '../../../shared/utils/amount.util';
 
 
 interface RefundData {
@@ -217,7 +218,7 @@ export class InvoiceRefundComponent implements OnInit {
           CustomerName: refund.CustomerName,
           
           FinancialYear: Math.floor(Number(refund.FinancialYear)).toString(),
-          InvoiceAmount: parseFloat(refund.InvoiceAmount).toFixed(this.cs.billDecimals),
+          InvoiceAmount: formatAmount(refund.InvoiceAmount, this.cs.billDecimals),
           // Fix the transfer status mapping
           IsTransferred: refund.IsTransfered === 1 || refund.IsTransfered === true || refund.IsTransferred === 1 || refund.IsTransferred === true
         }));
@@ -302,7 +303,7 @@ export class InvoiceRefundComponent implements OnInit {
             case 'InvoiceNumber': return this.compare(a.InvoiceNumber, b.InvoiceNumber, isAsc);
             case 'CustomerName': return this.compare(a.CustomerName, b.CustomerName, isAsc);
             case 'FinancialYear': return this.compare(a.FinancialYear, b.FinancialYear, isAsc);
-            case 'InvoiceAmount': return this.compare(parseFloat(a.InvoiceAmount), parseFloat(b.InvoiceAmount), isAsc);
+            case 'InvoiceAmount': return this.compare(parseAmount(a.InvoiceAmount), parseAmount(b.InvoiceAmount), isAsc);
             case 'IsTransferred': return this.compare(a.IsTransferred ? 1 : 0, b.IsTransferred ? 1 : 0, isAsc);
             default: return 0;
           }
@@ -667,7 +668,7 @@ export class InvoiceRefundComponent implements OnInit {
   private calculateFinalBalance(): void {
           this.finalBalance = 0;
           this.allData.forEach((item) => {
-          if(item.InvoiceAmount){ this.finalBalance += Number(item.InvoiceAmount)
+          if(item.InvoiceAmount){ this.finalBalance += parseAmount(item.InvoiceAmount)
   }
   });
   }

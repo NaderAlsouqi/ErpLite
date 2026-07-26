@@ -45,10 +45,8 @@
           </div>
 
           <div class="d-flex gap-1 flex-wrap">
-            <button *hasPermission="'CashPayment.Print'" class="btn btn-sm btn-outline-primary"
-              (click)="printVoucher()" [disabled]="transNum === 0">
-              <i class="ti ti-printer me-1"></i>{{ 'General.Print' | translate }}
-            </button>
+            <app-report-export *hasPermission="'CashPayment.Print'" [disabled]="transNum === 0" (formatSelected)="reportService.setNextFormat($event); printVoucher()"></app-report-export>
+            <app-approve-voucher></app-approve-voucher>
             <div class="vr mx-1"></div>
             <button class="btn btn-sm btn-outline-secondary" (click)="goFirst()"
               title="{{ 'CashPayment.First' | translate }}">

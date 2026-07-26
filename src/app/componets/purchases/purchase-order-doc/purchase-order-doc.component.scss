@@ -1,0 +1,124 @@
+.po-doc-container {
+
+  // ── prominent status badge + lifecycle stepper ──
+  .po-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: .7rem 1.1rem;
+    border: 1px solid var(--default-border);
+    border-radius: .6rem;
+
+    .po-steps { display: flex; align-items: center; flex-wrap: wrap; flex: 1; row-gap: .4rem; }
+
+    .po-step {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      font-size: .85rem;
+      color: var(--text-muted);
+      padding-inline-end: 1.4rem;
+      position: relative;
+
+      // connector to the next step
+      &:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        inset-inline-end: .35rem;
+        top: 50%;
+        width: .7rem;
+        height: 2px;
+        background: var(--default-border);
+      }
+
+      .po-dot {
+        width: 1.7rem;
+        height: 1.7rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .78rem;
+        font-weight: 700;
+        background: var(--default-border);
+        color: var(--text-muted);
+        flex: 0 0 auto;
+      }
+
+      // reached steps
+      &[data-state='done'] {
+        color: #198754;
+        .po-dot { background: #198754; color: #fff; }
+      }
+      // the document's current state
+      &[data-state='current'] {
+        font-weight: 700;
+        color: var(--primary-color);
+        .po-dot { background: var(--primary-color); color: #fff; box-shadow: 0 0 0 3px rgba(13, 110, 253, .22); }
+      }
+    }
+
+    .po-current-badge {
+      font-size: .95rem;
+      padding: .5rem .95rem;
+      margin-inline-start: auto;
+      display: inline-flex;
+      align-items: center;
+      .ti-circle-filled { font-size: .6rem; }
+    }
+
+    // cancelled sits off the happy path
+    &.po-cancelled {
+      border-color: rgba(220, 53, 69, .5);
+      background: rgba(220, 53, 69, .06);
+      .po-cancel-note { color: #dc3545; font-weight: 600; font-size: 1rem; flex: 1; }
+    }
+  }
+
+  // action bar keeps its buttons on one line until it genuinely runs out of room
+  .po-actions { row-gap: .5rem; }
+
+  .po-grid {
+    td, th { vertical-align: middle; }
+    td.text-end { font-variant-numeric: tabular-nums; }
+
+    // the grid is wide; stop it collapsing the controls
+    min-width: 1100px;
+
+    .form-check-sm .form-check-input { margin-top: .15rem; }
+  }
+
+  // financial summary block
+  .po-totals {
+    border: 1px solid var(--default-border);
+    border-radius: .6rem;
+    padding: .75rem 1rem;
+
+    .po-t-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: .3rem 0;
+      font-variant-numeric: tabular-nums;
+
+      + .po-t-row { border-top: 1px dashed var(--default-border); }
+    }
+
+    .po-grand {
+      margin-top: .25rem;
+      border-top: 2px solid var(--primary-color) !important;
+      font-size: 1.1rem;
+
+      b { color: var(--primary-color); }
+    }
+  }
+}
+
+[data-theme-mode='dark'] {
+  .po-doc-container .po-totals { background: rgba(255, 255, 255, .03); }
+  .po-doc-container .po-status-bar {
+    &.po-cancelled { background: rgba(220, 53, 69, .14); }
+    .po-step[data-state='current'] .po-dot { box-shadow: 0 0 0 3px rgba(13, 110, 253, .35); }
+  }
+}

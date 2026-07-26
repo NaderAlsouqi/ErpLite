@@ -1,0 +1,114 @@
+<app-page-header
+  [title]="'InboundPrint.Title' | translate"
+  [title1]="'Nav.Warehouse.Reports' | translate"
+  [activeTitle]="'InboundPrint.Title' | translate">
+</app-page-header>
+
+<div class="row ipr-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">{{ 'InboundPrint.Title' | translate }}</div>
+        <div class="d-flex gap-2">
+          <app-report-export [disabled]="!fetched || rows.length === 0" (formatSelected)="reportPrint.setNextFormat($event); onExport()"></app-report-export>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-printer me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Filters ───────────────────────────────────── -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-2">
+            <label class="form-label">{{ 'InboundPrint.Year' | translate }} <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="year" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">{{ 'InboundPrint.Serial' | translate }} <span class="text-danger">*</span></label>
+            <ng-select [items]="serials" bindValue="VSerialNo" [(ngModel)]="serialNo" [clearable]="false"
+              (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-s="item">{{ s.VSerialNo }} — {{ isAr ? s.SName : (s.Sename || s.SName) }}</ng-template>
+              <ng-template ng-option-tmp let-s="item">{{ s.VSerialNo }} — {{ isAr ? s.SName : (s.Sename || s.SName) }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'InboundPrint.DocNo' | translate }} <span class="text-danger">*</span></label>
+            <input type="text" inputmode="numeric" class="form-control" [(ngModel)]="docNo" (keypress)="onlyDigits($event)" (change)="sanitizeDoc()" />
+          </div>
+        </div>
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-4">
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="showPrice" [(ngModel)]="showPrice" /><label class="form-check-label" for="showPrice">{{ 'InboundPrint.ShowPrice' | translate }}</label></div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5"><div class="spinner-border text-primary" role="status"></div></div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched">
+          <div *ngIf="rows.length === 0" class="alert alert-info text-center">{{ 'InboundPrint.NotFound' | translate }}</div>
+
+          <div *ngIf="header as hd">
+            <!-- Voucher header -->
+            <div class="ip-voucher-head mb-3">
+              <div class="ip-title">{{ 'InboundPrint.VoucherTitle' | translate }}<span *ngIf="hd.SerialName"> — {{ isAr ? hd.SerialName : (hd.SerialEName || hd.SerialName) }}</span></div>
+              <div class="ip-grid">
+                <div><span class="ip-lbl">{{ 'InboundPrint.DocNo' | translate }}:</span> <b>{{ hd.DocNo }}</b></div>
+                <div><span class="ip-lbl">{{ 'InboundPrint.Date' | translate }}:</span> {{ fmtDate(hd.TransDate) }}</div>
+                <div><span class="ip-lbl">{{ 'InboundPrint.VendorAcc' | translate }}:</span> {{ hd.AccNo }}</div>
+                <div class="ip-wide"><span class="ip-lbl">{{ 'InboundPrint.Vendor' | translate }}:</span> {{ isAr ? hd.VendorName : (hd.VendorEName || hd.VendorName) }}</div>
+                <div class="ip-wide" *ngIf="hd.Des"><span class="ip-lbl">{{ 'InboundPrint.Des' | translate }}:</span> {{ hd.Des }}</div>
+              </div>
+            </div>
+
+            <!-- Lines -->
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover table-sm mb-0">
+                <thead class="table-primary">
+                  <tr>
+                    <th>{{ 'InboundPrint.ItemNo' | translate }}</th>
+                    <th>{{ 'InboundPrint.ItemName' | translate }}</th>
+                    <th>{{ 'InboundPrint.Unit' | translate }}</th>
+                    <th>{{ 'InboundPrint.Store' | translate }}</th>
+                    <th class="text-end">{{ 'InboundPrint.Qty' | translate }}</th>
+                    <th class="text-end" *ngIf="canViewCost">{{ 'InboundPrint.Cost' | translate }}</th>
+                    <th class="text-end">{{ 'InboundPrint.Total' | translate }}</th>
+                    <th class="text-end" *ngIf="showPrice">{{ 'InboundPrint.Price' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of rows | paginate:page:pageSize">
+                    <td>{{ r.ItemNo }}</td>
+                    <td>{{ isAr ? r.ItemName : (r.Ename || r.ItemName) }}<span *ngIf="r.Barcode" class="text-muted"> / {{ r.Barcode }}</span></td>
+                    <td>{{ isAr ? r.Unit : (r.UnitE || r.Unit) }}</td>
+                    <td>{{ isAr ? r.StoreName : (r.StoreEName || r.StoreName) }}</td>
+                    <td class="text-end">{{ r.Qty | number:numFmt }}</td>
+                    <td class="text-end" *ngIf="canViewCost">{{ r.Cost | number:numFmt }}</td>
+                    <td class="text-end fw-semibold">{{ r.Total | number:numFmt }}</td>
+                    <td class="text-end" *ngIf="showPrice">{{ r.Price | number:numFmt }}</td>
+                  </tr>
+                </tbody>
+                <tfoot class="fw-bold table-light">
+                  <tr>
+                    <td [attr.colspan]="4 + (canViewCost ? 1 : 0)">{{ 'General.Total' | translate }}</td>
+                    <td></td>
+                    <td class="text-end">{{ grandTotal | number:numFmt }}</td>
+                    <td *ngIf="showPrice"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <app-paginator [total]="rows.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

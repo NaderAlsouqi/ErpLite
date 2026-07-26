@@ -1,6 +1,7 @@
 import {
   Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation
 } from '@angular/core';
+import { ApproveVoucherComponent } from '../../../shared/components/approve-voucher/approve-voucher.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -40,6 +41,7 @@ export interface CheqTrackingLine {
   selector: 'app-cheq-tracking',
   standalone: true,
   imports: [
+    ApproveVoucherComponent,
     CommonModule,
     FormsModule,
     TranslateModule,

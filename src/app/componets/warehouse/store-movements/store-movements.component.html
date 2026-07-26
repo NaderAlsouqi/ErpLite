@@ -1,0 +1,151 @@
+<app-page-header
+  [title]="'StoreMovements.Title' | translate"
+  [title1]="'Nav.Warehouse.Reports' | translate"
+  [activeTitle]="'StoreMovements.Title' | translate">
+</app-page-header>
+
+<div class="row sm-container">
+  <div class="col-xl-12">
+    <div class="card custom-card">
+
+      <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title mb-0">{{ 'StoreMovements.Title' | translate }}</div>
+        <div class="d-flex gap-2">
+          <app-report-export [disabled]="!fetched" (formatSelected)="reportPrint.setNextFormat($event); onExport()"></app-report-export>
+          <button class="btn btn-primary" (click)="generate()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loading" class="ti ti-report-analytics me-1"></i>
+            {{ 'General.Generate' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ── Store ─────────────────────────────────────── -->
+        <div class="row g-3 align-items-end mb-3">
+          <div class="col-md-3">
+            <div class="form-check"><input class="form-check-input" type="radio" id="storeAll" [value]="true" [(ngModel)]="storeAll" name="storeMode" (change)="onStoreModeChange()" />
+              <label class="form-check-label" for="storeAll">{{ 'StoreMovements.AllStores' | translate }}</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" id="storeOne" [value]="false" [(ngModel)]="storeAll" name="storeMode" (change)="onStoreModeChange()" />
+              <label class="form-check-label" for="storeOne">{{ 'StoreMovements.ByStore' | translate }}</label></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'StoreMovements.Store1' | translate }}</label>
+            <ng-select [items]="stores" bindValue="StoreNo" [(ngModel)]="store1" [searchFn]="storeSearchFn" [disabled]="storeAll"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.StoreName : (s.StoreEname || s.StoreName) }}</ng-template>
+              <ng-template ng-option-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.StoreName : (s.StoreEname || s.StoreName) }}</ng-template>
+            </ng-select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'StoreMovements.Store2' | translate }}</label>
+            <ng-select [items]="stores" bindValue="StoreNo" [(ngModel)]="store2" [searchFn]="storeSearchFn" [disabled]="storeAll"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'General.Select' | translate">
+              <ng-template ng-label-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.StoreName : (s.StoreEname || s.StoreName) }}</ng-template>
+              <ng-template ng-option-tmp let-s="item">{{ s.StoreNo }} — {{ isAr ? s.StoreName : (s.StoreEname || s.StoreName) }}</ng-template>
+            </ng-select>
+          </div>
+        
+
+        <!-- ── Dates + item ──────────────────────────────── -->
+        
+          <div class="col-md-3">
+            <label class="form-label">{{ 'StoreMovements.DateFrom' | translate }} <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'StoreMovements.DateTo' | translate }} <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="dateTo" (change)="onFilterChange()" />
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">{{ 'StoreMovements.Item' | translate }}</label>
+            <ng-select [items]="allItems" bindValue="ItemNo" [(ngModel)]="itemNo" [searchFn]="itemSearchFn"
+              [clearable]="true" (change)="onFilterChange()" appendTo="body" [placeholder]="'StoreMovements.AllItems' | translate">
+              <ng-template ng-label-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+              <ng-template ng-option-tmp let-x="item">{{ x.ItemNo }} — {{ isAr ? x.ItemName : (x.Ename || x.ItemName) }}</ng-template>
+            </ng-select>
+          </div>
+        
+
+        <!-- ── Voucher type + options ────────────────────── -->
+        
+          <div class="col-md-7">
+            <label class="form-label d-block">{{ 'StoreMovements.VoucherType' | translate }}</label>
+            <div class="d-flex gap-3 flex-wrap">
+              <div class="form-check"><input class="form-check-input" type="radio" id="vt0" name="vt" [value]="0" [(ngModel)]="voucherType" (change)="onFilterChange()" /><label class="form-check-label" for="vt0">{{ 'StoreMovements.VtAll' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" id="vt1" name="vt" [value]="1" [(ngModel)]="voucherType" (change)="onFilterChange()" /><label class="form-check-label" for="vt1">{{ 'StoreMovements.VtInbound' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" id="vt2" name="vt" [value]="2" [(ngModel)]="voucherType" (change)="onFilterChange()" /><label class="form-check-label" for="vt2">{{ 'StoreMovements.VtOutbound' | translate }}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" id="vt3" name="vt" [value]="3" [(ngModel)]="voucherType" (change)="onFilterChange()" /><label class="form-check-label" for="vt3">{{ 'StoreMovements.VtTransfer' | translate }}</label></div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label d-block">{{ 'StoreMovements.Options' | translate }}</label>
+            <div class="d-flex gap-3 flex-wrap">
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="showTax" [(ngModel)]="showTax" /><label class="form-check-label" for="showTax">{{ 'StoreMovements.ShowTax' | translate }}</label></div>
+              <div class="form-check" *ngIf="canViewCost"><input class="form-check-input" type="checkbox" id="showCost" [(ngModel)]="showCostCol" /><label class="form-check-label" for="showCost">{{ 'StoreMovements.ShowCost' | translate }}</label></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="d-flex justify-content-center my-5"><div class="spinner-border text-primary" role="status"></div></div>
+
+        <!-- Results -->
+        <ng-container *ngIf="!loading && fetched">
+          <div *ngIf="rows.length === 0" class="alert alert-info text-center">{{ 'StoreMovements.NoData' | translate }}</div>
+
+          <div *ngIf="rows.length > 0" class="table-responsive">
+            <table class="table table-bordered table-hover table-sm mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th>{{ 'StoreMovements.DocNo' | translate }}</th>
+                  <th>{{ 'StoreMovements.Type' | translate }}</th>
+                  <th>{{ 'StoreMovements.Date' | translate }}</th>
+                  <th>{{ 'StoreMovements.ItemNo' | translate }}</th>
+                  <th>{{ 'StoreMovements.ItemName' | translate }}</th>
+                  <th>{{ 'StoreMovements.Unit' | translate }}</th>
+                  <th class="text-end" *ngIf="showTax">{{ 'StoreMovements.Tax' | translate }}</th>
+                  <th class="text-end">{{ 'StoreMovements.InQty' | translate }}</th>
+                  <th class="text-end">{{ 'StoreMovements.OutQty' | translate }}</th>
+                  <th class="text-end" *ngIf="showCostColumns">{{ 'StoreMovements.Cost' | translate }}</th>
+                  <th class="text-end" *ngIf="showCostColumns">{{ 'StoreMovements.Total' | translate }}</th>
+                  <th>{{ 'StoreMovements.Store' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of rows | paginate:page:pageSize">
+                  <td>{{ r.DocNo }}</td>
+                  <td>{{ typeLabel(r) }}</td>
+                  <td>{{ fmtDate(r.TransDate) }}</td>
+                  <td>{{ r.ItemNo }}</td>
+                  <td>{{ isAr ? r.ItemName : (r.Ename || r.ItemName) }}</td>
+                  <td>{{ isAr ? r.Unit : (r.UnitE || r.Unit) }}</td>
+                  <td class="text-end" *ngIf="showTax">{{ r.Tax | number:'1.0-2' }}%</td>
+                  <td class="text-end">{{ r.InQty ? (r.InQty | number:numFmt) : '' }}</td>
+                  <td class="text-end">{{ r.OutQty ? (r.OutQty | number:numFmt) : '' }}</td>
+                  <td class="text-end" *ngIf="showCostColumns">{{ r.Cost | number:numFmt }}</td>
+                  <td class="text-end" *ngIf="showCostColumns">{{ r.Total | number:numFmt }}</td>
+                  <td>{{ r.StoreNo }}<span *ngIf="r.StoreName" class="text-muted"> — {{ isAr ? r.StoreName : (r.StoreEName || r.StoreName) }}</span></td>
+                </tr>
+              </tbody>
+              <tfoot class="fw-bold table-light">
+                <tr>
+                  <td [attr.colspan]="6 + (showTax ? 1 : 0)">{{ 'General.Total' | translate }}</td>
+                  <td class="text-end">{{ totIn | number:numFmt }}</td>
+                  <td class="text-end">{{ totOut | number:numFmt }}</td>
+                  <td *ngIf="showCostColumns"></td>
+                  <td class="text-end" *ngIf="showCostColumns">{{ totNet | number:numFmt }}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <app-paginator [total]="rows.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

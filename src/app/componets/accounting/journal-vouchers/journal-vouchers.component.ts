@@ -1,6 +1,7 @@
 import {
   Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation
 } from '@angular/core';
+import { ApproveVoucherComponent } from '../../../shared/components/approve-voucher/approve-voucher.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -29,6 +30,7 @@ import {
 import { ChartOfAccountsService, ChartOfAccountDto } from '../../../shared/services/chart-of-accounts.service';
 import { CurrencyService, CurrencyDto } from '../../../shared/services/currency.service';
 import { ReportService } from '../../../shared/services/report.service';
+import { ReportExportComponent } from '../../../shared/components/report-export/report-export.component';
 import { CompanySettingsService } from '../../../shared/services/company-settings.service';
 import { CostCenterService, CostCenterDto } from '../../../shared/services/cost-center.service';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
@@ -48,6 +50,8 @@ export interface VoucherLine {
   selector: 'app-journal-vouchers',
   standalone: true,
   imports: [
+    ReportExportComponent,
+    ApproveVoucherComponent,
     CommonModule,
     FormsModule,
     TranslateModule,
@@ -89,6 +93,10 @@ export class JournalVouchersComponent implements OnInit {
   private _loadedYear = this.myYear;
   vType = this.DEFAULT_V_TYPE;
   docType = this.DEFAULT_DOC_TYPE;
+  // deep-link params captured in ngOnInit, applied once serials load (async)
+  private _pendingVType: number | null = null;
+  private _pendingDocType: number | null = null;
+  private _pendingDocNum: number | null = null;
   brNo = 0;
   selectedVtypeNo = 0;
   selectedSerial: VoucherSerial | null = null;
@@ -170,7 +178,7 @@ export class JournalVouchersComponent implements OnInit {
     private jvService: JournalVouchersService,
     private coaService: ChartOfAccountsService,
     private currencyService: CurrencyService,
-    private reportService: ReportService,
+    public reportService: ReportService,
     private costCenterService: CostCenterService,
     private cs: CompanySettingsService,
     private voucherSerialService: VoucherSerialService,
@@ -188,22 +196,20 @@ export class JournalVouchersComponent implements OnInit {
     this.loadAccounts();
     this.loadCurrencies();
     this.loadCostCenters();
-    this.loadVoucherSerials();
-    this._loadedYear = this.myYear;
 
-    // Deep-link: ?docNum=&year=&vType=&docType= opens that voucher directly
-    // (e.g. clicked from the Journal Voucher Report or a detailed statement).
+    // Deep-link: ?docNum=&year=&vType=&docType= (report/detailed-statement) or
+    // ?vType=&year= (workflow step). Captured here and applied once the serials
+    // finish loading — loadVoucherSerials() is async and would otherwise reset
+    // the serial to the first one and clobber the ?vType= value.
     const qp = this.route.snapshot.queryParamMap;
+    if (qp.has('year')) this.myYear = Number(qp.get('year')) || this.myYear;
+    this._loadedYear = this.myYear;
+    this._pendingVType   = qp.has('vType')   ? (Number(qp.get('vType'))   || null) : null;
+    this._pendingDocType = qp.has('docType') ? (Number(qp.get('docType')) || null) : null;
     const focusDoc = Number(qp.get('docNum'));
-    if (qp.has('docNum') && !isNaN(focusDoc) && focusDoc > 0) {
-      this.myYear  = Number(qp.get('year'))    || this.myYear;
-      this.vType   = Number(qp.get('vType'))   || this.vType;
-      this.docType = Number(qp.get('docType')) || this.docType;
-      this.docNum  = focusDoc;
-      this.loadVoucher(focusDoc);
-    } else {
-      this.initNewVoucher();
-    }
+    this._pendingDocNum  = (qp.has('docNum') && !isNaN(focusDoc) && focusDoc > 0) ? focusDoc : null;
+
+    this.loadVoucherSerials();   // applies the pending deep-link + inits the form
   }
 
   // ─── Lookups ────────────────────────────────────────────
@@ -233,16 +239,31 @@ export class JournalVouchersComponent implements OnInit {
         this.voucherSerials = d ?? [];
         this.updateSerialTypes();
         if (this.voucherSerials.length) {
-          const first = this.voucherSerials[0];
-          this.selectedVtypeNo = first.VtypeNo;
+          // Deep-linked serial (?vType): match نوع التسلسل (VtypeNo) first, then
+          // serial number (VSerialNo); else fall back to the first serial.
+          let chosen = this.voucherSerials[0];
+          if (this._pendingVType != null) {
+            const match = this.voucherSerials.find(s => s.VtypeNo === this._pendingVType)
+                       ?? this.voucherSerials.find(s => s.VSerialNo === this._pendingVType);
+            if (match) chosen = match;
+          }
+          this.selectedVtypeNo = chosen.VtypeNo;
           this.updateSerialsByType();
-          this.selectedSerial  = first;
-          this.vType           = first.VSerialNo;
-          this.brNo            = first.BR_No;
-          this.docType         = first.VtypeNo;
+          this.selectedSerial  = chosen;
+          this.vType           = chosen.VSerialNo;
+          this.brNo            = chosen.BR_No;
+          this.docType         = this._pendingDocType ?? chosen.VtypeNo;
         }
+        // Serials are ready: open the deep-linked voucher, else start a new one.
+        if (this._pendingDocNum != null) {
+          this.docNum = this._pendingDocNum;
+          this.loadVoucher(this._pendingDocNum);
+        } else {
+          this.initNewVoucher();
+        }
+        this._pendingVType = null; this._pendingDocType = null; this._pendingDocNum = null;
       },
-      error: () => {}
+      error: () => { this.initNewVoucher(); }
     });
   }
 

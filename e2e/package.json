@@ -1,0 +1,33 @@
+{
+  "name": "erplite-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Functional (end-to-end) test suite for the ErpLite Angular + CashVanApi application, powered by Playwright.",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test tests/smoke",
+    "test:auth": "playwright test --project=guest tests/auth",
+    "test:guest": "playwright test --project=guest",
+    "test:authed": "playwright test --project=authed",
+    "test:sales": "playwright test tests/sales",
+    "test:warehouse": "playwright test tests/warehouse",
+    "test:accounting": "playwright test tests/accounting",
+    "test:cheques": "playwright test tests/cheques",
+    "test:reports": "playwright test tests/reports",
+    "test:permissions": "playwright test tests/permissions",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen --ignore-https-errors http://localhost:4200",
+    "typecheck": "tsc --noEmit",
+    "routes:extract": "node scripts/extract-routes.cjs",
+    "install:browsers": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.2",
+    "dotenv": "^16.4.7",
+    "typescript": "^5.6.3"
+  }
+}

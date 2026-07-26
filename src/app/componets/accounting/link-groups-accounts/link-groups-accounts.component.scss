@@ -21,7 +21,7 @@
 
 // ── Add form ──────────────────────────────────────────────────────────────────
 .lga-add-form {
-  background: #f8fafc;
+  background: var(--default-background, #f8fafc);
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 1.25rem 1.5rem;
@@ -118,7 +118,7 @@
   .ng-select-container {
     min-height: 38px !important;
     border-radius: 6px !important;
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid var(--default-border, #cbd5e1) !important;
     background: #fff !important;
     box-shadow: none !important;
     transition: border-color 0.15s, box-shadow 0.15s !important;

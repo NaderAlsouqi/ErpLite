@@ -36,6 +36,39 @@
 
         <div *ngIf="!loading">
 
+          <!-- ── Section: Company Logo / Profile Image ── -->
+          <div class="ci-section-title">
+            <i class="ti ti-photo me-1"></i>
+            {{ 'CompanyInfo.Logo' | translate }}
+          </div>
+
+          <div class="ci-logo-row mb-3">
+            <div class="ci-logo-preview">
+              <img *ngIf="logoUrl" [src]="logoUrl" alt="{{ 'CompanyInfo.Logo' | translate }}" />
+              <div *ngIf="!logoUrl" class="ci-logo-empty">
+                <i class="ti ti-building-store"></i>
+                <span>{{ 'CompanyInfo.NoLogo' | translate }}</span>
+              </div>
+            </div>
+
+            <div class="ci-logo-actions" *hasPermission="'Comf.Edit'">
+              <input type="file" #logoInput hidden accept="image/*"
+                     (change)="onLogoSelected($event)" />
+              <button type="button" class="btn btn-primary btn-sm"
+                      (click)="logoInput.click()" [disabled]="logoSaving">
+                <span *ngIf="logoSaving" class="spinner-border spinner-border-sm me-1"></span>
+                <i *ngIf="!logoSaving" class="ti ti-upload me-1"></i>
+                {{ 'CompanyInfo.UploadLogo' | translate }}
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm"
+                      *ngIf="logoUrl" (click)="removeLogo()" [disabled]="logoSaving">
+                <i class="ti ti-trash me-1"></i>
+                {{ 'CompanyInfo.RemoveLogo' | translate }}
+              </button>
+              <div class="ci-logo-hint">{{ 'CompanyInfo.LogoHint' | translate }}</div>
+            </div>
+          </div>
+
           <!-- ── Section 1: Basic Info ── -->
           <div class="ci-section-title">
             <i class="ti ti-info-circle me-1"></i>
@@ -99,10 +132,10 @@
               <label class="form-label">{{ 'CompanyInfo.CompYear' | translate }}</label>
               <input type="number" class="form-control text-center" [(ngModel)]="form.compYear" />
             </div>
-          </div>
+          
 
           <!-- ── Tax Section ── -->
-          <div class="row g-3 mb-4 align-items-center">
+          
             <div class="col-md-auto">
               <div class="form-check form-check-inline">
                 <input class="form-check-input" type="checkbox" id="notTaxable"

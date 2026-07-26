@@ -12,10 +12,7 @@
       <div class="card-header">
         <div class="card-title">{{ 'OpeningBalances.Title' | translate }}</div>
         <div class="card-options">
-          <button class="btn btn-outline-primary me-1" *hasPermission="'Accf.Print'" (click)="printTable()">
-            <i class="ti ti-printer me-1"></i>
-            {{ 'General.Print' | translate }}
-          </button>
+          <app-report-export *hasPermission="'Accf.Print'" (formatSelected)="reportService.setNextFormat($event); printTable()"></app-report-export>
           <button class="btn btn-outline-success me-1" *hasPermission="'Accf.Export'" (click)="exportToExcel()">
             <i class="ti ti-file-spreadsheet me-1"></i>
             {{ 'ChartOfAccounts.ExportExcel' | translate }}

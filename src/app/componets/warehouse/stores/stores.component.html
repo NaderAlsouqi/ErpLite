@@ -1,0 +1,166 @@
+<app-page-header
+  [title]="'Stores.Title' | translate"
+  [title1]="'Nav.Warehouse.InputScreens' | translate"
+  [activeTitle]="'Nav.Warehouse.EntryWarehouses' | translate">
+</app-page-header>
+
+<div class="stores-container">
+  <div class="card custom-card">
+
+    <!-- ── Tabs header ─────────────────────────────────────────── -->
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs mb-0">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'form'"
+             (click)="switchToForm()" href="javascript:void(0)">
+            <i class="ti ti-plus me-1"></i>{{ 'Stores.StoreDetails' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'list'"
+             (click)="switchToList()" href="javascript:void(0)">
+            <i class="ti ti-list me-1"></i>{{ 'Stores.Title' | translate }}
+          </a>
+        </li>
+      </ul>
+
+      <div class="d-flex gap-1" *ngIf="activeTab === 'list'">
+        <button class="btn btn-sm btn-outline-secondary" (click)="loadData()" title="{{ 'General.Refresh' | translate }}">
+          <i class="ti ti-refresh"></i>
+        </button>
+        <app-report-export *hasPermission="'Stores.Print'" (formatSelected)="reportService.setNextFormat($event); print()"></app-report-export>
+      </div>
+    </div>
+
+    <!-- ── Entry tab ───────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'form'" class="card-body">
+      <div class="row">
+        <div class="col-xl-8 col-lg-10">
+          <div class="form-section">
+
+            <div class="form-group">
+              <label><i class="ti ti-hash"></i> {{ 'Stores.StoreNo' | translate }} <span class="required">*</span></label>
+              <input type="number" class="form-control" min="1" [(ngModel)]="currentStore.StoreNo"
+                (change)="onNoChange()" [placeholder]="'Stores.EnterStoreNo' | translate" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="ti ti-language"></i> {{ 'Stores.ArabicName' | translate }} <span class="required">*</span></label>
+              <input type="text" class="form-control" maxlength="30" [(ngModel)]="currentStore.StoreName"
+                [placeholder]="'Stores.EnterArabicName' | translate" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="ti ti-language"></i> {{ 'Stores.EnglishName' | translate }} <span class="required">*</span></label>
+              <input type="text" class="form-control" maxlength="30" [(ngModel)]="currentStore.StoreEname"
+                [placeholder]="'Stores.EnterEnglishName' | translate" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="ti ti-credit-card"></i> {{ 'Stores.AccountNo' | translate }}</label>
+              <ng-select
+                [items]="accounts"
+                bindValue="no"
+                [searchFn]="accountSearchFn"
+                [searchable]="true"
+                [clearable]="true"
+                [(ngModel)]="currentStore.AccountNo"
+                [placeholder]="'General.Select' | translate"
+                appendTo="body"
+                class="def-select">
+                <ng-template ng-label-tmp let-item="item">
+                  {{ item.no }} — {{ item.name }}
+                </ng-template>
+                <ng-template ng-option-tmp let-item="item">
+                  <span class="def-opt-no">{{ item.no }}</span>
+                  <span class="def-opt-name">{{ item.name }}</span>
+                </ng-template>
+              </ng-select>
+            </div>
+
+          </div>
+
+          <div class="action-buttons">
+            <button *hasPermission="'Stores.Create'" class="btn btn-primary" (click)="save()" [disabled]="saving">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <i *ngIf="!saving" class="ti ti-device-floppy me-1"></i>
+              {{ 'General.Save' | translate }}
+            </button>
+            <button class="btn btn-secondary" (click)="reset()">
+              <i class="ti ti-refresh me-1"></i>{{ 'General.New' | translate }}
+            </button>
+            <button *hasPermission="'Stores.Delete'" class="btn btn-danger" (click)="delete()" [disabled]="!currentStore.StoreNo">
+              <i class="ti ti-trash me-1"></i>{{ 'General.Delete' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── List tab ────────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'list'" class="card-body">
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text"><i class="ti ti-search"></i></span>
+            <input type="text" class="form-control" [(ngModel)]="filterName" (input)="applyFilters()"
+              [placeholder]="'Stores.SearchPlaceholder' | translate" />
+            <button class="btn btn-outline-secondary" (click)="clearFilters()" *ngIf="filterName">
+              <i class="ti ti-x"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="d-flex justify-content-center my-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">{{ 'General.Loading' | translate }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="!loading" class="table-section">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover mb-0">
+            <thead class="table-primary">
+              <tr>
+                <th>{{ 'Stores.StoreNo' | translate }}</th>
+                <th>{{ 'Stores.ArabicName' | translate }}</th>
+                <th>{{ 'Stores.EnglishName' | translate }}</th>
+                <th>{{ 'Stores.AccountNo' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let store of filteredStores | paginate:page:pageSize"
+                  class="cursor-pointer"
+                  (click)="onSelectRow(store)"
+                  [class.selected-row]="currentStore.StoreNo === store.StoreNo">
+                <td>{{ store.StoreNo }}</td>
+                <td>{{ store.StoreName }}</td>
+                <td>{{ store.StoreEname }}</td>
+                <td>{{ store.AccountNo ?? '—' }}</td>
+              </tr>
+              <tr *ngIf="filteredStores.length === 0">
+                <td colspan="4" class="text-center text-muted py-4">{{ 'General.NoRecordsFound' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <app-paginator [total]="filteredStores.length" [(page)]="page" [(pageSize)]="pageSize"></app-paginator>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<app-confirmation-modal
+  #confirmModal
+  [title]="'Stores.DeleteConfirmation' | translate"
+  [message]="'General.ActionCannotBeUndone' | translate"
+  [confirmButtonText]="'General.Delete' | translate"
+  [cancelButtonText]="'General.Cancel' | translate"
+  confirmButtonClass="btn-danger"
+  (confirm)="confirmDelete()">
+</app-confirmation-modal>
